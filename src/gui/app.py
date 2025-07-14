@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from PyPDF2 import PdfMerger
-from src.converter.merger import merge_pdfs
+from src.converter import merge_pdfs, export_to_pdf
 
 class PDFMergerGUI(tk.Tk):
     def __init__(self):
@@ -11,14 +10,16 @@ class PDFMergerGUI(tk.Tk):
         self.build_widgets()
 
     def build_widgets(self):
-        # Верхня панель з кнопками
+        # ── Верхня панель кнопок ────────────────────
         top = tk.Frame(self)
         top.pack(fill="x", padx=8, pady=8)
+
         tk.Button(top, text="Add PDFs",   command=self.add_pdfs).pack(side="left", padx=4)
         tk.Button(top, text="Remove PDF", command=self.remove_pdf).pack(side="left", padx=4)
-        tk.Button(top, text="Merge PDFs", command=self.merge_pdfs).pack(side="left", padx=4)
+        tk.Button(top, text="Merge PDFs", command=self.on_merge).pack(side="left", padx=4)
+        tk.Button(top, text="Export",     command=self.on_export).pack(side="left", padx=4)
 
-        # Центральна частина: список + кнопки переміщення
+        # ── Центральна частина: список + керування ───
         mid = tk.Frame(self)
         mid.pack(fill="both", expand=True, padx=4, pady=8)
 
@@ -31,62 +32,77 @@ class PDFMergerGUI(tk.Tk):
         tk.Button(ctrl, text="▼", width=3, command=self.move_down).pack(pady=2)
 
     def add_pdfs(self):
-        files = filedialog.askopenfilenames(
-            title="Select PDF files",
-            filetypes=[("PDF Files", "*.pdf")]
+        paths = filedialog.askopenfilenames(
+            title="Select PDF files", filetypes=[("PDF Files","*.pdf")]
         )
-        for f in files:
-            if f not in self.listbox.get(0, tk.END):
-                self.listbox.insert(tk.END, f)
+        for p in paths:
+            if p not in self.listbox.get(0, tk.END):
+                self.listbox.insert(tk.END, p)
 
     def remove_pdf(self):
-        idx = self.listbox.curselection()
-        if not idx:
+        sel = self.listbox.curselection()
+        if not sel:
             messagebox.showwarning("Warning", "No file selected")
             return
-        self.listbox.delete(idx)
+        self.listbox.delete(sel)
 
     def move_up(self):
-        idx = self.listbox.curselection()
-        if not idx or idx[0] == 0:
-            return
-        i = idx[0]
+        sel = self.listbox.curselection()
+        if not sel or sel[0] == 0: return
+        i = sel[0]
         val = self.listbox.get(i)
         self.listbox.delete(i)
         self.listbox.insert(i-1, val)
         self.listbox.select_set(i-1)
 
     def move_down(self):
-        idx = self.listbox.curselection()
+        sel = self.listbox.curselection()
         last = self.listbox.size() - 1
-        if not idx or idx[0] == last:
-            return
-        i = idx[0]
+        if not sel or sel[0] == last: return
+        i = sel[0]
         val = self.listbox.get(i)
         self.listbox.delete(i)
         self.listbox.insert(i+1, val)
         self.listbox.select_set(i+1)
 
-    def merge_pdfs(self):
-        pdf_list = list(self.listbox.get(0, tk.END))
-        if not pdf_list:
-            messagebox.showwarning("Warning", "No files to merge")
+    def on_merge(self):
+        pdfs = list(self.listbox.get(0, tk.END))
+        if not pdfs:
+            messagebox.showwarning("Warning", "No PDFs to merge")
             return
 
-        output_file = filedialog.asksaveasfilename(
-            title="Save Merged PDF",
-            defaultextension=".pdf",
-            filetypes=[("PDF Files", "*.pdf")]
+        out = filedialog.asksaveasfilename(
+            title="Save Merged PDF", defaultextension=".pdf",
+            filetypes=[("PDF Files","*.pdf")]
         )
-        if not output_file:
+        if not out: return
+
+        try:
+            merge_pdfs(pdfs, out)
+            messagebox.showinfo("Success", f"Merged file:\n{out}")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    def on_export(self):
+        files = filedialog.askopenfilenames(
+            title="Select files to export", filetypes=[("All files","*.*")]
+        )
+        if not files:
+            return
+
+        save_to = filedialog.asksaveasfilename(
+            title="Save Export", defaultextension=".pdf",
+            filetypes=[("PDF Files","*.pdf")]
+        )
+        if not save_to:
             return
 
         try:
-            merge_pdfs(pdf_list, output_file)
-            messagebox.showinfo("Success", "PDFs merged successfully")
+            export_to_pdf(files, save_to)
+            messagebox.showinfo("Success", f"Exported to:\n{save_to}")
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to merge PDFs: {e}")
+            messagebox.showerror("Error", str(e))
 
-if __name__ == "__main__":
+def main():
     app = PDFMergerGUI()
     app.mainloop()
