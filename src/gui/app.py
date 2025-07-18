@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
+from pypdf import PdfReader, PdfWriter
 from src.converter import merge_pdfs, export_to_pdf
+from src.converter.pages_remover import remove_from_pdf
+from pathlib import Path
 
 class PDFMergerGUI(tk.Tk):
     def __init__(self):
@@ -20,7 +23,8 @@ class PDFMergerGUI(tk.Tk):
         tk.Button(top, text="Remove PDF", command=self.remove_from_list).pack(side="left", padx=4)
         tk.Button(top, text="Merge PDFs", command=self.on_merge).pack(side="left", padx=4)
         tk.Button(top, text="Export",     command=self.on_export).pack(side="left", padx=4)
-
+        tk.Button(top,text="Remove pages",command=self.remove_from_pdf).pack(side="left", padx=4)
+        
         # Central part:
 
         mid = tk.Frame(self)
@@ -114,7 +118,58 @@ class PDFMergerGUI(tk.Tk):
             messagebox.showinfo("Success", f"Merged file:\n{out}")
         except Exception as e:
             messagebox.showerror("Error", str(e))
+    
+    def remove_from_pdf(input_path: str, pages_to_remove: list[int],output_path: str) ->None:
+        reader = PdfReader(input_path)
+        writer = PdfWriter()
+        total_pages = len(reader.pages)
 
+        pages_to_remove={p - 1 for p in pages_to_remove if 1 <= p <= total_pages}
+        if len(pages_to_remove) == total_pages:
+            raise ValueError("Cannot remove all pages from a PDF")
+       
+        for i,page in enumerate(reader.pages):
+            if i not in pages_to_remove:
+                writer.add_page(page)
+        output_path = Path(output_path)
+        output_path.parent.mkdir(parents = True, exist_ok = True)
+        with open(output_path, "wb") as f:
+            writer.write(f)
+    
+    def parse_pages(self, raw: str) -> list[int] | None:
+        pages = []
+        try:
+            for part in raw.split(','):
+                if '-' in part:
+                    start, end = map(int, part.split('-'))
+                    pages.extend(range(start - 1, end))  # Convert to 0-based index
+                else:
+                    pages.append(int(part) - 1)  # Convert to 0-based index
+            return pages
+        except ValueError:
+            return None
+        
+    def open_remove_dialog(self):
+        win= tk.Toplevel(self)
+        win.title("Remove PDF")
+        win.geometry("300x150")
+        win.transient(self)
+        win.grab_set()
+
+        tk.Label(win, text="Select pages to remove:").pack(pady=8)
+        entry = tk.Entry(win)
+        entry.pack(fill="x", padx=10)
+
+        def on_confirm():
+            raw = entry.get().strip()
+            pages = self.parse_pages(raw)
+            if pages is None:
+                messagebox.showerror("Error", "Invalid page range format")
+                return
+            self.remove_from_pdf(pages)
+            win.destroy()
+            tk.Button(win,text="OK", command=on_confirm).pack(pady=12)
+        
     def on_export(self):
         files = filedialog.askopenfilenames(
             title="Select files to export", filetypes=[("All files","*.*")]
