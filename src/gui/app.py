@@ -10,7 +10,9 @@ class PDFMergerGUI(tk.Tk):
         self.build_widgets()
 
     def build_widgets(self):
+
         # Top button panel
+
         top = tk.Frame(self)
         top.pack(fill="x", padx=8, pady=8)
 
@@ -20,6 +22,7 @@ class PDFMergerGUI(tk.Tk):
         tk.Button(top, text="Export",     command=self.on_export).pack(side="left", padx=4)
 
         # Central part:
+
         mid = tk.Frame(self)
         mid.pack(fill="both", expand=True, padx=4, pady=8)
 
@@ -57,7 +60,9 @@ class PDFMergerGUI(tk.Tk):
         sel = self.listbox.curselection()
         if not sel or sel[0] == 0:
             return
+        
         # Deselect all
+
         self.listbox.selection_clear(0, tk.END)
         for idx in sel:
             if idx == 0:
@@ -65,7 +70,9 @@ class PDFMergerGUI(tk.Tk):
             val = self.listbox.get(idx)
             self.listbox.delete(idx)
             self.listbox.insert(idx - 1, val)
+
         # Reselect moved items
+
         for idx in [i - 1 for i in sel if i != 0]:
             self.listbox.select_set(idx)
 
@@ -74,7 +81,9 @@ class PDFMergerGUI(tk.Tk):
         last = self.listbox.size() - 1
         if not sel or sel[-1] == last:
             return
+        
         # Deselect all
+
         self.listbox.selection_clear(0, tk.END)
         for idx in reversed(sel):
             if idx == last:
@@ -82,7 +91,9 @@ class PDFMergerGUI(tk.Tk):
             val = self.listbox.get(idx)
             self.listbox.delete(idx)
             self.listbox.insert(idx + 1, val)
+
         # Reselect moved items
+        
         for idx in [i + 1 for i in sel if i != last]:
             self.listbox.select_set(idx)
 
@@ -124,9 +135,9 @@ class PDFMergerGUI(tk.Tk):
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
-def main():
+def run_gui():
     app = PDFMergerGUI()
     app.mainloop()
 
 if __name__ == "__main__":
-    main()
+    run_gui()
