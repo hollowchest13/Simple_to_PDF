@@ -175,7 +175,6 @@ class PDFMergerGUI(tk.Tk):
         tk.Label(win, text="Select pages to remove:").pack(pady=8)
         entry = tk.Entry(win)
         entry.pack(fill="x", padx=10)
-        tk.Button(win, text="OK", command=on_confirm).pack(pady=12)
 
         def on_confirm():
             raw = entry.get().strip()
@@ -201,6 +200,7 @@ class PDFMergerGUI(tk.Tk):
             finally:
                 win.destroy()
 
+        tk.Button(win, text="OK", command=on_confirm).pack(pady=12)
         
     def on_export(self):
         files = filedialog.askopenfilenames(
