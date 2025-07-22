@@ -119,7 +119,7 @@ class PDFMergerGUI(tk.Tk):
         except Exception as e:
             messagebox.showerror("Error", str(e))
     
-    def remove_from_pdf(input_path: str, pages_to_remove: list[int], output_path: str) -> None:
+    def remove_from_pdf(self,input_path: str, pages_to_remove: list[int], output_path: str) -> None:
 
        # Load the PDF file for reading
 
@@ -166,6 +166,10 @@ class PDFMergerGUI(tk.Tk):
             return None
         
     def open_remove_dialog(self):
+        sel= self.listbox.curselection()
+        if not sel:
+            messagebox.showwarning("No PDF selected", "Please select a PDF to remove pages from.")
+            return
         win= tk.Toplevel(self)
         win.title("Remove PDF")
         win.geometry("300x150")
@@ -183,7 +187,8 @@ class PDFMergerGUI(tk.Tk):
                 messagebox.showerror("Error", "Invalid page range format")
                 return
 
-            input_path = self.manager.get_selected()  # або будь-який спосіб вибрати PDF
+            input_path = self.listbox.get(sel[0])
+            # або будь-який спосіб вибрати PDF
             if not input_path:
                 messagebox.showwarning("No file", "Please select a PDF to remove pages from.")
                 return
