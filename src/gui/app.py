@@ -23,7 +23,7 @@ class PDFMergerGUI(tk.Tk):
         tk.Button(top, text="Remove PDF", command=self.remove_pdf).pack(side="left", padx=4)
         tk.Button(top, text="Merge PDFs", command=self.on_merge).pack(side="left", padx=4)
         tk.Button(top, text="Export",     command=self.on_export).pack(side="left", padx=4)
-        tk.Button(top,text="Get pages",   command=self.open_dialog).pack(side="left", padx=4)
+        tk.Button(top,text="Get pages",   command=self.extract_pages).pack(side="left", padx=4)
 
         # Central part:
 
@@ -35,8 +35,8 @@ class PDFMergerGUI(tk.Tk):
 
         ctrl = tk.Frame(mid)
         ctrl.pack(side="right", fill="y", padx=6)
-        tk.Button(ctrl, text="▲", width=3, command=lambda: self.move_on_listbox(direction="up")).pack(pady=2)
-        tk.Button(ctrl, text="▼", width=3, command=lambda: self.move_on_listbox(direction="down")).pack(pady=2)
+        tk.Button(ctrl, text = "▲", width = 3, command = lambda: self.move_on_listbox(direction="up")).pack(pady = 2)
+        tk.Button(ctrl, text = "▼", width = 3, command = lambda: self.move_on_listbox(direction="down")).pack(pady = 2)
     
     def load_from_listbox(self) -> list[str]:
         if not self.listbox.size():
@@ -54,20 +54,25 @@ class PDFMergerGUI(tk.Tk):
 
     def list_update(self,*,files: list[str]) -> None:
         self.listbox_clear()
-        self.merger.add_pdf(files)
         for pdf in files:
             self.listbox.insert(tk.END, pdf)
-  
+    
+    # Reselect items after update
     def reselect_items(self, selected_values:list[str], updated_list:list[str])->None:
         self.listbox.selection_clear(0, tk.END)
         for i,value in enumerate(updated_list):
             if value in selected_values:
                 self.listbox.select_set(i)
 
+    
+    def get_files(self):
+        files_paths = filedialog.askopenfilenames(title="Select PDF files", filetypes=[("PDF Files","*.pdf")]) 
+        return files_paths
+
+    
+    # Add PDF files to the listbox
     def add_pdf(self):
-        files_paths = filedialog.askopenfilenames(
-            title="Select PDF files", filetypes=[("PDF Files","*.pdf")]
-        )
+        files_paths=self.get_files()
         self.list_update(files=files_paths)
     
     def remove_pdf(self):
@@ -83,18 +88,20 @@ class PDFMergerGUI(tk.Tk):
         new_file_list= self.merger.remove_from_list(selected_list=sel, files_list=self.load_from_listbox())
         self.list_update(files=new_file_list)
 
+    # Move selected items in the listbox
     def move_on_listbox(self,*,direction: str = "up"):
         sel_indexes = self.listbox.curselection()
         selected_values = self.get_list_selected()
 
         # Deselect all
         self.listbox.selection_clear(0, tk.END)
-        new_files=self.merger.move_on_list(files=self.load_from_listbox(),selected_idx=sel_indexes, direction=direction)
+        new_files=self.merger.move_on_list(files=self.load_from_listbox(),selected_idx = sel_indexes, direction = direction)
         self.list_update(files=new_files)
 
         # Reselect moved items
         self.reselect_items(selected_values = selected_values, updated_list=new_files)
 
+    # Merge selected PDFs
     def on_merge(self):
         pdfs = list(self.listbox.get(0, tk.END))
 
@@ -116,35 +123,9 @@ class PDFMergerGUI(tk.Tk):
             messagebox.showinfo("Success", f"Merged file:\n{out}")
         except Exception as e:
             messagebox.showerror("Error", str(e))
-    
-    def remove_from_pdf(self,input_path: str, pages_to_remove: list[int], output_path: str) -> None:
 
-       # Load the PDF file for reading
-        reader = PdfReader(input_path)
-        writer = PdfWriter()
-        total_pages = len(reader.pages)
-
-        # Normalize page numbers to 0-based index and filter invalid entries
-        pages_to_remove = {p - 1 for p in pages_to_remove if 1 <= p <= total_pages}
-
-        # Raise an error if all pages are being removed
-        if len(pages_to_remove) == total_pages:
-            raise ValueError("Cannot remove all pages from a PDF")
-
-        # Add only pages that are not marked for removal
-        for i, page in enumerate(reader.pages):
-            if i not in pages_to_remove:
-                writer.add_page(page)
-
-        # Ensure the output directory exists
-        output_path = Path(output_path)
-        
-        # Write the new PDF file
-        with open(output_path, "wb") as f:
-            writer.write(f)
-
-    def parse_pages(self, raw: str) -> list[int] | None:
-        pages = []
+    def get_pages(self,*, raw: str) -> list[int] | None:
+        pages:list[int] = []
         try:
             for part in raw.split(','):
                 if '-' in part:
@@ -156,52 +137,49 @@ class PDFMergerGUI(tk.Tk):
         except ValueError:
             return None
         
-    def open_dialog(self):
-        sel = self.listbox.curselection()
-
-        # If no item is selected, show a warning
-        if not sel:
-            messagebox.showwarning("No PDF selected", "Please select a PDF to remove pages from.")
-            return
-        win= tk.Toplevel(self)
+    def extract_pages(self):
+        input_path: tuple[str] = self.get_files()
+        win = tk.Toplevel(self)
         win.title("Remove PDF")
         win.geometry("300x150")
         win.transient(self)
         win.grab_set()
 
         # Create a label and entry for page selection
-        tk.Label(win, text="Select pages to remove:").pack(pady=8)
+        tk.Label(win, text = "Select pages to remove:").pack(pady=20)
         entry = tk.Entry(win)
-        entry.pack(fill="x", padx=10)
+        entry.pack(fill = "x", padx=10)
+        tk.Button(win, text = "OK", command = lambda: self.on_confirm(raw_input = entry.get(), input_path = input_path, win = win)).pack(pady=12)
+        
 
-        def on_confirm():
-            raw = entry.get().strip()
-            pages = self.parse_pages(raw)
-            if pages is None:
-                messagebox.showerror("Error", "Invalid page range format")
-                return
+    def on_confirm(self,*, raw_input: str, input_path: tuple[str], win: tk.Toplevel) -> None:
 
-            input_path = self.listbox.get(sel[0])
+        pages = self.get_pages(raw = raw_input.strip())
 
-            # або будь-який спосіб вибрати PDF
+        if pages is None:
+            messagebox.showerror("Error", "Invalid page range format")
+            return
 
-            if not input_path:
-                messagebox.showwarning("No file", "Please select a PDF to remove pages from.")
-                return
+        # If no input path is selected, show a warning
+        if not input_path:
+            messagebox.showwarning("No file", "Please select a PDF to extract pages from.")
+            return
 
-            output_path = filedialog.asksaveasfilename(defaultextension=".pdf")
-            if not output_path:
-                return
-
-            try:
-                self.remove_from_pdf(input_path, pages, output_path)
-                messagebox.showinfo("Success", f"Saved to:\n{output_path}")
-            except Exception as e:
-                messagebox.showerror("Error", str(e))
-            finally:
-                win.destroy()
-
-        tk.Button(win, text="OK", command=on_confirm).pack(pady=12)
+        output_path = filedialog.asksaveasfilename(
+            defaultextension = ".pdf",
+            filetypes=[("PDF files", "*.pdf")],
+            initialfile="removed_pages.pdf",
+            title="Save PDF")
+        
+        if not output_path:
+            return
+        try:
+            self.merger.extract_pages(input_path=input_path, pages_to_extract = pages, output_path=output_path)
+            messagebox.showinfo("Success", f"Saved to:\n{output_path}")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+        finally:
+            win.destroy()
         
     def on_export(self):
         files = filedialog.askopenfilenames(
@@ -218,6 +196,7 @@ class PDFMergerGUI(tk.Tk):
             return
 
         try:
+          #FIXME: export_to_pdf not in merger
             self.merger.export_to_pdf(files, save_to)
             messagebox.showinfo("Success", f"Exported to:\n{save_to}")
         except Exception as e:
