@@ -1,8 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from pypdf import PdfReader, PdfWriter
-from src.converter import PdfManager
-from pathlib import Path
+from src.converter import PdfManager, PdfExporter
 
 class PDFMergerGUI(tk.Tk):
     def __init__(self):
@@ -11,6 +9,7 @@ class PDFMergerGUI(tk.Tk):
         self.geometry("600x350")
         self.build_widgets()
         self.merger = PdfManager()
+        self.exporter = PdfExporter()
 
     def build_widgets(self):
 
@@ -19,11 +18,11 @@ class PDFMergerGUI(tk.Tk):
         top = tk.Frame(self)
         top.pack(fill="x", padx=8, pady=8)
 
-        tk.Button(top, text="Add PDFs",   command=self.add_pdf).pack(side="left", padx=4)
-        tk.Button(top, text="Remove PDF", command=self.remove_pdf).pack(side="left", padx=4)
+        tk.Button(top, text="Add files",   command=self.add_files).pack(side="left", padx=4)
+        tk.Button(top, text="Remove files", command=self.remove_files).pack(side="left", padx=4)
         tk.Button(top, text="Merge PDFs", command=self.on_merge).pack(side="left", padx=4)
         tk.Button(top, text="Export",     command=self.on_export).pack(side="left", padx=4)
-        tk.Button(top,text="Get pages",   command=self.extract_pages).pack(side="left", padx=4)
+        tk.Button(top,text="Get pages from pdf",   command=self.extract_pages).pack(side="left", padx=4)
 
         # Central part:
 
@@ -43,7 +42,7 @@ class PDFMergerGUI(tk.Tk):
             return []
         return list(self.listbox.get(0, tk.END))
     
-    def get_list_selected(self) -> list[str]:
+    def get_selected_values(self) -> list[str]:
         selection = self.listbox.curselection()
         if not selection:
             return []
@@ -52,54 +51,70 @@ class PDFMergerGUI(tk.Tk):
     def listbox_clear(self) -> None:
         self.listbox.delete(0, tk.END)
 
+   # List Updating
     def list_update(self,*,files: list[str]) -> None:
         self.listbox_clear()
         for pdf in files:
             self.listbox.insert(tk.END, pdf)
     
     # Reselect items after update
-    def reselect_items(self, selected_values:list[str], updated_list:list[str])->None:
+    def reselect_items(self,*, all_items, selected_values):
         self.listbox.selection_clear(0, tk.END)
-        for i,value in enumerate(updated_list):
-            if value in selected_values:
-                self.listbox.select_set(i)
+        for idx, val in enumerate(all_items):
+            if val in selected_values:
+                self.listbox.selection_set(idx)
 
-    
-    def get_files(self):
-        files_paths = filedialog.askopenfilenames(title="Select PDF files", filetypes=[("PDF Files","*.pdf")]) 
+    # Chouse files from dialog
+    def get_files(self,*,filetype: str = "pdf"):
+        files_paths = filedialog.askopenfilenames(title = "Select files", filetypes = [("Files","*" + filetype)]) 
         return files_paths
 
-    
     # Add PDF files to the listbox
-    def add_pdf(self):
-        files_paths=self.get_files()
+    def add_files(self):
+        files_paths=self.get_files(filetype="*")
         self.list_update(files=files_paths)
     
-    def remove_pdf(self):
-        sel = self.get_list_selected()
-        if not sel:
+    def remove_files(self)->None:
+        all_files=self.load_from_listbox()
+        sel_files=self.get_selected_values()
+        if not sel_files:
             answer=messagebox.askyesno(
-                "No PDF selected.",
-                "No PDF selected. Do you want to remove all PDFs?"
+                "No files.",
+                "No files selected. Do you want to remove all files?"
             )
             if answer:
                 self.listbox_clear()
-                return
-        new_file_list= self.merger.remove_from_list(selected_list=sel, files_list=self.load_from_listbox())
-        self.list_update(files=new_file_list)
-
+                return 
+        for file in sel_files:
+            if file in all_files:
+                all_files.remove(file)
+        self.list_update(files=all_files)
+       
     # Move selected items in the listbox
-    def move_on_listbox(self,*,direction: str = "up"):
-        sel_indexes = self.listbox.curselection()
-        selected_values = self.get_list_selected()
+    def move_on_listbox(self, *, direction: str):
+        sel_idxs = sorted(self.listbox.curselection())
+        if not sel_idxs:
+            return
 
-        # Deselect all
-        self.listbox.selection_clear(0, tk.END)
-        new_files=self.merger.move_on_list(files=self.load_from_listbox(),selected_idx = sel_indexes, direction = direction)
-        self.list_update(files=new_files)
+        items = self.load_from_listbox()
+        selected_values = [items[i] for i in sel_idxs]
 
-        # Reselect moved items
-        self.reselect_items(selected_values = selected_values, updated_list=new_files)
+        max_idx = len(items) - 1
+
+        if direction == "down":
+            for i in reversed(sel_idxs):
+                if i < max_idx and i + 1 not in sel_idxs:
+                    items[i], items[i + 1] = items[i + 1], items[i]
+                    sel_idxs[sel_idxs.index(i)] += 1
+
+        elif direction == "up":
+            for i in sel_idxs:
+                if i > 0 and i-1 not in sel_idxs:
+                    items[i], items[i - 1] = items[i - 1], items[i]
+                    sel_idxs[sel_idxs.index(i)] -= 1
+
+        self.list_update(files=items)
+        self.reselect_items(all_items=items, selected_values=selected_values)
 
     # Merge selected PDFs
     def on_merge(self):
@@ -196,8 +211,7 @@ class PDFMergerGUI(tk.Tk):
             return
 
         try:
-          #FIXME: export_to_pdf not in merger
-            self.merger.export_to_pdf(files, save_to)
+            self.exporter.convert_to_pdf(files, save_to)
             messagebox.showinfo("Success", f"Exported to:\n{save_to}")
         except Exception as e:
             messagebox.showerror("Error", str(e))
