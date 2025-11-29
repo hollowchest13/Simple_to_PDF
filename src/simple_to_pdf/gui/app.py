@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from src.converter import PdfManager, PdfExporter
+from src.simple_to_pdf.pdf import PdfMerger, PdfSpliter
+from src.simple_to_pdf.converter import PdfConverter
 
 class PDFMergerGUI(tk.Tk):
     def __init__(self):
@@ -8,8 +9,9 @@ class PDFMergerGUI(tk.Tk):
         self.title("PDF Merger")
         self.geometry("600x350")
         self.build_widgets()
-        self.merger = PdfManager()
-        self.exporter = PdfExporter()
+        self.merger = PdfMerger()
+        self.spliter = PdfSpliter()
+        self.converter = PdfConverter()
 
     def build_widgets(self):
 
@@ -17,25 +19,27 @@ class PDFMergerGUI(tk.Tk):
 
         top = tk.Frame(self)
         top.pack(fill="x", padx=8, pady=8)
+        btns_padx=4
 
-        tk.Button(top, text="Add files",   command=self.add_files).pack(side="left", padx=4)
-        tk.Button(top, text="Remove files", command=self.remove_files).pack(side="left", padx=4)
-        tk.Button(top, text="Merge PDFs", command=self.on_merge).pack(side="left", padx=4)
-        tk.Button(top, text="Export",     command=self.on_export).pack(side="left", padx=4)
-        tk.Button(top,text="Get pages from pdf",   command=self.extract_pages).pack(side="left", padx=4)
+        tk.Button(top, text="Add files",command=self.add_files).pack(side="left", padx = btns_padx)
+        tk.Button(top, text="Remove files",command=self.remove_files).pack(side="left", padx = btns_padx)
+        tk.Button(top, text="Merge PDFs", command=self.on_merge).pack(side="left", padx = btns_padx)
+        tk.Button(top, text="Export", command=self.on_export).pack(side="left", padx = btns_padx)
+        tk.Button(top,text="Get pages from pdf", command=self.extract_pages).pack(side="left", padx = btns_padx)
 
         # Central part:
 
         mid = tk.Frame(self)
-        mid.pack(fill="both", expand=True, padx=4, pady=8)
+        mid.pack(fill = "both", expand = True, padx = 4, pady = 8)
 
-        self.listbox = tk.Listbox(mid, selectmode="multiple")
-        self.listbox.pack(side="left", fill="both", expand=True)
+        self.listbox = tk.Listbox(mid, selectmode = "multiple")
+        self.listbox.pack(side = "left", fill = "both", expand = True)
 
         ctrl = tk.Frame(mid)
-        ctrl.pack(side="right", fill="y", padx=6)
-        tk.Button(ctrl, text = "▲", width = 3, command = lambda: self.move_on_listbox(direction="up")).pack(pady = 2)
-        tk.Button(ctrl, text = "▼", width = 3, command = lambda: self.move_on_listbox(direction="down")).pack(pady = 2)
+        btns_width=3
+        ctrl.pack(side = "right", fill = "y", padx = 6)
+        tk.Button(ctrl, text = "▲", width = btns_width, command = lambda: self.move_on_listbox(direction="up")).pack(pady = 2)
+        tk.Button(ctrl, text = "▼", width = btns_width, command = lambda: self.move_on_listbox(direction="down")).pack(pady = 2)
     
     def load_from_listbox(self) -> list[str]:
         if not self.listbox.size():
@@ -65,13 +69,42 @@ class PDFMergerGUI(tk.Tk):
                 self.listbox.selection_set(idx)
 
     # Chouse files from dialog
-    def get_files(self,*,filetype: str = "pdf"):
-        files_paths = filedialog.askopenfilenames(title = "Select files", filetypes = [("Files","*" + filetype)]) 
-        return files_paths
+    from tkinter import filedialog
 
-    # Add PDF files to the listbox
+    def get_files(self, *, filetype: str = "pdf", multiple: bool = True):
+        """
+        Open a file dialog to select files.
+
+        Args:
+            filetype: str, file extension to filter, e.g. "pdf"
+            multiple: bool, if True, allow selecting multiple files
+
+        Returns:
+            str if multiple=False and one file selected
+            tuple[str] if multiple=True
+            None if user cancels
+        """
+        if multiple:
+            files_paths = filedialog.askopenfilenames(
+                title="Select files",
+                filetypes=[("Files", "*" + filetype)]
+            )
+            if not files_paths:
+                return None
+            return files_paths  # tuple[str]
+        else:
+            file_path = filedialog.askopenfilename(
+                title="Select file",
+                filetypes=[("Files", "*" + filetype)]
+            )
+            if not file_path:
+                return None
+            return file_path  # str
+
+
+    # Add files to the listbox
     def add_files(self):
-        files_paths=self.get_files(filetype="*")
+        files_paths=self.get_files(filetype="*",multiple=True)
         self.list_update(files=files_paths)
     
     def remove_files(self)->None:
@@ -134,8 +167,9 @@ class PDFMergerGUI(tk.Tk):
 
         # Attempt to merge PDFs
         try:
-            self.merger.merge_pdfs(pdfs, out)
+            self.merger.merge_pdfs(pdfs = pdfs, output_path = out)
             messagebox.showinfo("Success", f"Merged file:\n{out}")
+
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
@@ -153,7 +187,7 @@ class PDFMergerGUI(tk.Tk):
             return None
         
     def extract_pages(self):
-        input_path: tuple[str] = self.get_files()
+        input_path: str = self.get_files(filetype = ".pdf", multiple = False)
         win = tk.Toplevel(self)
         win.title("Remove PDF")
         win.geometry("300x150")
@@ -167,7 +201,7 @@ class PDFMergerGUI(tk.Tk):
         tk.Button(win, text = "OK", command = lambda: self.on_confirm(raw_input = entry.get(), input_path = input_path, win = win)).pack(pady=12)
         
 
-    def on_confirm(self,*, raw_input: str, input_path: tuple[str], win: tk.Toplevel) -> None:
+    def on_confirm(self,*, raw_input: str, input_path: str, win: tk.Toplevel) -> None:
 
         pages = self.get_pages(raw = raw_input.strip())
 
@@ -189,10 +223,12 @@ class PDFMergerGUI(tk.Tk):
         if not output_path:
             return
         try:
-            self.merger.extract_pages(input_path=input_path, pages_to_extract = pages, output_path=output_path)
+            self.spliter.extract_pages(input_path = input_path, pages_to_extract = pages, output_path = output_path)
             messagebox.showinfo("Success", f"Saved to:\n{output_path}")
+
         except Exception as e:
             messagebox.showerror("Error", str(e))
+            
         finally:
             win.destroy()
         
@@ -211,7 +247,7 @@ class PDFMergerGUI(tk.Tk):
             return
 
         try:
-            self.exporter.convert_to_pdf(files, save_to)
+            self.converter.convert_to_pdf(files, save_to)
             messagebox.showinfo("Success", f"Exported to:\n{save_to}")
         except Exception as e:
             messagebox.showerror("Error", str(e))
@@ -219,6 +255,3 @@ class PDFMergerGUI(tk.Tk):
 def run_gui():
     app = PDFMergerGUI()
     app.mainloop()
-
-if __name__ == "__main__":
-    run_gui()
