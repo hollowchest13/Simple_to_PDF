@@ -11,7 +11,7 @@ class PDFMergerGUI(tk.Tk):
         self.build_widgets()
         self.merger = PdfMerger()
         self.spliter = PdfSpliter()
-        self.converter = PdfConverter()
+       
 
     def build_widgets(self):
 
@@ -41,10 +41,14 @@ class PDFMergerGUI(tk.Tk):
         tk.Button(ctrl, text = "▲", width = btns_width, command = lambda: self.move_on_listbox(direction="up")).pack(pady = 2)
         tk.Button(ctrl, text = "▼", width = btns_width, command = lambda: self.move_on_listbox(direction="down")).pack(pady = 2)
     
-    def load_from_listbox(self) -> list[str]:
-        if not self.listbox.size():
-            return []
-        return list(self.listbox.get(0, tk.END))
+    def load_from_listbox(self) -> list[tuple[int,str]]:
+        result:list[tuple[int,str]]=[]
+        if self.listbox.size()==0:
+            return result
+        for i in range(self.listbox.size()):
+            text=self.listbox.get(i)
+            result.append((i,text))
+        return result
     
     def get_selected_values(self) -> list[str]:
         selection = self.listbox.curselection()
@@ -67,9 +71,6 @@ class PDFMergerGUI(tk.Tk):
         for idx, val in enumerate(all_items):
             if val in selected_values:
                 self.listbox.selection_set(idx)
-
-    # Chouse files from dialog
-    from tkinter import filedialog
 
     def get_files(self, *, filetype: str = "pdf", multiple: bool = True):
         """
@@ -108,7 +109,7 @@ class PDFMergerGUI(tk.Tk):
         self.list_update(files=files_paths)
     
     def remove_files(self)->None:
-        all_files=self.load_from_listbox()
+        all_files=self.listbox.get(0,tk.END)
         sel_files=self.get_selected_values()
         if not sel_files:
             answer=messagebox.askyesno(
@@ -129,7 +130,7 @@ class PDFMergerGUI(tk.Tk):
         if not sel_idxs:
             return
 
-        items = self.load_from_listbox()
+        items = self.listbox.get(0, tk.END)
         selected_values = [items[i] for i in sel_idxs]
 
         max_idx = len(items) - 1
@@ -151,10 +152,13 @@ class PDFMergerGUI(tk.Tk):
 
     # Merge selected PDFs
     def on_merge(self):
-        pdfs = list(self.listbox.get(0, tk.END))
-
+        files = self.load_from_listbox
+        exls : list[tuple[int,str]] = []
+        wrd : list[tuple[int,str]] = []
+        pdfs : list[tuple[int,str]] = []
+    
         # Warn if no PDFs selected
-        if not pdfs:
+        if not files:
             messagebox.showwarning("Warning", "No PDFs to merge")
             return
         
@@ -167,7 +171,7 @@ class PDFMergerGUI(tk.Tk):
 
         # Attempt to merge PDFs
         try:
-            self.merger.merge_pdfs(pdfs = pdfs, output_path = out)
+            self.merger.merge_to_pdf(pdfs = pdfs, output_path = out)
             messagebox.showinfo("Success", f"Merged file:\n{out}")
 
         except Exception as e:
