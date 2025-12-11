@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from src.simple_to_pdf.pdf import PdfMerger, PdfSpliter
-from src.simple_to_pdf.converter import PdfConverter
 
 class PDFMergerGUI(tk.Tk):
     def __init__(self):
@@ -11,7 +10,7 @@ class PDFMergerGUI(tk.Tk):
         self.build_widgets()
         self.merger = PdfMerger()
         self.spliter = PdfSpliter()
-        self.converter = PdfConverter()
+       
 
     def build_widgets(self):
 
@@ -24,7 +23,6 @@ class PDFMergerGUI(tk.Tk):
         tk.Button(top, text="Add files",command=self.add_files).pack(side="left", padx = btns_padx)
         tk.Button(top, text="Remove files",command=self.remove_files).pack(side="left", padx = btns_padx)
         tk.Button(top, text="Merge PDFs", command=self.on_merge).pack(side="left", padx = btns_padx)
-        tk.Button(top, text="Export", command=self.on_export).pack(side="left", padx = btns_padx)
         tk.Button(top,text="Get pages from pdf", command=self.extract_pages).pack(side="left", padx = btns_padx)
 
         # Central part:
@@ -41,10 +39,14 @@ class PDFMergerGUI(tk.Tk):
         tk.Button(ctrl, text = "▲", width = btns_width, command = lambda: self.move_on_listbox(direction="up")).pack(pady = 2)
         tk.Button(ctrl, text = "▼", width = btns_width, command = lambda: self.move_on_listbox(direction="down")).pack(pady = 2)
     
-    def load_from_listbox(self) -> list[str]:
-        if not self.listbox.size():
-            return []
-        return list(self.listbox.get(0, tk.END))
+    def load_from_listbox(self) -> list[tuple[int,str]]:
+        result:list[tuple[int,str]]=[]
+        if self.listbox.size()==0:
+            return result
+        for i in range(self.listbox.size()):
+            text=self.listbox.get(i)
+            result.append((i,text))
+        return result
     
     def get_selected_values(self) -> list[str]:
         selection = self.listbox.curselection()
@@ -68,50 +70,48 @@ class PDFMergerGUI(tk.Tk):
             if val in selected_values:
                 self.listbox.selection_set(idx)
 
-    # Chouse files from dialog
-    from tkinter import filedialog
-
-    def get_files(self, *, filetype: str = "pdf", multiple: bool = True):
+    def get_files(self, *, filetypes: tuple[str, ...] = ("pdf",), multiple=True):
         """
         Open a file dialog to select files.
 
         Args:
-            filetype: str, file extension to filter, e.g. "pdf"
-            multiple: bool, if True, allow selecting multiple files
+            filetypes: список або кортеж розширень, наприклад ("pdf", "docx", "xlsx")
+            multiple: якщо True — можна вибрати кілька файлів
 
         Returns:
-            str if multiple=False and one file selected
-            tuple[str] if multiple=True
-            None if user cancels
+            str якщо multiple=False і вибрано один файл
+            tuple[str] якщо multiple=True
+            None якщо користувач натиснув Cancel
         """
+        filters = [(f"{ext.upper()} files", f"*.{ext}") for ext in filetypes]
+        filters.append(("All files", "*.*"))
+
         if multiple:
-            files_paths = filedialog.askopenfilenames(
+            file_paths = filedialog.askopenfilenames(
                 title="Select files",
-                filetypes=[("Files", "*" + filetype)]
+                filetypes=filters
             )
-            if not files_paths:
-                return None
-            return files_paths  # tuple[str]
+            return file_paths or None
         else:
             file_path = filedialog.askopenfilename(
                 title="Select file",
-                filetypes=[("Files", "*" + filetype)]
+               filetypes=filters
             )
-            if not file_path:
-                return None
-            return file_path  # str
+            return file_path or None
 
 
     # Add files to the listbox
     def add_files(self):
-        files_paths=self.get_files(filetype="*",multiple=True)
-        self.list_update(files=files_paths)
+        filetypes: tuple[str,...] = ("xls","xlsx","doc","docx","jpg","png","pdf")
+        files_paths = self.get_files(filetypes = filetypes, multiple = True)
+        if files_paths: 
+            self.list_update(files = files_paths)
     
-    def remove_files(self)->None:
-        all_files=self.load_from_listbox()
-        sel_files=self.get_selected_values()
+    def remove_files(self) -> None:
+        all_files = list(self.listbox.get(0,tk.END))
+        sel_files = self.get_selected_values()
         if not sel_files:
-            answer=messagebox.askyesno(
+            answer = messagebox.askyesno(
                 "No files.",
                 "No files selected. Do you want to remove all files?"
             )
@@ -121,7 +121,7 @@ class PDFMergerGUI(tk.Tk):
         for file in sel_files:
             if file in all_files:
                 all_files.remove(file)
-        self.list_update(files=all_files)
+        self.list_update(files = all_files)
        
     # Move selected items in the listbox
     def move_on_listbox(self, *, direction: str):
@@ -129,7 +129,7 @@ class PDFMergerGUI(tk.Tk):
         if not sel_idxs:
             return
 
-        items = self.load_from_listbox()
+        items = self.listbox.get(0, tk.END)
         selected_values = [items[i] for i in sel_idxs]
 
         max_idx = len(items) - 1
@@ -151,11 +151,13 @@ class PDFMergerGUI(tk.Tk):
 
     # Merge selected PDFs
     def on_merge(self):
-        pdfs = list(self.listbox.get(0, tk.END))
-
+        files: list[tuple[int,str]] = []
+        files.extend(self.load_from_listbox())
+        
+    
         # Warn if no PDFs selected
-        if not pdfs:
-            messagebox.showwarning("Warning", "No PDFs to merge")
+        if not files:
+            messagebox.showwarning("Warning", "No files to merge")
             return
         
         # Ask for output file
@@ -167,7 +169,7 @@ class PDFMergerGUI(tk.Tk):
 
         # Attempt to merge PDFs
         try:
-            self.merger.merge_pdfs(pdfs = pdfs, output_path = out)
+            self.merger.merge_to_pdf(files=files, output_path = out)
             messagebox.showinfo("Success", f"Merged file:\n{out}")
 
         except Exception as e:
