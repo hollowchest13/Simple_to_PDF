@@ -20,8 +20,9 @@ class PdfMerger:
         
     def get_pdf_list(self,*, files: list[tuple[int, str]]) -> list[tuple[int, bytes]]:
 
-        exls: list[tuple[int,Path]] = []
-        wrds: list[tuple[int,Path]] = []
+        exls: list[tuple[int, Path]] = []
+        wrds: list[tuple[int, Path]] = []
+        imgs: list[tuple[int, Path]] = []
         pdfs: list[tuple[int, bytes]] = []
         converted: list[tuple[int, bytes]] = []
 
@@ -34,9 +35,12 @@ class PdfMerger:
                     exls.append((idx,path))
                 elif self.is_word_file(file_path = path):
                     wrds.append((idx,path))
-
+                elif self.is_image_file(file_path = path):
+                    imgs.append((idx,path))
+                
         converted.extend(self.converter.convert_excel_to_pdf(files = exls))
-        converted.extend(self.converter.convert_word_to_pdf(files = wrds))
+        converted.extend(self.converter.convert_word_to_pdf(word_files = wrds))
+        converted.extend(self.converter.convert_images_to_pdf(files = imgs))
         pdfs.extend(converted)
         return pdfs
 

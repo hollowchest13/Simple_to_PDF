@@ -108,11 +108,11 @@ class PDFMergerGUI(tk.Tk):
         files_paths=self.get_files(filetype="*",multiple=True)
         self.list_update(files=files_paths)
     
-    def remove_files(self)->None:
-        all_files=self.listbox.get(0,tk.END)
-        sel_files=self.get_selected_values()
+    def remove_files(self) -> None:
+        all_files = list(self.listbox.get(0,tk.END))
+        sel_files = self.get_selected_values()
         if not sel_files:
-            answer=messagebox.askyesno(
+            answer = messagebox.askyesno(
                 "No files.",
                 "No files selected. Do you want to remove all files?"
             )
@@ -122,7 +122,7 @@ class PDFMergerGUI(tk.Tk):
         for file in sel_files:
             if file in all_files:
                 all_files.remove(file)
-        self.list_update(files=all_files)
+        self.list_update(files = all_files)
        
     # Move selected items in the listbox
     def move_on_listbox(self, *, direction: str):
@@ -152,14 +152,13 @@ class PDFMergerGUI(tk.Tk):
 
     # Merge selected PDFs
     def on_merge(self):
-        files = self.load_from_listbox
-        exls : list[tuple[int,str]] = []
-        wrd : list[tuple[int,str]] = []
-        pdfs : list[tuple[int,str]] = []
+        files: list[tuple[int,str]] = []
+        files.extend(self.load_from_listbox())
+        
     
         # Warn if no PDFs selected
         if not files:
-            messagebox.showwarning("Warning", "No PDFs to merge")
+            messagebox.showwarning("Warning", "No files to merge")
             return
         
         # Ask for output file
@@ -171,7 +170,7 @@ class PDFMergerGUI(tk.Tk):
 
         # Attempt to merge PDFs
         try:
-            self.merger.merge_to_pdf(pdfs = pdfs, output_path = out)
+            self.merger.merge_to_pdf(files=files, output_path = out)
             messagebox.showinfo("Success", f"Merged file:\n{out}")
 
         except Exception as e:
