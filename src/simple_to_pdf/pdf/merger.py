@@ -1,10 +1,10 @@
 from pypdf import PdfReader,PdfWriter
 from pathlib import Path
-from src.simple_to_pdf.converter import PdfConverter
+from src.simple_to_pdf.converters import get_converter
 import io
 class PdfMerger:
     def __init__(self):
-        self.converter=PdfConverter()
+        self.converter = get_converter()
 
     def is_pdf_file(self,*, file_path :Path)->bool:
         return file_path.suffix.lower() == ".pdf"

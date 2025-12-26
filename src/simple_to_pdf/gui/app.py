@@ -154,7 +154,6 @@ class PDFMergerGUI(tk.Tk):
         files: list[tuple[int,str]] = []
         files.extend(self.load_from_listbox())
         
-    
         # Warn if no PDFs selected
         if not files:
             messagebox.showwarning("Warning", "No files to merge")
@@ -234,26 +233,6 @@ class PDFMergerGUI(tk.Tk):
         finally:
             win.destroy()
         
-    def on_export(self):
-        files = filedialog.askopenfilenames(
-            title="Select files to export", filetypes=[("All files","*.*")]
-        )
-        if not files:
-            return
-
-        save_to = filedialog.asksaveasfilename(
-            title="Save Export", defaultextension=".pdf",
-            filetypes=[("PDF Files","*.pdf")]
-        )
-        if not save_to:
-            return
-
-        try:
-            self.converter.convert_to_pdf(files, save_to)
-            messagebox.showinfo("Success", f"Exported to:\n{save_to}")
-        except Exception as e:
-            messagebox.showerror("Error", str(e))
-
 def run_gui():
     app = PDFMergerGUI()
     app.mainloop()

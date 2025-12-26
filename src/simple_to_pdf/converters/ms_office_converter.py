@@ -1,15 +1,17 @@
-import win32com.client as win32
 from pathlib import Path
-import tempfile
+from converter import BaseConverter
 from PIL import Image
+import tempfile
 import io
 
 
-class PdfConverter:
+class MSOfficeConverter(BaseConverter):
     def __init__(self):
         self.pdf_files: list[tuple[int, Path]] = []
-        
-    def convert_excel_to_pdf(self, *, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
+        import win32com.client
+        self.client = win32com.client
+    
+    def convert_excel_to_pdf(self,*, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
         excel = win32.Dispatch("Excel.Application")
         excel.Visible = False
 
