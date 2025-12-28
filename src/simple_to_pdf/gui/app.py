@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from src.simple_to_pdf.pdf import PdfMerger, PdfSpliter
+from ..pdf import PdfMerger, PdfSpliter
 
 class PDFMergerGUI(tk.Tk):
     def __init__(self):
@@ -17,8 +17,8 @@ class PDFMergerGUI(tk.Tk):
         # Top button panel
 
         top = tk.Frame(self)
-        top.pack(fill="x", padx=8, pady=8)
-        btns_padx=4
+        top.pack(fill = "x", padx = 8, pady = 8)
+        btns_padx = 4
 
         tk.Button(top, text="Add files",command=self.add_files).pack(side="left", padx = btns_padx)
         tk.Button(top, text="Remove files",command=self.remove_files).pack(side="left", padx = btns_padx)
@@ -41,7 +41,7 @@ class PDFMergerGUI(tk.Tk):
     
     def load_from_listbox(self) -> list[tuple[int,str]]:
         result:list[tuple[int,str]]=[]
-        if self.listbox.size()==0:
+        if self.listbox.size() == 0:
             return result
         for i in range(self.listbox.size()):
             text=self.listbox.get(i)
@@ -88,14 +88,14 @@ class PDFMergerGUI(tk.Tk):
 
         if multiple:
             file_paths = filedialog.askopenfilenames(
-                title="Select files",
-                filetypes=filters
+                title = "Select files",
+                filetypes = filters
             )
             return file_paths or None
         else:
             file_path = filedialog.askopenfilename(
-                title="Select file",
-               filetypes=filters
+                title = "Select file",
+               filetypes = filters
             )
             return file_path or None
 
@@ -124,7 +124,7 @@ class PDFMergerGUI(tk.Tk):
         self.list_update(files = all_files)
        
     # Move selected items in the listbox
-    def move_on_listbox(self, *, direction: str):
+    def move_on_listbox(self,*, direction: str):
         sel_idxs = sorted(self.listbox.curselection())
         if not sel_idxs:
             return
@@ -146,8 +146,8 @@ class PDFMergerGUI(tk.Tk):
                     items[i], items[i - 1] = items[i - 1], items[i]
                     sel_idxs[sel_idxs.index(i)] -= 1
 
-        self.list_update(files=items)
-        self.reselect_items(all_items=items, selected_values=selected_values)
+        self.list_update(files = items)
+        self.reselect_items(all_items = items, selected_values = selected_values)
 
     # Merge selected PDFs
     def on_merge(self):
@@ -161,14 +161,14 @@ class PDFMergerGUI(tk.Tk):
         
         # Ask for output file
         out = filedialog.asksaveasfilename(
-            title="Save Merged PDF", defaultextension=".pdf",
-            filetypes=[("PDF Files","*.pdf")]
+            title = "Save Merged PDF", defaultextension = ".pdf",
+            filetypes = [("PDF Files","*.pdf")]
         )
         if not out: return
 
         # Attempt to merge PDFs
         try:
-            self.merger.merge_to_pdf(files=files, output_path = out)
+            self.merger.merge_to_pdf(files = files, output_path = out)
             messagebox.showinfo("Success", f"Merged file:\n{out}")
 
         except Exception as e:

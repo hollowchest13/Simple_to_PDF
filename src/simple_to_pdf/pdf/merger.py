@@ -1,6 +1,6 @@
 from pypdf import PdfReader,PdfWriter
 from pathlib import Path
-from src.simple_to_pdf.converters import get_converter
+from ..converters import get_converter
 import io
 class PdfMerger:
     def __init__(self):
@@ -58,7 +58,7 @@ class PdfMerger:
                     writer.add_page(page)
             except Exception as e:
                 print(f"⚠️ [{idx}] Warning: failed to read PDF ({e})")
-        output_file=Path(output_path).resolve()
+        output_file = Path(output_path).resolve()
         output_file.parent.mkdir(parents=True,exist_ok=True)
 
         with output_file.open("wb") as f:

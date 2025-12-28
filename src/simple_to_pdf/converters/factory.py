@@ -9,4 +9,3 @@ def get_converter():
     else:
         from .lib_office_converter import LibreOfficeConverter
         return LibreOfficeConverter()
-    
