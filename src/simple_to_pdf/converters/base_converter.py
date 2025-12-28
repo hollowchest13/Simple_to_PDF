@@ -1,0 +1,47 @@
+from abc import ABC, abstractmethod
+from pathlib import Path
+from PIL import Image
+import io
+class BaseConverter(ABC):
+
+    def __init__(self, chunk_size=10):
+        self.chunk_size = chunk_size
+
+    @staticmethod
+    def make_chunks(lst, n):
+        """Розбиває список lst на частини по n елементів."""
+        for i in range(0, len(lst), n):
+            yield lst[i:i + n]
+    
+    @abstractmethod
+    def convert_to_pdf(self,*, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
+        """Абстрактний метод, який мають реалізувати всі класи"""
+        pass
+
+    def is_pdf_file(self,*, file_path :Path) -> bool:
+        return file_path.suffix.lower() == ".pdf"
+        
+    def is_excel_file(self,*, file_path: Path) -> bool:
+         return file_path.suffix.lower() in {".xls", ".xlsx"}
+           
+    def is_image_file(self,*, file_path:Path) -> bool:
+        return file_path.suffix.lower() in {".jpg", ".jpeg", ".png"}
+    
+    def is_word_file(self,*, file_path: Path) -> bool:
+        return file_path.suffix.lower() in {".doc", ".docx"}
+    
+    def convert_images_to_pdf(self,*, files: list[tuple[int,str]])->list[tuple[int, bytes]]:
+        pdfs: list[tuple[int,bytes]] = []
+        for idx,path_str in files:
+            path=Path(path_str)
+            if path.exists():
+                try:
+                    img=Image.open(path).convert("RGB")
+                    buffer=io.BytesIO()
+                    img.save(buffer,format="PDF")
+                    pdfs.append((idx,buffer.getvalue()))
+                except Exception as e:
+                     print(f"⚠️ [{idx}] Warning: failed to convert image {path} ({e})")
+                else:
+                    print(f"⚠️ [{idx}] Skipped: {path} (not an image or missing)")
+        return pdfs

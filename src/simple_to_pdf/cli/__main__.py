@@ -1,4 +1,4 @@
-from src.simple_to_pdf.gui.app import run_gui
+from ..gui.app import run_gui
 
 def main():
     run_gui()
