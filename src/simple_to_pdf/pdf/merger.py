@@ -6,47 +6,9 @@ class PdfMerger:
     def __init__(self):
         self.converter = get_converter()
 
-    def is_pdf_file(self,*, file_path :Path)->bool:
-        return file_path.suffix.lower() == ".pdf"
-        
-    def is_excel_file(self,*, file_path: Path) -> bool:
-         return file_path.suffix.lower() in {".xls", ".xlsx"}
-           
-    def is_image_file(self,*, file_path:Path)->bool:
-        return file_path.suffix.lower() in {".jpg", ".jpeg", ".png"}
-    
-    def is_word_file(self,*, file_path: Path) -> bool:
-        return file_path.suffix.lower() in {".doc", ".docx"}
-        
-    def get_pdf_list(self,*, files: list[tuple[int, str]]) -> list[tuple[int, bytes]]:
-
-        exls: list[tuple[int, Path]] = []
-        wrds: list[tuple[int, Path]] = []
-        imgs: list[tuple[int, Path]] = []
-        pdfs: list[tuple[int, bytes]] = []
-        converted: list[tuple[int, bytes]] = []
-
-        for idx, path_str in files:
-            path = Path(path_str)
-            if path.exists():
-                if self.is_pdf_file(file_path = path):
-                     pdfs.append((idx,path.read_bytes()))
-                elif self.is_excel_file(file_path = path):
-                    exls.append((idx,path))
-                elif self.is_word_file(file_path = path):
-                    wrds.append((idx,path))
-                elif self.is_image_file(file_path = path):
-                    imgs.append((idx,path))
-                
-        converted.extend(self.converter.convert_excel_to_pdf(files = exls))
-        converted.extend(self.converter.convert_word_to_pdf(word_files = wrds))
-        converted.extend(self.converter.convert_images_to_pdf(files = imgs))
-        pdfs.extend(converted)
-        return pdfs
-
     def merge_to_pdf(self,*, files: list[tuple[int, str]], output_path: str | Path) -> Path:
         pdfs: list[tuple[int, bytes]] = []
-        pdfs.extend(self.get_pdf_list(files = files))
+        pdfs.extend(self.converter.convert_to_pdf(files = files))
         writer = PdfWriter()
     
         # Сортуємо список за індексом
