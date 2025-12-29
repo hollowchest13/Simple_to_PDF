@@ -4,18 +4,21 @@ from PIL import Image
 import io
 class BaseConverter(ABC):
 
-    def __init__(self, chunk_size=10):
+    def __init__(self, chunk_size = 10):
         self.chunk_size = chunk_size
 
     @staticmethod
     def make_chunks(lst, n):
-        """Розбиває список lst на частини по n елементів."""
+
+        """Splits list lst into chunks of n elements."""
+
         for i in range(0, len(lst), n):
             yield lst[i:i + n]
     
     @abstractmethod
     def convert_to_pdf(self,*, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
-        """Абстрактний метод, який мають реалізувати всі класи"""
+
+        """Abstract method that all classes must implement"""
         pass
 
     def is_pdf_file(self,*, file_path :Path) -> bool:
@@ -30,7 +33,7 @@ class BaseConverter(ABC):
     def is_word_file(self,*, file_path: Path) -> bool:
         return file_path.suffix.lower() in {".doc", ".docx"}
     
-    def convert_images_to_pdf(self,*, files: list[tuple[int,str]])->list[tuple[int, bytes]]:
+    def convert_images_to_pdf(self,*, files: list[tuple[int,str]]) -> list[tuple[int, bytes]]:
         pdfs: list[tuple[int,bytes]] = []
         for idx,path_str in files:
             path=Path(path_str)
@@ -38,7 +41,7 @@ class BaseConverter(ABC):
                 try:
                     img=Image.open(path).convert("RGB")
                     buffer=io.BytesIO()
-                    img.save(buffer,format="PDF")
+                    img.save(buffer,format = "PDF")
                     pdfs.append((idx,buffer.getvalue()))
                 except Exception as e:
                      print(f"⚠️ [{idx}] Warning: failed to convert image {path} ({e})")
