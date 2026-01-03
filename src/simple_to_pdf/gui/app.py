@@ -258,39 +258,50 @@ class PDFMergerGUI(tk.Tk):
         tk.Button(win, text = "OK", command = lambda: self.on_confirm(raw_input = entry.get(), input_path = input_path, win = win)).pack(pady = 12)
         
 
-    def on_confirm(self,*, raw_input: str, input_path: str, win: tk.Toplevel) -> None:
-
+    def on_confirm(self, *, raw_input: str, input_path: str, win: tk.Toplevel) -> None:
+        # Parse string input into a list of page indices
         pages = self._get_pages(raw = raw_input.strip())
 
         if pages is None:
             messagebox.showwarning(
                 "Invalid Input", 
-                 "Please use the correct format for page ranges (e.g., 1-5, 8, 10-12)."
+                "Please use the correct format (e.g., 1-5, 8, 10-12).",
+                parent = win
             )
             return
 
-        # If no input path is selected, show a warning
-        if not input_path:
-            messagebox.showwarning(
-               "No file", 
-               "Please select a PDF to extract pages from."
-            )
+        # Validate page numbers against the actual PDF file
+        try:
+            self.page_extractor.validate_pages(input_path = input_path, pages_to_extract = pages)
+        except ValueError as e:
+            messagebox.showerror("Validation Error", str(e), parent = win)
+            return
+        except Exception as e:
+            messagebox.showerror("File Error", f"Could not read PDF: {e}", parent = win)
             return
 
+        # Ask user for the output destination
         output_path = filedialog.asksaveasfilename(
             defaultextension = ".pdf",
-            filetypes=[("PDF files", "*.pdf")],
-            initialfile = f"extracted_pages_from_{Path(input_path).name}.pdf",
-            title = "Save PDF")
-        
+            filetypes = [("PDF files", "*.pdf")],
+            initialfile = f"extracted_{Path(input_path).stem}.pdf",
+            title = "Save PDF"
+        )
+
         if not output_path:
             return
-        win.destroy()  # Close the prompt window
+
+        # Close input window and start the background worker thread
+        win.destroy()
 
         threading.Thread(
-            target = self._run_page_extractor_worker,
-            kwargs={"input_path": input_path, "pages": pages, "output_path": output_path},
-            daemon = True
+            target=self._run_page_extractor_worker,
+            kwargs={
+                "input_path": input_path, 
+                "pages": pages, 
+                "output_path": output_path
+            },
+            daemon=True
         ).start()
 
     def _run_page_extractor_worker(self, input_path, pages, output_path):
@@ -299,12 +310,11 @@ class PDFMergerGUI(tk.Tk):
             self.callback.show_status_message(f"✅ Extraction completed successfully! Extracted pages saved to:\n{output_path}")
 
         except Exception as e:
-            error_msg = f"❌ Error during page extraction: {e}"
-            self.callback.show_status_message(error_msg)
+            error_msg = f" Error during page extraction: {e}"
             if isinstance(e, ValueError):
-                messagebox.showerror(error_msg)
+                self.after(0, lambda: messagebox.showerror("Extraction Error", error_msg))
             else:   
-                self.callback.show_status_message(error_msg)
+                self.callback.show_status_message(f"❌ {error_msg}")
             
 def run_gui():
     app = PDFMergerGUI()

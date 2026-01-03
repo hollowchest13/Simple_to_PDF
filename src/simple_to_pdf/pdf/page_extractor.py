@@ -15,7 +15,6 @@ class PageExtractor:
         writer = PdfWriter()
         with input_file.open("rb") as f:
             reader = PdfReader(f)
-            self._validate_pages(reader = reader, pages = pages_to_extract)
             total_to_extract = len(pages_to_extract)
             
             # Get enumerated pages and add to writer
@@ -38,21 +37,19 @@ class PageExtractor:
             writer.write(f)
         return output_file
     
-    def _validate_pages(self,*, reader: PdfReader, pages: list[int]) -> None:
+    def validate_pages(self,*, input_path: Path, pages_to_extract: list[int]) -> None:
 
         """Check if all specified pages exist in the file."""
 
-        actual_total = len(reader.pages)
+        with open(input_path, "rb") as f:
+            reader = PdfReader(f)
+            actual_total = len(reader.pages)
 
-        # Find invalid indices
-        invalid = [p + 1 for p in pages if p < 0 or p >= actual_total]
+        invalid = [p + 1 for p in pages_to_extract if p < 0 or p >= actual_total]
     
         if invalid:
-            # Raise an exception with a detailed description
-            # This will stop execution and give a clear understanding of what went wrong
-            logger.debug(f"Invalid page numbers requested: {invalid} out of {actual_total} pages.")
-            raise ValueError(
-                f"Invalid page numbers: {invalid}. "
-                f"The document only has {actual_total} pages."
-            )
+            raise ValueError(f"Invalid page numbers file has only {actual_total} pages.")
+    
+        if not pages_to_extract:
+            raise ValueError("No pages selected for extraction.")
     
