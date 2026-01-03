@@ -1,4 +1,4 @@
-from importlib.metadata import files
+from pathlib import Path
 import tkinter as tk
 from tkinter import ttk
 import threading
@@ -6,33 +6,58 @@ from tkinter import filedialog, messagebox
 from src.simple_to_pdf.pdf import PdfMerger, PdfSpliter
 from src.simple_to_pdf.gui.gui_builder import GUIBuilder
 from src.simple_to_pdf.gui.gui_callback import GUICallback
+import logging
+
+logger = logging.getLogger(__name__)
 
 class PDFMergerGUI(tk.Tk):
 
     def __init__(self):
         super().__init__()
-        handlers = {
+        handlers = self._setup_handlers()
+        builder = GUIBuilder()
+        self.ui = builder.build_gui(parent = self, callbacks = handlers)
+        self._init_controls()
+        self._init_services()
+
+    def _setup_handlers(self) -> dict:
+
+        """Create a dictionary of commands to pass to the Builder."""
+
+        handlers: dict[str, callable] = {
             'add': self.add_files,
             'merge': self.on_merge,
             'extract': self.extract_pages,
             'remove': self.remove_files,
-            'move': self.move_on_listbox  # Твій метод для ▲/▼
-        }
-        builder = GUIBuilder()
-        self.ui = builder.build_gui(self, handlers)
+            'move': self.move_on_listbox
+            }
+        return handlers
+    
+    def _init_controls(self) -> None:
+
+        """Create  references to widgets from self.ui."""
+
+        # Display elements
         self.listbox: tk.Listbox = self.ui['listbox']
         self.progress_bar: ttk.Progressbar = self.ui['progress_bar']
         self.status_text: tk.Text = self.ui['status_text']
+
+        # Buttons
+        self.btn_add: tk.Button = self.ui['btn_add']
         self.btn_merge: tk.Button = self.ui['btn_merge']
         self.btn_split: tk.Button = self.ui['btn_extract']
         self.btn_remove: tk.Button = self.ui['btn_remove']
-        self.btn_add: tk.Button = self.ui['btn_add']
         self.btn_up: tk.Button = self.ui['btn_up']
         self.btn_down: tk.Button = self.ui['btn_down']
+
+    def _init_services(self) -> None:
+
+        """Initialize internal logic and services."""
+
         self.callback = GUICallback(main_app = self)
         self.merger = PdfMerger()
         self.spliter = PdfSpliter()
-    
+
     def _load_from_listbox(self) -> list[tuple[int,str]]:
         result: list[tuple[int,str]] = []
         if self.listbox.size() == 0:
@@ -219,7 +244,7 @@ class PDFMergerGUI(tk.Tk):
             return None
         
     def extract_pages(self):
-        input_path: str = self._get_files(filetypes = ".pdf", multiple = False)
+        input_path: str = self._get_files(filetypes = "*.pdf", multiple = False)
 
         if not input_path:
             return
@@ -259,18 +284,21 @@ class PDFMergerGUI(tk.Tk):
         output_path = filedialog.asksaveasfilename(
             defaultextension = ".pdf",
             filetypes=[("PDF files", "*.pdf")],
-            initialfile ="removed_pages.pdf",
+            initialfile = f"removed_pages_from_{Path(input_path).name}.pdf",
             title = "Save PDF")
         
         if not output_path:
             return
         try:
             self.spliter.extract_pages(input_path = input_path, pages_to_extract = pages, output_path = output_path)
-            self.callback.show_status_message("Success", f"Saved to:\n{output_path}")
+            self.callback.show_status_message(f"Success: removed pages saved to:\n{output_path}!")
+            logger.info(f"Removed pages {pages} from {input_path}, saved to {output_path}.")
             win.destroy()
 
         except Exception as e:
-            self.callback.show_status_message("Error", f"Failed to extract pages: {e}")
+            logger.error(f"Failed to extract pages: {e}", exc_info = True)   
+            self.callback.show_status_message(f"Error: Failed to extract pages{pages} from \n{input_path}!")
+            
             
 def run_gui():
     app = PDFMergerGUI()

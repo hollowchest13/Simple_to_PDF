@@ -1,5 +1,7 @@
 from pathlib import Path
 from pypdf import PdfReader, PdfWriter
+import logging
+logger = logging.getLogger(__name__)
 
 
 class PdfSpliter:
@@ -28,5 +30,5 @@ class PdfSpliter:
         with output_file.open("wb") as f:
             writer.write(f)
 
-        print(f"📁 Extracted pages saved to: {output_file}")
+        logger.info(f"📁 Extracted pages saved to: {output_file}")
         return output_file

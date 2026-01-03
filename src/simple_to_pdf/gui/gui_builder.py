@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 class GUIBuilder:
-    def build_gui(self, parent: tk.Tk, callbacks: dict) -> dict:
+    def build_gui(self,*, parent: tk.Tk, callbacks) -> dict:
         # Window settings
         parent.title("Simple to PDF - PDF Merger")
         parent.geometry("700x400")
@@ -11,7 +11,7 @@ class GUIBuilder:
         ui = {}
 
         # 1. Top panel (Buttons)
-        ui.update(self._build_top_controls_area(parent, callbacks))
+        ui.update(self._build_top_controls_area(parent = parent, callbacks = callbacks))
         
         # 2. Main area (Frame for Listbox + Progress + Status)
         # Create container for the central part
@@ -19,16 +19,16 @@ class GUIBuilder:
         widgets_area.pack(side = "left", fill = "both", expand = True)
         
         # Fill the central part
-        ui['listbox'] = self._build_file_batch_area(widgets_area)
-        ui['progress_bar'], ui['progress_label'] = self._build_progress_bar(widgets_area)
-        ui['status_text'] = self._build_status_area(widgets_area)
+        ui['listbox'] = self._build_file_batch_area(parent = widgets_area)
+        ui['progress_bar'], ui['progress_label'] = self._build_progress_bar(parent = widgets_area)
+        ui['status_text'] = self._build_status_area(parent = widgets_area)
         
         # 3. Right panel (Arrows)
-        ui.update(self._build_right_controls_area(parent, callbacks))
+        ui.update(self._build_right_controls_area(parent = parent, callbacks = callbacks))
         
         return ui
 
-    def _build_top_controls_area(self, parent, callbacks):
+    def _build_top_controls_area(self,*, parent, callbacks):
         top = tk.Frame(parent)
         top.pack(fill = "x", padx = 4, pady = 8)
         btns = {}
@@ -49,7 +49,7 @@ class GUIBuilder:
         
         return btns
 
-    def _build_file_batch_area(self, parent):
+    def _build_file_batch_area(self,*, parent):
         mid = tk.Frame(parent)
         mid.pack(fill = "both", expand = True, padx = 4, pady = 8)
         
@@ -67,25 +67,25 @@ class GUIBuilder:
         scrollbar.config(command = listbox.yview)
         return listbox
 
-    def _build_right_controls_area(self, parent, callbacks) -> dict:
+    def _build_right_controls_area(self,*, parent, callbacks) -> dict:
         right = tk.Frame(parent)
         right.pack(side = "right", fill = "y", padx = 4, pady = 8)
         btns = {}
         btns_width = 3
     
         # Create Up and Down buttons with callbacks
-        btns['btn_up'] = tk.Button(right, text="▲", width = btns_width, command = lambda: callbacks['move'](direction="up"))
-        btns['btn_up'].pack(pady=2)
+        btns['btn_up'] = tk.Button(right, text  = "▲", width = btns_width, command = lambda: callbacks['move'](direction = "up"))
+        btns['btn_up'].pack(pady = 2)
 
-        btns['btn_down'] = tk.Button(right, text="▼", width = btns_width, command = lambda: callbacks['move'](direction="down"))
-        btns['btn_down'].pack(pady=2)
+        btns['btn_down'] = tk.Button(right, text = "▼", width = btns_width, command = lambda: callbacks['move'](direction = "down"))
+        btns['btn_down'].pack(pady = 2)
 
         # Return them so they can be accessed in self.ui
         return btns
 
-    def _build_status_area(self, parent):
+    def _build_status_area(self,*, parent):
         status_frame = tk.Frame(parent)
-        status_frame.pack(fill="x", padx = 4, pady = 8)
+        status_frame.pack(fill = "x", padx = 4, pady = 8)
         
         scrollbar = tk.Scrollbar(status_frame)
         scrollbar.pack(side = "right", fill = "y")
@@ -99,11 +99,11 @@ class GUIBuilder:
         scrollbar.config(command = text.yview)
         return text
 
-    def _build_progress_bar(self, parent):
+    def _build_progress_bar(self,*, parent):
         progress_frame = tk.Frame(parent)
         progress_frame.pack(side = "top", fill = "x", padx = (4, 22), pady = (2, 14))
         
-        label = tk.Label(progress_frame, text="Progress:")
+        label = tk.Label(progress_frame, text = "Progress:")
         label.pack(pady = 4)
         
         bar = ttk.Progressbar(progress_frame, orient = "horizontal", mode = "determinate")
