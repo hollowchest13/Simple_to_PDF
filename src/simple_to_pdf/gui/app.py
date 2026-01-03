@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 import threading
 from tkinter import filedialog, messagebox
-from src.simple_to_pdf.pdf import PdfMerger, PdfSpliter
+from src.simple_to_pdf.pdf import PdfMerger, PageExtractor
 from src.simple_to_pdf.gui.gui_builder import GUIBuilder
 from src.simple_to_pdf.gui.gui_callback import GUICallback
 import logging
@@ -27,7 +27,7 @@ class PDFMergerGUI(tk.Tk):
         handlers: dict[str, callable] = {
             'add': self.add_files,
             'merge': self.on_merge,
-            'extract': self.extract_pages,
+            'extract': self.prompt_pages_to_remove,
             'remove': self.remove_files,
             'move': self.move_on_listbox
             }
@@ -56,7 +56,7 @@ class PDFMergerGUI(tk.Tk):
 
         self.callback = GUICallback(main_app = self)
         self.merger = PdfMerger()
-        self.spliter = PdfSpliter()
+        self.page_extractor = PageExtractor()
 
     def _load_from_listbox(self) -> list[tuple[int,str]]:
         result: list[tuple[int,str]] = []
@@ -89,7 +89,7 @@ class PDFMergerGUI(tk.Tk):
             if val in selected_values:
                 self.listbox.selection_set(idx)
 
-    def _get_files(self, *, filetypes: tuple[str, ...] = ("pdf",), multiple = True):
+    def _get_files(self, *, filetypes: tuple[str, ...] = (".pdf",), multiple = True):
 
         """
         Open dialog window to select files.
@@ -105,13 +105,10 @@ class PDFMergerGUI(tk.Tk):
         # 2. Then each type separately (for convenience)
         for ext in filetypes:
             filters.append((f"{ext.upper()} files", f"*.{ext}"))
-            
-        # 3. Finally — all files
-        filters.append(("All files", "*.*"))
 
         if multiple:
             return filedialog.askopenfilenames(filetypes = filters)
-        return filedialog.askopenfilename(filetypes = filters)
+        return filedialog.askopenfilename(filetypes = [("PDF files", "*.pdf")])
 
 
     # Add files to the listbox
@@ -221,17 +218,16 @@ class PDFMergerGUI(tk.Tk):
                 output_path = output_path, 
                 callback = self.callback.safe_callback # Use the wrapper
             )
-
             #In the end, we can show a final message
             self.after(0, lambda: self.callback.show_status_message("✅ All files merged successfully!"))
         except Exception as e:
-            self.after(0, lambda: self.callback.show_status_message(f"❌ Error: Could not merge files:\n{e}"))
+            self.after(0, lambda: self.callback.show_status_message(f"❌ Error: Could not merge files: \n{e}"))
         
         finally:
             self.after(0, lambda: self.btn_merge.config(state = "normal"))
 
     def _get_pages(self,*, raw: str) -> list[int] | None:
-        pages:list[int] = []
+        pages: list[int] = []
         try:
             for part in raw.split(','):
                 if '-' in part:
@@ -243,14 +239,14 @@ class PDFMergerGUI(tk.Tk):
         except ValueError:
             return None
         
-    def extract_pages(self):
+    def prompt_pages_to_remove(self):
         input_path: str = self._get_files(filetypes = "*.pdf", multiple = False)
 
         if not input_path:
             return
         
         win = tk.Toplevel(self)
-        win.title("Remove PDF")
+        win.title("Pages to extract")
         win.geometry("300x150")
         win.transient(self)
         win.grab_set()
@@ -284,21 +280,31 @@ class PDFMergerGUI(tk.Tk):
         output_path = filedialog.asksaveasfilename(
             defaultextension = ".pdf",
             filetypes=[("PDF files", "*.pdf")],
-            initialfile = f"removed_pages_from_{Path(input_path).name}.pdf",
+            initialfile = f"extracted_pages_from_{Path(input_path).name}.pdf",
             title = "Save PDF")
         
         if not output_path:
             return
+        win.destroy()  # Close the prompt window
+
+        threading.Thread(
+            target = self._run_page_extractor_worker,
+            kwargs={"input_path": input_path, "pages": pages, "output_path": output_path},
+            daemon = True
+        ).start()
+
+    def _run_page_extractor_worker(self, input_path, pages, output_path):
         try:
-            self.spliter.extract_pages(input_path = input_path, pages_to_extract = pages, output_path = output_path)
-            self.callback.show_status_message(f"Success: removed pages saved to:\n{output_path}!")
-            logger.info(f"Removed pages {pages} from {input_path}, saved to {output_path}.")
-            win.destroy()
+            self.page_extractor.extract_pages(input_path = input_path, pages_to_extract = pages, output_path = output_path, callback = self.callback.safe_callback)
+            self.callback.show_status_message(f"✅ Extraction completed successfully! Extracted pages saved to:\n{output_path}")
 
         except Exception as e:
-            logger.error(f"Failed to extract pages: {e}", exc_info = True)   
-            self.callback.show_status_message(f"Error: Failed to extract pages{pages} from \n{input_path}!")
-            
+            error_msg = f"❌ Error during page extraction: {e}"
+            self.callback.show_status_message(error_msg)
+            if isinstance(e, ValueError):
+                messagebox.showerror(error_msg)
+            else:   
+                self.callback.show_status_message(error_msg)
             
 def run_gui():
     app = PDFMergerGUI()

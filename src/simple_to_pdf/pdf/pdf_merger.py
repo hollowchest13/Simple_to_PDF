@@ -18,35 +18,36 @@ class PdfMerger:
     
         # 1. Massege to GUI, about starting (progress bar is at 0, but text has changed)
 
+
         if callback:
+            start_status_message = f"Starting conversion of {total_inputs} files to PDF..."
             callback(
                 stage = "Conversion", 
                 progress_bar_mode = "indeterminate",
                 current = 0, 
                 total = total_inputs, 
-                status_message = f"Start conversion of {total_inputs} files..."
+                status_message = start_status_message
             )
 
-            # 2. Conversion process 
-            converted_pdfs = self.converter.convert_to_pdf(files = files)
+        # 2. Conversion process 
+        converted_pdfs = self.converter.convert_to_pdf(files = files)
     
-            total_converted = len(converted_pdfs)
-            status_message = f"✅ Converted {total_converted} of {total_inputs} files."
-            logger.info(status_message)
+        total_converted = len(converted_pdfs)
+        
 
-            # 3. Update GUI after completion of the stage
-            if callback:
-                callback(
-                stage = "Conversion", 
-                progress_bar_mode = "determinate",
-                current = total_inputs, # Full progress
-                total = total_inputs, 
-                status_message = status_message
-            )
-    
+        # 3. Update GUI after completion of the stage
+        if callback:
+            end_status_message = f"✅ Converted {total_converted} of {total_inputs} files."
+            logger.info(end_status_message)
+            callback(
+            stage = "Conversion", 
+            progress_bar_mode = "determinate",
+            current = total_inputs, # Full progress
+            total = total_inputs, 
+            status_message = end_status_message
+        )
         return converted_pdfs
     
-
     def merge_to_pdf(self, *, files: list[tuple[int, str]], output_path: str | Path, callback = None) -> Path:
 
         """Merges multiple files into a single PDF."""
@@ -75,7 +76,10 @@ class PdfMerger:
                     callback(stage = "Merging", progress_bar_mode = "determinate", current = i, total = total, filename = f"Document {current_filename}")
             except Exception as e:
                 logger.error(f"⚠️ Failed to read PDF with name {current_filename}: ({e})", exc_info = True)
-
+                
+        if len(writer.pages) == 0:
+            raise RuntimeError("Failed to add any pages. Input files are corrupted or empty.")
+        
         # 3. Saving the result
         output_file = Path(output_path).resolve()
         output_file.parent.mkdir(parents = True, exist_ok = True)

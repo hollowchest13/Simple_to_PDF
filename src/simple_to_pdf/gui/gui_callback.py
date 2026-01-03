@@ -11,9 +11,11 @@ class GUICallback:
         """
         Using self.app.after, because after belongs to the main window.
         """
-        data=kwargs.copy()
+        data = kwargs.copy()
         status_message = data.pop('status_message', None)
+
         # Pass updates to the GUI thread queue
+
         self.app.after(0, lambda: self.progress_bar_update(**data))
         if status_message:
             self.app.after(0, lambda: self.show_status_message(status_message = status_message))
