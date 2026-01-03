@@ -1,6 +1,9 @@
 import platform
 import shutil
 from pathlib import Path
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ConverterFactory:
    @staticmethod
@@ -11,6 +14,7 @@ class ConverterFactory:
         # 1. Check in system PATH
         in_path = shutil.which("soffice")
         if in_path:
+            logger.info(f"LibreOffice found in PATH: {in_path}")
             return in_path
 
         # 2. Check standard paths
@@ -20,6 +24,7 @@ class ConverterFactory:
         ]
         for p in standard_paths:
             if Path(p).exists():
+                logger.info(f"LibreOffice found at standard path: {p}")
                 return p
 
         # 3. If no LibreOffice found — raise an error
@@ -34,19 +39,26 @@ class ConverterFactory:
 
         if os_name == "Windows":
             try:
-                from .ms_office_converter import MSOfficeConverter
-                return MSOfficeConverter(chunk_size=chunk_size)
+                from src.simple_to_pdf.converters.ms_office_converter import MSOfficeConverter
+                return MSOfficeConverter(chunk_size = chunk_size)
             except Exception as e:
+                logger.warning(f"MS Office converter unavailable: {e}. Trying fallback to LibreOffice.")
                 # if MS Office not found, we MUST find LibreOffice or fail with a clear error
-                actual_soffice = soffice_path or ConverterFactory._find_soffice_windows()
-                from .lib_office_converter import LibreOfficeConverter
-                return LibreOfficeConverter(soffice_path=actual_soffice, chunk_size=chunk_size)
-        
+                try:
+                    actual_soffice = soffice_path or ConverterFactory._find_soffice_windows()
+                    from src.simple_to_pdf.converters.lib_office_converter import LibreOfficeConverter
+                    return LibreOfficeConverter(soffice_path = actual_soffice, chunk_size = chunk_size)
+                except Exception as le:
+                    logger.debug("All conversion engines failed on Windows.")
+                    raise RuntimeError("Neither MS Office or LibreOffice converters are available.") from le
+                    
         else:
-            # For Linux/Mac similarly: either path, or shutil.which, or error
+            # For Linux similarly: either path, or shutil.which, or error
             actual_soffice = soffice_path or shutil.which("soffice")
             if not actual_soffice:
-                raise FileNotFoundError("LibreOffice ('soffice') not found in Linux/Mac system.")
-                
-            from .lib_office_converter import LibreOfficeConverter
-            return LibreOfficeConverter(soffice_path=actual_soffice, chunk_size=chunk_size)
+                logger.debug("LibreOffice ('soffice') conversion engine failed on Linux.")
+                raise FileNotFoundError("LibreOffice ('soffice') not found in Linux system.")
+            
+            logger.info(f"Using LibreOffice on Linux: {actual_soffice}")    
+            from src.simple_to_pdf.converters.lib_office_converter import LibreOfficeConverter
+            return LibreOfficeConverter(soffice_path=actual_soffice, chunk_size = chunk_size)

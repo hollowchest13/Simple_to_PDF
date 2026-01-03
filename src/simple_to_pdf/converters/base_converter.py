@@ -2,9 +2,13 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from PIL import Image
 import io
+import logging
+
+logger = logging.getLogger(__name__)
+
 class BaseConverter(ABC):
 
-    def __init__(self, chunk_size = 10):
+    def __init__(self,*, chunk_size: int = 10):
         self.chunk_size = chunk_size
 
     @staticmethod
@@ -44,7 +48,7 @@ class BaseConverter(ABC):
                     img.save(buffer,format = "PDF")
                     pdfs.append((idx,buffer.getvalue()))
                 except Exception as e:
-                     print(f"⚠️ [{idx}] Warning: failed to convert image {path} ({e})")
+                     logger.error(f"⚠️ [{idx}] Error: failed to convert image {path} ({e})", exc_info=True)
                 else:
-                    print(f"⚠️ [{idx}] Skipped: {path} (not an image or missing)")
+                    logger.warning(f"⚠️ [{idx}] Skipped: {path} (not an image or missing)")
         return pdfs
