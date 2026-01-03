@@ -2,19 +2,21 @@ import subprocess
 import tempfile
 import shutil
 from pathlib import Path
-from .base_converter import BaseConverter
+from src.simple_to_pdf.converters.base_converter import BaseConverter
+import logging
+
+logger = logging.getLogger(__name__)
 
 class LibreOfficeConverter(BaseConverter):
-   
-   class LibreOfficeConverter(BaseConverter):
-    def __init__(self, soffice_path: str, chunk_size: int = 30):
+    def __init__(self,*, soffice_path: str, chunk_size: int = 30):
+        
         # Call constructor of base class, so it can initialize its data
         super().__init__() 
         
         self.soffice_path = soffice_path
         self.chunk_size = chunk_size
     
-   def convert_to_pdf(self,*, files: list[tuple[int, str]]) -> list[tuple[int, bytes]]:
+    def convert_to_pdf(self,*, files: list[tuple[int, str]]) -> list[tuple[int, bytes]]:
         docs: list[tuple[int, Path]] = []
         imgs: list[tuple[int, Path]] = []
         pdfs: list[tuple[int, bytes]] = []
@@ -35,14 +37,15 @@ class LibreOfficeConverter(BaseConverter):
         pdfs.extend(converted)
         return pdfs
    
-   def _convert_docs_to_pdf(self,*, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
+    def _convert_docs_to_pdf(self,*, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
        all_results = []
        for chunk in self.make_chunks(files, self.chunk_size):
+            
             # Call the new method that handles one chunk
             all_results.extend(self._convert_chunk(chunk))
        return all_results
    
-   def _convert_chunk(self, chunk: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
+    def _convert_chunk(self, chunk: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
         
         """Logic for processing one chunk of files."""
         
@@ -62,7 +65,7 @@ class LibreOfficeConverter(BaseConverter):
                 
         return results
    
-   def _prepare_temp_files(self, chunk: list[tuple[int, Path]], tmp_path: Path) -> list[str]:
+    def _prepare_temp_files(self, chunk: list[tuple[int, Path]], tmp_path: Path) -> list[str]:
         
         """Copy files in temporary directory with index prefix."""
 
@@ -74,7 +77,7 @@ class LibreOfficeConverter(BaseConverter):
             paths.append(str(temp_file_path))
         return paths
    
-   def _run_libreoffice_command(self, input_paths: list[str], out_dir: Path) -> bool:
+    def _run_libreoffice_command(self, input_paths: list[str], out_dir: Path) -> bool:
         
         """Run the LibreOffice conversion command."""
 
@@ -88,10 +91,10 @@ class LibreOfficeConverter(BaseConverter):
             subprocess.run(command, check = True, capture_output = True)
             return True
         except subprocess.CalledProcessError as e:
-            print(f"❌ LibreOffice error: {e}")
+            logger.error(f"❌ LibreOffice error: {e}", exc_info = True)
             return False
     
-   def _collect_results(self, chunk: list[tuple[int, Path]], tmp_path: Path) -> list[tuple[int, bytes]]:
+    def _collect_results(self, chunk: list[tuple[int, Path]], tmp_path: Path) -> list[tuple[int, bytes]]:
         
         """Reads created PDF files into memory."""
 
@@ -101,7 +104,7 @@ class LibreOfficeConverter(BaseConverter):
             if expected_pdf.exists():
                 chunk_results.append((idx, expected_pdf.read_bytes()))
             else:
-                print(f"⚠️ Файл не знайдено: {expected_pdf.name}")
+                logger.warning(f"❌ File not found: {expected_pdf.name}")
         return chunk_results
    
    

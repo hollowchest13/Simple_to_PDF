@@ -1,7 +1,7 @@
-from .merger import PdfMerger
-from .spliter import PdfSpliter
+from .pdf_merger import PdfMerger
+from .page_extractor import PageExtractor
 
 __all__ = [
     "PdfMerger",
-    "PdfSpliter"
+    "PageExtractor",
 ]
