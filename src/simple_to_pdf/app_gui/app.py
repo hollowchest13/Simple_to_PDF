@@ -16,6 +16,7 @@ class PDFMergerGUI(tk.Tk):
         super().__init__()
         handlers = self._setup_handlers()
         builder = GUIBuilder()
+        self.menu_bar = builder._build_menu_bar(parent = self, callbacks = handlers)
         self.ui = builder.build_gui(parent = self, callbacks = handlers)
         self._init_controls()
         self._init_services()
@@ -44,8 +45,6 @@ class PDFMergerGUI(tk.Tk):
 
         # Buttons
         self.btn_add: tk.Button = self.ui['btn_add']
-        self.btn_merge: tk.Button = self.ui['btn_merge']
-        self.btn_split: tk.Button = self.ui['btn_extract']
         self.btn_remove: tk.Button = self.ui['btn_remove']
         self.btn_up: tk.Button = self.ui['btn_up']
         self.btn_down: tk.Button = self.ui['btn_down']
@@ -196,10 +195,6 @@ class PDFMergerGUI(tk.Tk):
         if not out: 
             return
 
-        # 2. Block the button, so user doesn't click twice
-        # Assume button is stored in self.btn_merge
-        self.btn_merge.config(state = "disabled") 
-
         # 3. START THREAD
         # Pass data (files and out) via args
         thread = threading.Thread(
@@ -218,13 +213,10 @@ class PDFMergerGUI(tk.Tk):
                 output_path = output_path, 
                 callback = self.callback.safe_callback # Use the wrapper
             )
-            #In the end, we can show a final message
-            self.after(0, lambda: self.callback.show_status_message("✅ All files merged successfully!"))
+            self.after(0, lambda: self.callback.show_status_message(f"Merged PDF saved to:\n{output_path}"))
         except Exception as e:
             self.after(0, lambda: self.callback.show_status_message(f"❌ Error: Could not merge files: \n{e}"))
         
-        finally:
-            self.after(0, lambda: self.btn_merge.config(state = "normal"))
 
     def _get_pages(self,*, raw: str) -> list[int] | None:
         pages: list[int] = []
