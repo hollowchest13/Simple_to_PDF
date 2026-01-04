@@ -2,7 +2,10 @@ import tkinter as tk
 from tkinter import ttk
 
 class GUIBuilder:
-    def build_gui(self,*, parent: tk.Tk, callbacks) -> dict:
+    def build_gui(self,*, parent: tk.Tk, callbacks: dict[str, callable]) -> dict[str, tk.Widget]:
+
+        """Builds the main GUI layout and returns a dictionary of widgets."""
+
         # Window settings
         parent.title("Simple to PDF - PDF Merger")
         parent.geometry("700x400")
@@ -16,7 +19,7 @@ class GUIBuilder:
         # 2. Main area (Frame for Listbox + Progress + Status)
         # Create container for the central part
         widgets_area = tk.Frame(parent)
-        widgets_area.pack(side = "left", fill = "both", expand = True)
+        widgets_area.pack(side = "left", fill = "both", expand = True, padx = (12, 4), pady = 4)
         
         # Fill the central part
         ui['listbox'] = self._build_file_batch_area(parent = widgets_area)
@@ -28,9 +31,12 @@ class GUIBuilder:
         
         return ui
 
-    def _build_top_controls_area(self,*, parent, callbacks):
+    def _build_top_controls_area(self,*, parent: tk.Widget, callbacks: dict[str, callable]) -> dict[str, tk.Button]:
+
+        """Builds the top control buttons area."""
+
         top = tk.Frame(parent)
-        top.pack(fill = "x", padx = 4, pady = 8)
+        top.pack(fill = "x", padx = (12, 4), pady = 4)
         btns = {}
         
         btns_padx = 4
@@ -41,7 +47,7 @@ class GUIBuilder:
         btns['btn_merge'] = tk.Button(top, text = "Merge PDFs", command = callbacks['merge'])
         btns['btn_merge'].pack(side = "left", padx = btns_padx)
 
-        btns['btn_extract'] = tk.Button(top, text = "Get pages", command = callbacks['extract'])
+        btns['btn_extract'] = tk.Button(top, text = "Extract pages", command = callbacks['extract'])
         btns['btn_extract'].pack(side = "left", padx = btns_padx)
 
         btns['btn_remove'] = tk.Button(top, text = "Remove files", command = callbacks['remove'])
@@ -49,7 +55,10 @@ class GUIBuilder:
         
         return btns
 
-    def _build_file_batch_area(self,*, parent):
+    def _build_file_batch_area(self,*, parent: tk.Widget) -> tk.Listbox:
+
+        """Builds the central Listbox area for displaying files."""
+
         mid = tk.Frame(parent)
         mid.pack(fill = "both", expand = True, padx = 4, pady = 8)
         
@@ -67,7 +76,7 @@ class GUIBuilder:
         scrollbar.config(command = listbox.yview)
         return listbox
 
-    def _build_right_controls_area(self,*, parent, callbacks) -> dict:
+    def _build_right_controls_area(self,*, parent: tk.Widget, callbacks: dict[str, callable]) -> dict[str, tk.Button]:
         right = tk.Frame(parent)
         right.pack(side = "right", fill = "y", padx = 4, pady = 8)
         btns = {}
@@ -83,7 +92,7 @@ class GUIBuilder:
         # Return them so they can be accessed in self.ui
         return btns
 
-    def _build_status_area(self,*, parent):
+    def _build_status_area(self,*, parent: tk.Widget) -> tk.Text:
         status_frame = tk.Frame(parent)
         status_frame.pack(fill = "x", padx = 4, pady = 8)
         
@@ -99,7 +108,7 @@ class GUIBuilder:
         scrollbar.config(command = text.yview)
         return text
 
-    def _build_progress_bar(self,*, parent):
+    def _build_progress_bar(self,*, parent: tk.Widget) -> tuple[ttk.Progressbar, tk.Label]:
         progress_frame = tk.Frame(parent)
         progress_frame.pack(side = "top", fill = "x", padx = (4, 22), pady = (2, 14))
         

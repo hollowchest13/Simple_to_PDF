@@ -1,4 +1,4 @@
-from src.simple_to_pdf.gui.app import run_gui
+from src.simple_to_pdf.app_gui.app import run_gui
 from src.simple_to_pdf.cli.logger import setup_logger
 
 def main():
