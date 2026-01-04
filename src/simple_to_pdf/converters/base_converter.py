@@ -49,6 +49,6 @@ class BaseConverter(ABC):
                     pdfs.append((idx,buffer.getvalue()))
                 except Exception as e:
                      logger.error(f"⚠️ [{idx}] Error: failed to convert image {path} ({e})", exc_info=True)
-                else:
-                    logger.warning(f"⚠️ [{idx}] Skipped: {path} (not an image or missing)")
+            else:
+                logger.warning(f"⚠️ [{idx}] Skipped: {path} (not an image or missing)")
         return pdfs
