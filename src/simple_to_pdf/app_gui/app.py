@@ -1,11 +1,11 @@
 from pathlib import Path
 import tkinter as tk
 from tkinter import ttk
-import threading
 from tkinter import filedialog, messagebox
+import threading
 from src.simple_to_pdf.pdf import PdfMerger, PageExtractor
-from src.simple_to_pdf.gui.gui_builder import GUIBuilder
-from src.simple_to_pdf.gui.gui_callback import GUICallback
+from src.simple_to_pdf.app_gui.gui_builder import GUIBuilder
+from src.simple_to_pdf.app_gui.gui_callback import GUICallback
 import logging
 
 logger = logging.getLogger(__name__)
@@ -247,15 +247,30 @@ class PDFMergerGUI(tk.Tk):
         
         win = tk.Toplevel(self)
         win.title("Pages to extract")
-        win.geometry("300x150")
+        win.geometry("350x170")
         win.transient(self)
         win.grab_set()
 
         # Create a label and entry for page selection
-        tk.Label(win, text = "Select pages to remove:").pack(pady = 20)
+        # Main instruction
+        tk.Label(win, text = "Select pages to extract:", font = ("TkDefaultFont", 10, "bold")).pack(pady=(20, 0))
+
+        # Format description (hint)
+        hint_text = "Format: 1, 3, 5-10\n(use commas for single pages and dashes for ranges)"
+        tk.Label(win, text = hint_text, fg = "gray", font = ("TkDefaultFont", 9)).pack(pady = (0, 10))
         entry = tk.Entry(win)
         entry.pack(fill = "x", padx = 10)
-        tk.Button(win, text = "OK", command = lambda: self.on_confirm(raw_input = entry.get(), input_path = input_path, win = win)).pack(pady = 12)
+        tk.Button(
+            win, 
+            text = "OK", 
+            width = 10,    # Width in characters
+            height = 1,    # Height in text lines
+            command = lambda: self.on_confirm(
+                raw_input = entry.get(), 
+                input_path = input_path, 
+                win = win
+            )
+        ).pack(pady = 12)
         
 
     def on_confirm(self, *, raw_input: str, input_path: str, win: tk.Toplevel) -> None:
