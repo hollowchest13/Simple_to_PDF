@@ -9,58 +9,52 @@ class GUIBuilder:
         # Window settings
         parent.title("Simple to PDF - PDF Merger")
         parent.geometry("700x400")
-        
         # Dictionary to hold references to created widgets
         ui = {}
 
-        # 1. Top panel (Buttons)
-        ui.update(self._build_top_controls_area(parent = parent, callbacks = callbacks))
-        
-        # 2. Main area (Frame for Listbox + Progress + Status)
-        # Create container for the central part
-        widgets_area = tk.Frame(parent)
-        widgets_area.pack(side = "left", fill = "both", expand = True, padx = (12, 4), pady = 4)
-        
-        # Fill the central part
-        ui['listbox'] = self._build_file_batch_area(parent = widgets_area)
-        ui['progress_bar'], ui['progress_label'] = self._build_progress_bar(parent = widgets_area)
-        ui['status_text'] = self._build_status_area(parent = widgets_area)
-        
-        # 3. Right panel (Arrows)
-        ui.update(self._build_right_controls_area(parent = parent, callbacks = callbacks))
+        right_panel = tk.Frame(parent)
+        right_panel.pack(side = "right", fill = "both")
+        left_panel = tk.Frame(parent)
+        left_panel.pack(side = "left", expand = True, fill = "both")
+
+        ui.update(self._build_right_controls_area(parent = right_panel, callbacks = callbacks))
+        ui['listbox'] = self._build_file_batch_area(parent = left_panel)
+        ui['progress_bar'], ui['progress_label'] = self._build_progress_bar(parent = left_panel)
+        ui['status_text'] = self._build_status_area(parent = left_panel)
         
         return ui
-
-    def _build_top_controls_area(self,*, parent: tk.Widget, callbacks: dict[str, callable]) -> dict[str, tk.Button]:
-
-        """Builds the top control buttons area."""
-
-        top = tk.Frame(parent)
-        top.pack(fill = "x", padx = (12, 4), pady = 4)
-        btns = {}
+    
+    def _build_menu_bar(self,*, parent: tk.Tk, callbacks: dict[str, callable]) -> tk.Menu:
         
-        btns_padx = 4
-        # Using callbacks instead of self.add_files
-        btns['btn_add'] = tk.Button(top, text = "Add files", command = callbacks['add'])
-        btns['btn_add'].pack(side = "left", padx = btns_padx)
+        """Builds the menu bar for the application."""
 
-        btns['btn_merge'] = tk.Button(top, text = "Merge PDFs", command = callbacks['merge'])
-        btns['btn_merge'].pack(side = "left", padx = btns_padx)
+        menu_bar = tk.Menu(parent)
+        parent.config(menu = menu_bar)
 
-        btns['btn_extract'] = tk.Button(top, text = "Extract pages", command = callbacks['extract'])
-        btns['btn_extract'].pack(side = "left", padx = btns_padx)
+        # File menu
+        file_menu = tk.Menu(menu_bar, tearoff = 0)
+        file_menu.add_command(label = "Add Files", command = callbacks['add'])
+        file_menu.add_command(label = "Merge to PDF", command = callbacks['merge'])
+        file_menu.add_command(label = "Extract pages", command = callbacks['extract'])
+        file_menu.add_command(label = "Remove files", command = callbacks['remove'])
+        file_menu.add_separator()
+        file_menu.add_command(label = "Exit", command = parent.quit)
+        menu_bar.add_cascade(label = "File", menu = file_menu)
 
-        btns['btn_remove'] = tk.Button(top, text = "Remove files", command = callbacks['remove'])
-        btns['btn_remove'].pack(side = "left", padx = btns_padx)
-        
-        return btns
+        # About menu
+        about_menu = tk.Menu(menu_bar, tearoff = 0)
+        #about_menu.add_command(label = "License", command = callbacks['license'])
+        #about_menu.add_command(label = "Help", command = callbacks['help'])
+        menu_bar.add_cascade(label = "About", menu = about_menu)
 
-    def _build_file_batch_area(self,*, parent: tk.Widget) -> tk.Listbox:
+        return menu_bar
+
+    def _build_file_batch_area(self,*, parent: tk.Frame | tk.Tk) -> tk.Listbox:
 
         """Builds the central Listbox area for displaying files."""
 
         mid = tk.Frame(parent)
-        mid.pack(fill = "both", expand = True, padx = 4, pady = 8)
+        mid.pack(fill = "both", expand = True, padx = 12, pady = 8)
         
         scrollbar = tk.Scrollbar(mid)
         scrollbar.pack(side = "right", fill = "y")
@@ -76,25 +70,36 @@ class GUIBuilder:
         scrollbar.config(command = listbox.yview)
         return listbox
 
-    def _build_right_controls_area(self,*, parent: tk.Widget, callbacks: dict[str, callable]) -> dict[str, tk.Button]:
+    def _build_right_controls_area(self,*, parent: tk.Frame | tk.Tk, callbacks: dict[str, callable]) -> dict[str, tk.Button]:
         right = tk.Frame(parent)
-        right.pack(side = "right", fill = "y", padx = 4, pady = 8)
+        right.grid(row = 0, column = 0, sticky = "n", padx = 4, pady = 8)
         btns = {}
-        btns_width = 3
+        btns_width = 4
+        btns_height = 2
+        btns_padx = 2
+        btns_pady = 2
     
         # Create Up and Down buttons with callbacks
-        btns['btn_up'] = tk.Button(right, text  = "▲", width = btns_width, command = lambda: callbacks['move'](direction = "up"))
-        btns['btn_up'].pack(pady = 2)
+        btns_side = "top"
 
-        btns['btn_down'] = tk.Button(right, text = "▼", width = btns_width, command = lambda: callbacks['move'](direction = "down"))
-        btns['btn_down'].pack(pady = 2)
+        btns['btn_add'] = tk.Button(right, text = "➕", command = callbacks['add'], width = btns_width, height = btns_height)
+        btns['btn_add'].pack(side = btns_side, padx = btns_padx)
+
+        btns['btn_up'] = tk.Button(right, text  = "▲", width = btns_width, height = btns_height, command = lambda: callbacks['move'](direction = "up"))
+        btns['btn_up'].pack(side = btns_side, padx = btns_padx, pady = btns_pady)
+
+        btns['btn_down'] = tk.Button(right, text = "▼", width = btns_width, height = btns_height, command = lambda: callbacks['move'](direction = "down"))
+        btns['btn_down'].pack(side = btns_side, padx = btns_padx, pady = btns_pady)
+
+        btns['btn_remove'] = tk.Button(right, text = "🗑", command = callbacks['remove'], width = btns_width, height = btns_height)
+        btns['btn_remove'].pack(side = btns_side, padx = btns_padx, pady = btns_pady)
 
         # Return them so they can be accessed in self.ui
         return btns
 
-    def _build_status_area(self,*, parent: tk.Widget) -> tk.Text:
+    def _build_status_area(self,*, parent: tk.Frame | tk.Tk) -> tk.Text:
         status_frame = tk.Frame(parent)
-        status_frame.pack(fill = "x", padx = 4, pady = 8)
+        status_frame.pack(fill = "x", padx = 12, pady = 4)
         
         scrollbar = tk.Scrollbar(status_frame)
         scrollbar.pack(side = "right", fill = "y")
@@ -108,9 +113,9 @@ class GUIBuilder:
         scrollbar.config(command = text.yview)
         return text
 
-    def _build_progress_bar(self,*, parent: tk.Widget) -> tuple[ttk.Progressbar, tk.Label]:
+    def _build_progress_bar(self,*, parent: tk.Frame | tk.Tk) -> tuple[ttk.Progressbar, tk.Label]:
         progress_frame = tk.Frame(parent)
-        progress_frame.pack(side = "top", fill = "x", padx = (4, 22), pady = (2, 14))
+        progress_frame.pack(side = "top", fill = "x", padx = (12, 22), pady = (2, 16))
         
         label = tk.Label(progress_frame, text = "Progress:")
         label.pack(pady = 4)
