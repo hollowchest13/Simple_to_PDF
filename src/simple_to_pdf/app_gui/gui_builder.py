@@ -37,15 +37,19 @@ class GUIBuilder:
         file_menu.add_command(label = "Merge to PDF", command = callbacks['merge'])
         file_menu.add_command(label = "Extract pages", command = callbacks['extract'])
         file_menu.add_command(label = "Remove files", command = callbacks['remove'])
+        file_menu.add_command(label = "Clear status text",command = callbacks['clear_status'])
         file_menu.add_separator()
         file_menu.add_command(label = "Exit", command = parent.quit)
         menu_bar.add_cascade(label = "File", menu = file_menu)
 
-        # About menu
-        about_menu = tk.Menu(menu_bar, tearoff = 0)
-        #about_menu.add_command(label = "License", command = callbacks['license'])
-        #about_menu.add_command(label = "Help", command = callbacks['help'])
-        menu_bar.add_cascade(label = "About", menu = about_menu)
+        # Help menu
+        help_menu = tk.Menu(menu_bar, tearoff = 0)
+        help_menu.add_command(label = "License", command = callbacks['license'])
+        help_menu.add_command(label = "How to use", command = callbacks['documentation'])
+        help_menu.add_command(label = "Check updates", command = callbacks['update'])
+        menu_bar.add_cascade(label = "Help", menu = help_menu)
+
+
 
         return menu_bar
 

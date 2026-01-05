@@ -30,10 +30,27 @@ class PDFMergerGUI(tk.Tk):
             'merge': self.on_merge,
             'extract': self.prompt_pages_to_remove,
             'remove': self.remove_files,
-            'move': self.move_on_listbox
+            'move': self.move_on_listbox,
+            'license':self.show_license,
+            'documentation':self.show_documentation,
+            'update':self.check_updates,
+            'about':self.show_about,
+            'clear_status':self.clear_status_bar
             }
         return handlers
+    def clear_status_bar(self) -> None:
+        pass
+    def check_updates(self) -> None:
+        pass
+    def show_about(self) -> None:
+        pass
     
+    def show_license(self) -> None:
+        pass
+
+    def show_documentation(self) -> None:
+        pass
+
     def _init_controls(self) -> None:
 
         """Create  references to widgets from self.ui."""
@@ -118,8 +135,15 @@ class PDFMergerGUI(tk.Tk):
         # Supported list the extensions 
         types = ("xls", "xlsx", "doc", "docx", "jpg", "png", "pdf")
 
-        # Call the method. It will create both "All supported" and "All files"
-        files_paths = self._get_files(filetypes = types, multiple = True)
+        new_files_paths: list[str] =  list(self._get_files(filetypes = types, multiple = True))
+
+        if not new_files_paths:
+            return
+
+        # Call the method. It will create "All supported" files
+        saved_files_paths: list[str] = list(self.listbox.get(0,tk.END))
+        
+        files_paths: list[str] = saved_files_paths + new_files_paths
         
         if files_paths: 
             self._list_update(files = files_paths)
