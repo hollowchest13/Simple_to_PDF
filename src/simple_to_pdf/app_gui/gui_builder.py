@@ -9,18 +9,19 @@ class GUIBuilder:
         # Window settings
         parent.title("Simple to PDF - PDF Merger")
         parent.geometry("700x400")
+
         # Dictionary to hold references to created widgets
         ui = {}
 
-        right_panel = tk.Frame(parent)
-        right_panel.pack(side = "right", fill = "both")
-        left_panel = tk.Frame(parent)
-        left_panel.pack(side = "left", expand = True, fill = "both")
+        list_controller_frame = tk.Frame(parent)
+        list_controller_frame.pack(side = "right", fill = "both")
+        main_frame = tk.Frame(parent)
+        main_frame.pack(side = "left", expand = True, fill = "both")
 
-        ui.update(self._build_right_controls_area(parent = right_panel, callbacks = callbacks))
-        ui['listbox'] = self._build_file_batch_area(parent = left_panel)
-        ui['progress_bar'], ui['progress_label'] = self._build_progress_bar(parent = left_panel)
-        ui['status_text'] = self._build_status_area(parent = left_panel)
+        ui.update(self._build_right_controls_area(parent = list_controller_frame, callbacks = callbacks))
+        ui['listbox'] = self._build_file_batch_area(parent = main_frame)
+        ui['progress_bar'], ui['progress_label'] = self._build_progress_bar(parent = main_frame)
+        ui['status_text'] = self._build_status_area(parent = main_frame)
         
         return ui
     
@@ -48,8 +49,6 @@ class GUIBuilder:
         help_menu.add_command(label = "How to use", command = callbacks['documentation'])
         help_menu.add_command(label = "Check updates", command = callbacks['update'])
         menu_bar.add_cascade(label = "Help", menu = help_menu)
-
-
 
         return menu_bar
 

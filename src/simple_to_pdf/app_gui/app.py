@@ -1,12 +1,13 @@
 from pathlib import Path
-import tkinter as tk
 import os
 from tkinter import ttk
+import tkinter as tk
 from tkinter import filedialog, messagebox,scrolledtext
 import threading
 from src.simple_to_pdf.pdf import PdfMerger, PageExtractor
 from src.simple_to_pdf.app_gui.gui_builder import GUIBuilder
 from src.simple_to_pdf.app_gui.gui_callback import GUICallback
+from src.simple_to_pdf.app_gui.utils import get_text, get_files, get_pages
 
 import logging
 
@@ -55,24 +56,11 @@ class PDFMergerGUI(tk.Tk):
     def show_license(self) -> None:
         license_file_name: str = "LICENSE"
         license_path: Path = os.path.join(os.path.dirname(__file__),license_file_name)
-        license_text: str = self._get_text(file_name = license_file_name,file_path = license_path)
+        license_text: str = get_text(file_name = license_file_name,file_path = license_path)
         if not license_text:
             return
         self._create_text_window(title = "LICENSE",text = license_text)
 
-    def _get_text(self,*,file_name: str,file_path: str) -> str:
-        if not os.path.exists(file_path):
-            messagebox.showwarning("Warning", f"{file_name} file not found")
-            return
-        try:
-            with open(file_path,"r",encoding = "utf-8") as f:
-                return f.read()
-        except Exception as e:
-            err_msg=  f"Failed to read {file_name}: {e}"
-            logger.error(err_msg,exc_info = True)
-            messagebox.showerror("Error", err_msg)
-            return
-        
     def _create_text_window(self,*,text: str,title: str,size: str = "700x400",text_font: str = "Consolas",font_size: int = 10) -> None:
         top = tk.Toplevel(self)
         top.title(title)
@@ -84,16 +72,6 @@ class PDFMergerGUI(tk.Tk):
         txt.pack(expand = True,fill = "both", padx = 10,pady = 10)
         btn_close:tk.Button = tk.Button(top, text = "Got it!", command = top.destroy)
         btn_close.pack(pady = 5)
-
-
-
-    
-    
-
-
-        
-
-        
 
     def show_documentation(self) -> None:
         pass
@@ -152,28 +130,6 @@ class PDFMergerGUI(tk.Tk):
             if val in selected_values:
                 self.listbox.selection_set(idx)
 
-    def _get_files(self, *, filetypes: tuple[str, ...] = (".pdf",), multiple = True):
-
-        """
-        Open dialog window to select files.
-
-        """
-        # Create mask for all extensions together: "*.pdf *.docx *.xlsx"
-        all_supported_mask = " ".join([f"*.{ext}" for ext in filetypes])
-        
-        # Form the list of filters
-        # 1. First item — all supported types together
-        filters = [("All supported types", all_supported_mask)]
-        
-        # 2. Then each type separately (for convenience)
-        for ext in filetypes:
-            filters.append((f"{ext.upper()} files", f"*.{ext}"))
-
-        if multiple:
-            return filedialog.askopenfilenames(filetypes = filters)
-        return filedialog.askopenfilename(filetypes = [("PDF files", "*.pdf")])
-
-
     # Add files to the listbox
     def add_files(self):
 
@@ -182,7 +138,7 @@ class PDFMergerGUI(tk.Tk):
         # Supported list the extensions 
         types = ("xls", "xlsx", "doc", "docx", "jpg", "png", "pdf")
 
-        new_files_paths: list[str] =  list(self._get_files(filetypes = types, multiple = True))
+        new_files_paths: list[str] =  list(get_files(filetypes = types, multiple = True))
 
         if not new_files_paths:
             return
@@ -288,22 +244,9 @@ class PDFMergerGUI(tk.Tk):
         except Exception as e:
             self.after(0, lambda: self.callback.show_status_message(f"❌ Error: Could not merge files: \n{e}"))
         
-
-    def _get_pages(self,*, raw: str) -> list[int] | None:
-        pages: list[int] = []
-        try:
-            for part in raw.split(','):
-                if '-' in part:
-                    start, end = map(int, part.split('-'))
-                    pages.extend(range(start - 1, end))  # Convert to 0-based index
-                else:
-                    pages.append(int(part) - 1)  # Convert to 0-based index
-            return pages
-        except ValueError:
-            return None
         
     def prompt_pages_to_remove(self):
-        input_path: str = self._get_files(filetypes = "*.pdf", multiple = False)
+        input_path: str = get_files(filetypes = "*.pdf", multiple = False)
 
         if not input_path:
             return
@@ -338,7 +281,7 @@ class PDFMergerGUI(tk.Tk):
 
     def on_confirm(self, *, raw_input: str, input_path: str, win: tk.Toplevel) -> None:
         # Parse string input into a list of page indices
-        pages = self._get_pages(raw = raw_input.strip())
+        pages = get_pages(raw = raw_input.strip())
 
         if pages is None:
             messagebox.showwarning(
