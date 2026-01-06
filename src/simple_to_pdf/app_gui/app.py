@@ -1,11 +1,13 @@
 from pathlib import Path
 import tkinter as tk
+import os
 from tkinter import ttk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox,scrolledtext
 import threading
 from src.simple_to_pdf.pdf import PdfMerger, PageExtractor
 from src.simple_to_pdf.app_gui.gui_builder import GUIBuilder
 from src.simple_to_pdf.app_gui.gui_callback import GUICallback
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -35,18 +37,63 @@ class PDFMergerGUI(tk.Tk):
             'documentation':self.show_documentation,
             'update':self.check_updates,
             'about':self.show_about,
-            'clear_status':self.clear_status_bar
+            'clear_status':self.clear_status_text
             }
         return handlers
-    def clear_status_bar(self) -> None:
-        pass
+    
+    def clear_status_text(self) -> None:
+        self.status_text.config(state ="normal")     
+        self.status_text.delete("1.0", "end")        
+        self.status_text.config(state = "disabled")
+
     def check_updates(self) -> None:
         pass
+
     def show_about(self) -> None:
         pass
-    
+
     def show_license(self) -> None:
-        pass
+        license_file_name: str = "LICENSE"
+        license_path: Path = os.path.join(os.path.dirname(__file__),license_file_name)
+        license_text: str = self._get_text(file_name = license_file_name,file_path = license_path)
+        if not license_text:
+            return
+        self._create_text_window(title = "LICENSE",text = license_text)
+
+    def _get_text(self,*,file_name: str,file_path: str) -> str:
+        if not os.path.exists(file_path):
+            messagebox.showwarning("Warning", f"{file_name} file not found")
+            return
+        try:
+            with open(file_path,"r",encoding = "utf-8") as f:
+                return f.read()
+        except Exception as e:
+            err_msg=  f"Failed to read {file_name}: {e}"
+            logger.error(err_msg,exc_info = True)
+            messagebox.showerror("Error", err_msg)
+            return
+        
+    def _create_text_window(self,*,text: str,title: str,size: str = "700x400",text_font: str = "Consolas",font_size: int = 10) -> None:
+        top = tk.Toplevel(self)
+        top.title(title)
+        top.geometry(size)
+        top.resizable(False,False)
+        txt:scrolledtext.ScrolledText = scrolledtext.ScrolledText(top, wrap = tk.WORD,font = (text_font,font_size))
+        txt.insert(tk.END,text)
+        txt.config(state = tk.DISABLED)
+        txt.pack(expand = True,fill = "both", padx = 10,pady = 10)
+        btn_close:tk.Button = tk.Button(top, text = "Got it!", command = top.destroy)
+        btn_close.pack(pady = 5)
+
+
+
+    
+    
+
+
+        
+
+        
 
     def show_documentation(self) -> None:
         pass
