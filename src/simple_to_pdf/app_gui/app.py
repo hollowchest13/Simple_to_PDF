@@ -1,11 +1,14 @@
 from pathlib import Path
-import tkinter as tk
+import os
 from tkinter import ttk
-from tkinter import filedialog, messagebox
+import tkinter as tk
+from tkinter import filedialog, messagebox,scrolledtext
 import threading
 from src.simple_to_pdf.pdf import PdfMerger, PageExtractor
 from src.simple_to_pdf.app_gui.gui_builder import GUIBuilder
 from src.simple_to_pdf.app_gui.gui_callback import GUICallback
+from src.simple_to_pdf.app_gui.utils import get_text, get_files, get_pages
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -30,10 +33,49 @@ class PDFMergerGUI(tk.Tk):
             'merge': self.on_merge,
             'extract': self.prompt_pages_to_remove,
             'remove': self.remove_files,
-            'move': self.move_on_listbox
+            'move': self.move_on_listbox,
+            'license':self.show_license,
+            'documentation':self.show_documentation,
+            'update':self.check_updates,
+            'about':self.show_about,
+            'clear_status':self.clear_status_text
             }
         return handlers
     
+    def clear_status_text(self) -> None:
+        self.status_text.config(state ="normal")     
+        self.status_text.delete("1.0", "end")        
+        self.status_text.config(state = "disabled")
+
+    def check_updates(self) -> None:
+        pass
+
+    def show_about(self) -> None:
+        pass
+
+    def show_license(self) -> None:
+        license_file_name: str = "LICENSE"
+        license_path: Path = os.path.join(os.path.dirname(__file__),license_file_name)
+        license_text: str = get_text(file_name = license_file_name,file_path = license_path)
+        if not license_text:
+            return
+        self._create_text_window(title = "LICENSE",text = license_text)
+
+    def _create_text_window(self,*,text: str,title: str,size: str = "700x400",text_font: str = "Consolas",font_size: int = 10) -> None:
+        top = tk.Toplevel(self)
+        top.title(title)
+        top.geometry(size)
+        top.resizable(False,False)
+        txt:scrolledtext.ScrolledText = scrolledtext.ScrolledText(top, wrap = tk.WORD,font = (text_font,font_size))
+        txt.insert(tk.END,text)
+        txt.config(state = tk.DISABLED)
+        txt.pack(expand = True,fill = "both", padx = 10,pady = 10)
+        btn_close:tk.Button = tk.Button(top, text = "Got it!", command = top.destroy)
+        btn_close.pack(pady = 5)
+
+    def show_documentation(self) -> None:
+        pass
+
     def _init_controls(self) -> None:
 
         """Create  references to widgets from self.ui."""
@@ -88,28 +130,6 @@ class PDFMergerGUI(tk.Tk):
             if val in selected_values:
                 self.listbox.selection_set(idx)
 
-    def _get_files(self, *, filetypes: tuple[str, ...] = (".pdf",), multiple = True):
-
-        """
-        Open dialog window to select files.
-
-        """
-        # Create mask for all extensions together: "*.pdf *.docx *.xlsx"
-        all_supported_mask = " ".join([f"*.{ext}" for ext in filetypes])
-        
-        # Form the list of filters
-        # 1. First item — all supported types together
-        filters = [("All supported types", all_supported_mask)]
-        
-        # 2. Then each type separately (for convenience)
-        for ext in filetypes:
-            filters.append((f"{ext.upper()} files", f"*.{ext}"))
-
-        if multiple:
-            return filedialog.askopenfilenames(filetypes = filters)
-        return filedialog.askopenfilename(filetypes = [("PDF files", "*.pdf")])
-
-
     # Add files to the listbox
     def add_files(self):
 
@@ -118,8 +138,15 @@ class PDFMergerGUI(tk.Tk):
         # Supported list the extensions 
         types = ("xls", "xlsx", "doc", "docx", "jpg", "png", "pdf")
 
-        # Call the method. It will create both "All supported" and "All files"
-        files_paths = self._get_files(filetypes = types, multiple = True)
+        new_files_paths: list[str] =  list(get_files(filetypes = types, multiple = True))
+
+        if not new_files_paths:
+            return
+
+        # Call the method. It will create "All supported" files
+        saved_files_paths: list[str] = list(self.listbox.get(0,tk.END))
+        
+        files_paths: list[str] = saved_files_paths + new_files_paths
         
         if files_paths: 
             self._list_update(files = files_paths)
@@ -217,22 +244,9 @@ class PDFMergerGUI(tk.Tk):
         except Exception as e:
             self.after(0, lambda: self.callback.show_status_message(f"❌ Error: Could not merge files: \n{e}"))
         
-
-    def _get_pages(self,*, raw: str) -> list[int] | None:
-        pages: list[int] = []
-        try:
-            for part in raw.split(','):
-                if '-' in part:
-                    start, end = map(int, part.split('-'))
-                    pages.extend(range(start - 1, end))  # Convert to 0-based index
-                else:
-                    pages.append(int(part) - 1)  # Convert to 0-based index
-            return pages
-        except ValueError:
-            return None
         
     def prompt_pages_to_remove(self):
-        input_path: str = self._get_files(filetypes = "*.pdf", multiple = False)
+        input_path: str = get_files(filetypes = "*.pdf", multiple = False)
 
         if not input_path:
             return
@@ -267,7 +281,7 @@ class PDFMergerGUI(tk.Tk):
 
     def on_confirm(self, *, raw_input: str, input_path: str, win: tk.Toplevel) -> None:
         # Parse string input into a list of page indices
-        pages = self._get_pages(raw = raw_input.strip())
+        pages = get_pages(raw = raw_input.strip())
 
         if pages is None:
             messagebox.showwarning(

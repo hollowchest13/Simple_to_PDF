@@ -25,13 +25,13 @@ class BaseConverter(ABC):
         """Abstract method that all classes must implement"""
         pass
 
-    def is_pdf_file(self,*, file_path :Path) -> bool:
+    def is_pdf_file(self,*, file_path: Path) -> bool:
         return file_path.suffix.lower() == ".pdf"
         
     def is_excel_file(self,*, file_path: Path) -> bool:
          return file_path.suffix.lower() in {".xls", ".xlsx"}
            
-    def is_image_file(self,*, file_path:Path) -> bool:
+    def is_image_file(self,*, file_path: Path) -> bool:
         return file_path.suffix.lower() in {".jpg", ".jpeg", ".png"}
     
     def is_word_file(self,*, file_path: Path) -> bool:
