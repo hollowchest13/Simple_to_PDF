@@ -1,0 +1,23 @@
+# --- Python ---
+# Тимчасові файли компіляції (ті самі .pyc)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Віртуальні середовища (щоб не конфліктували Windows та Linux версії)
+.venv/
+venv/
+env/
+ENV/
+
+# Логи (ваші файли simple_to_pdf.log)
+*.log
+
+# --- VS Code ---
+# Налаштування самого редактора
+.vscode/
+*.code-workspace
+
+# --- Системні файли ---
+.DS_Store
+Thumbs.db
