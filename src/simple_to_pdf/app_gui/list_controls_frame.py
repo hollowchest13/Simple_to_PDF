@@ -7,11 +7,10 @@ logger = logging.getLogger(__name__)
 
 class ListControlsFrame(tk.Frame):
 
-    def __init__(self,*, parent: tk.Tk, callbacks: dict[str,callable]):
+    def __init__(self,*, parent: tk.Tk):
         super().__init__(parent)
-        self._init_btns(callbacks = callbacks)
-        
-    def _init_btns(self,*,callbacks:dict[str,callable]) -> None:
+              
+    def init_btns(self,*,callbacks: dict[str,callable]) -> None:
         btns_list: dict[str,tk.Widget] = self._build_right_controls_area(callbacks = callbacks)
         for key, value in btns_list.items():
             setattr(self, key, value)
