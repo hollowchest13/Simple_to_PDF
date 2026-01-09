@@ -43,8 +43,8 @@ class BaseConverter(ABC):
             path=Path(path_str)
             if path.exists():
                 try:
-                    img=Image.open(path).convert("RGB")
-                    buffer=io.BytesIO()
+                    img = Image.open(path).convert("RGB")
+                    buffer = io.BytesIO()
                     img.save(buffer,format = "PDF")
                     pdfs.append((idx,buffer.getvalue()))
                 except Exception as e:
