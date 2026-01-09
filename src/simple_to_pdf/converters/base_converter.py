@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from PIL import Image
 import io
+import openpyxl
 import logging
 
 logger = logging.getLogger(__name__)
@@ -52,3 +53,17 @@ class BaseConverter(ABC):
             else:
                 logger.warning(f"⚠️ [{idx}] Skipped: {path} (not an image or missing)")
         return pdfs
+    
+    def get_excel_width(self,*, file_path: Path) -> dict[Path,int]:
+        
+        workbook = openpyxl.load_workbook(filename = file_path, data_only = True)
+        report: dict[str,int] = {}
+        for sheet_name in workbook.sheetnames:
+            sheet = workbook[sheet_name]
+            width = sheet.max_column if sheet.max_column else 0
+            report[sheet_name] = width
+        workbook.close
+        return report
+            
+
+
