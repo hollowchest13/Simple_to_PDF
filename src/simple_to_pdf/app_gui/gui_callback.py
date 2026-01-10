@@ -1,11 +1,12 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+from src.simple_to_pdf.app_gui.main_frame import MainFrame
 
 class GUICallback:
-    def __init__(self,*, main_app: tk.Tk):
+    def __init__(self, main_frame: MainFrame):
 
         # Saving link to main window (PDFGUIMerger)
-        self.app = main_app
+        self.main_frame = main_frame
 
     def safe_callback(self, **kwargs) -> None:
         """
@@ -16,17 +17,16 @@ class GUICallback:
 
         # Pass updates to the GUI thread queue
 
-        self.app.after(0, lambda: self.progress_bar_update(**data))
+        self.main_frame.after(0, lambda: self.progress_bar_update(**data))
         if status_message:
-            self.app.after(0, lambda: self.show_status_message(status_message = status_message))
+            self.main_frame.after(0, lambda: self.show_status_message(status_message = status_message))
 
     def progress_bar_update(self,*, stage: str = "Processing", progress_bar_mode: str = "indeterminate", current: int = 0, total: int = 0, filename: str = "") -> None:
-        ui: dict[str, tk.Widget] = self.app.ui
-
+        
         # 2. Check types for specific widgets (now pb.start() methods will be highlighted)
         # Using ttk.Progressbar, because it has start/stop methods
-        pb: ttk.Progressbar = ui['progress_bar'] 
-        pl: tk.Label = ui['progress_label']
+        pb: ttk.Progressbar = self.main_frame.progress_bar
+        pl: tk.Label = self.main_frame.progress_label
 
         if pb['mode'] != progress_bar_mode:
             pb.stop()
@@ -47,21 +47,19 @@ class GUICallback:
 
         if filename and progress_bar_mode == "determinate":
             self.show_status_message(f"✅ {stage} successfully: {filename}")
-
-        self.app.update_idletasks()
+        self.main_frame.update_idletasks()
 
     def show_status_message(self, status_message: str):
-        ui: dict[str, tk.Text] = self.app.ui
-        if 'status_text' in ui:
-            st: tk.Text = ui['status_text']
-            st.config(state="normal")
-            st.insert(tk.END, f"- {status_message}\n")
-            st.see(tk.END)
-            st.config(state = "disabled")
+        st: tk.Text = self.main_frame.status_text
+        st.config(state = "normal")
+        st.insert(tk.END, f"- {status_message}\n")
+        st.see(tk.END)
+        st.config(state = "disabled")
 
     def progress_bar_reset(self):
-        ui: dict[str, ttk.Progressbar] = self.app.ui
-        ui['progress_bar'].stop()
-        ui['progress_bar'].config(mode = 'determinate', value = 0)
-        ui['progress_label'].config(text = "Progress: Ready")
-        self.app.update_idletasks()
+        pb: ttk.Progressbar = self.main_frame.progress_bar
+        pl: tk.Label = self.main_frame.progress_label
+        pb.stop()
+        pb.config(mode='determinate', value = 0, maximum = 100)
+        pl.config(text = "Progress: Ready")
+        self.main_frame.update_idletasks()

@@ -39,3 +39,7 @@
 2026-01-08 16:57:52 - INFO - Using LibreOffice on Linux: /usr/bin/soffice
 2026-01-08 17:04:26 - INFO - Using LibreOffice on Linux: /usr/bin/soffice
 2026-01-08 17:06:04 - INFO - Using LibreOffice on Linux: /usr/bin/soffice
+2026-01-10 16:52:37 - WARNING - MS Office converter unavailable: No module named 'openpyxl'. Trying fallback to LibreOffice.
+2026-01-10 18:51:00 - INFO - ✅ Converted 2 of 2 files.
+2026-01-10 18:54:01 - INFO - ✅ Converted 2 of 2 files.
+2026-01-10 19:12:33 - INFO - ✅ Converted 2 of 2 files.

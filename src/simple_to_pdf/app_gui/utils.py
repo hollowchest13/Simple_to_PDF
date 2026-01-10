@@ -67,11 +67,11 @@ def get_selected_values(*,listbox: tk.Listbox) -> list[str]:
 
 # List Updating
 def list_update(*,files: list[str],listbox: tk.Listbox) -> None:
-    listbox_clear(listbox)
+    listbox_clear(listbox = listbox)
     for pdf in files:
         listbox.insert(tk.END, pdf)
 
-def listbox_clear(*, listbox:tk.Listbox) -> None:
+def listbox_clear(*, listbox: tk.Listbox) -> None:
         listbox.delete(0, tk.END)
 
 # Reselect items after update

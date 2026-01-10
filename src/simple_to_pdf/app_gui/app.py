@@ -1,5 +1,4 @@
 from pathlib import Path
-import os
 import tkinter as tk
 from tkinter import filedialog, messagebox,scrolledtext
 import threading
@@ -17,11 +16,11 @@ class PDFMergerGUI(tk.Tk):
 
     def __init__(self):
         super().__init__()
-        self._init_services()
         self.init_panels()
+        self._init_services()
         self.build_gui
         handlers = self._setup_handlers()
-        self.btns_panel.init_btns(callbacks = handlers)
+        self.list_controls: dict[str,tk.Widget] = self.btns_panel.init_btns(callbacks = handlers)
         self.build_gui(parent = self,callbacks = handlers)
     
     def init_panels(self) -> None:
@@ -32,7 +31,7 @@ class PDFMergerGUI(tk.Tk):
 
         """Initialize internal logic and services."""
 
-        self.callback = GUICallback(main_app = self)
+        self.callback = GUICallback(main_frame = self.main_panel)
         self.merger = PdfMerger()
         self.page_extractor = PageExtractor()
 
@@ -100,7 +99,7 @@ class PDFMergerGUI(tk.Tk):
 
     def show_license(self) -> None:
         license_file_name: str = "LICENSE"
-        license_path: Path = os.path.join(os.path.dirname(__file__),license_file_name)
+        license_path = Path(__file__).parent.parent / "LICENSE"
         license_text: str = get_text(file_name = license_file_name,file_path = license_path)
         if not license_text:
             return
@@ -114,7 +113,7 @@ class PDFMergerGUI(tk.Tk):
         txt:scrolledtext.ScrolledText = scrolledtext.ScrolledText(top, wrap = tk.WORD,font = (text_font,font_size))
         txt.insert(tk.END,text)
         txt.config(state = tk.DISABLED)
-        txt.pack(expand = True,fill = "both", padx = 10,pady = 10)
+        txt.pack(expand = True, fill = "both", padx = 10, pady = 10)
         btn_close:tk.Button = tk.Button(top, text = "Got it!", command = top.destroy)
         btn_close.pack(pady = 5)
 
@@ -126,7 +125,7 @@ class PDFMergerGUI(tk.Tk):
         """Handler for Merge button click"""
 
         # 1. Preparing data (quick operation, doing in main thread)
-        files = self._load_from_listbox()
+        files = self.main_panel.load_from_listbox()
         self.callback.progress_bar_reset()
 
         if not files:

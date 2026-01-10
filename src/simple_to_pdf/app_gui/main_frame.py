@@ -13,7 +13,7 @@ class MainFrame(tk.Frame):
         super().__init__(parent)
 
         self.filebox = self._build_file_batch_area()
-        self.progress_bar = self._build_progress_bar()
+        self.progress_bar,self.progress_label = self._build_progress_bar()
         self.status_text = self._build_status_area()
 
 
