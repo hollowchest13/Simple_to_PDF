@@ -1,5 +1,6 @@
 import os
 import logging
+import tkinter as tk
 from tkinter import messagebox
 from tkinter import filedialog
 
@@ -13,7 +14,7 @@ def get_text(*,file_name: str,file_path: str) -> str:
             with open(file_path,"r",encoding = "utf-8") as f:
                 return f.read()
         except Exception as e:
-            err_msg=  f"Failed to read {file_name}: {e}"
+            err_msg =  f"Failed to read {file_name}: {e}"
             logger.error(err_msg,exc_info = True)
             messagebox.showerror("Error", err_msg)
             return
@@ -51,3 +52,31 @@ def get_pages(*, raw: str) -> list[int] | None:
             return pages
         except ValueError:
             return None
+
+def clear_text_widget(widget: tk.Text) -> None:
+    
+    widget.config(state = "normal")
+    widget.delete("1.0", "end")
+    widget.config(state = "disabled")
+
+def get_selected_values(*,listbox: tk.Listbox) -> list[str]:
+        selection = listbox.curselection()
+        if not selection:
+            return []
+        return [(listbox.get(i)) for i in listbox.curselection()]
+
+# List Updating
+def list_update(*,files: list[str],listbox: tk.Listbox) -> None:
+    listbox_clear(listbox = listbox)
+    for pdf in files:
+        listbox.insert(tk.END, pdf)
+
+def listbox_clear(*, listbox: tk.Listbox) -> None:
+        listbox.delete(0, tk.END)
+
+# Reselect items after update
+def reselect_items(*, all_items: list, selected_values: list,listbox: tk.Listbox):
+    listbox.selection_clear(0, tk.END)
+    for idx, val in enumerate(all_items):
+        if val in selected_values:
+            listbox.selection_set(idx)

@@ -66,6 +66,21 @@ class MSOfficeConverter(BaseConverter):
             del excel
             
         return results
+    
+    def _prepare_excel_for_export(self, wb):
+
+        """Setup printing options"""
+
+        for sheet in wb.Sheets:
+            width = sheet.UsedRange.Columns.Count
+        
+            # Налаштовуємо орієнтацію
+            sheet.PageSetup.Orientation = 2 if width > 10 else 1
+        
+            # Налаштовуємо масштабування
+            sheet.PageSetup.Zoom = False
+            sheet.PageSetup.FitToPagesWide = 1
+            sheet.PageSetup.FitToPagesTall = False
 
     def _convert_single_excel(self, excel_app, file_path: Path) -> bytes | None:
 
@@ -77,9 +92,10 @@ class MSOfficeConverter(BaseConverter):
         
         with tempfile.NamedTemporaryFile(delete = False, suffix = ".pdf") as tmp:
             temp_pdf_path = Path(tmp.name)
-
+            
         try:
-            wb = excel_app.Workbooks.Open(str(input_file), ReadOnly=True)
+            wb = excel_app.Workbooks.Open(str(input_file), ReadOnly = True)
+            self._prepare_excel_for_export(wb = wb)
             wb.ExportAsFixedFormat(0, str(temp_pdf_path))
             pdf_bytes = temp_pdf_path.read_bytes()
         except Exception as e:
@@ -91,6 +107,7 @@ class MSOfficeConverter(BaseConverter):
                 temp_pdf_path.unlink()
                 
         return pdf_bytes
+    
                
     def _convert_word_to_pdf(self, *, word_files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
         all_results = []
@@ -149,9 +166,8 @@ class MSOfficeConverter(BaseConverter):
                 temp_pdf_path.unlink()
                 
         return pdf_bytes
-
-
-                
+    
+    
                
     
 
