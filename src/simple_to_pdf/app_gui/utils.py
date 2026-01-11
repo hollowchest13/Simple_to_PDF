@@ -29,10 +29,10 @@ def get_files(*, filetypes: tuple[str, ...] = (".pdf",), multiple = True):
         all_supported_mask = " ".join([f"*.{ext}" for ext in filetypes])
         
         # Form the list of filters
-        # 1. First item — all supported types together
+        # First item — all supported types together
         filters = [("All supported types", all_supported_mask)]
         
-        # 2. Then each type separately (for convenience)
+        # Then each type separately (for convenience)
         for ext in filetypes:
             filters.append((f"{ext.upper()} files", f"*.{ext}"))
 

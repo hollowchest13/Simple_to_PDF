@@ -61,4 +61,4 @@ class ConverterFactory:
             
             logger.info(f"Using LibreOffice on Linux: {actual_soffice}")    
             from src.simple_to_pdf.converters.lib_office_converter import LibreOfficeConverter
-            return LibreOfficeConverter(soffice_path=actual_soffice, chunk_size = chunk_size)
+            return LibreOfficeConverter(soffice_path = actual_soffice, chunk_size = chunk_size)

@@ -1,8 +1,8 @@
 from pypdf import PdfReader,PdfWriter
 from pathlib import Path
-from src.simple_to_pdf.converters import get_converter
 import io
 import logging
+from src.simple_to_pdf.converters import get_converter
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +16,7 @@ class PdfMerger:
 
         total_inputs = len(files)
     
-        # 1. Massege to GUI, about starting (progress bar is at 0, but text has changed)
-
+        # Massege to GUI, about starting (progress bar is at 0, but text has changed)
 
         if callback:
             start_status_message = f"Starting conversion of {total_inputs} files to PDF..."
@@ -29,13 +28,12 @@ class PdfMerger:
                 status_message = start_status_message
             )
 
-        # 2. Conversion process 
+        # Conversion process 
         converted_pdfs = self.converter.convert_to_pdf(files = files)
     
         total_converted = len(converted_pdfs)
         
-
-        # 3. Update GUI after completion of the stage
+        #  Update GUI after completion of the stage
         if callback:
             end_status_message = f"✅ Converted {total_converted} of {total_inputs} files."
             logger.info(end_status_message)

@@ -167,7 +167,3 @@ class MSOfficeConverter(BaseConverter):
                 
         return pdf_bytes
     
-    
-               
-    
-

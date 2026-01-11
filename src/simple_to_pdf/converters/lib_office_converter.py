@@ -1,8 +1,10 @@
 import subprocess
 import tempfile
 import shutil
+import openpyxl
 from pathlib import Path
 from src.simple_to_pdf.converters.base_converter import BaseConverter
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,6 +20,7 @@ class LibreOfficeConverter(BaseConverter):
     
     def convert_to_pdf(self,*, files: list[tuple[int, str]]) -> list[tuple[int, bytes]]:
         docs: list[tuple[int, Path]] = []
+        exls: list[tuple[int, Path]] = []
         imgs: list[tuple[int, Path]] = []
         pdfs: list[tuple[int, bytes]] = []
         converted: list[tuple[int, bytes]] = []
@@ -27,7 +30,9 @@ class LibreOfficeConverter(BaseConverter):
             if path.exists():
                 if self.is_pdf_file(file_path = path):
                      pdfs.append((idx,path.read_bytes()))
-                elif self.is_excel_file(file_path = path) or self.is_word_file(file_path = path):
+                elif self.is_excel_file(file_path = path):
+                    exls.append((idx,path))
+                elif self.is_word_file(file_path = path):
                     docs.append((idx,path))
                 elif self.is_image_file(file_path = path):
                     imgs.append((idx,path))
@@ -42,30 +47,28 @@ class LibreOfficeConverter(BaseConverter):
        for chunk in self.make_chunks(files, self.chunk_size):
             
             # Call the new method that handles one chunk
-            all_results.extend(self._convert_chunk(chunk))
+            all_results.extend(self._convert_chunk(chunk = chunk))
        return all_results
-   
-    def _convert_chunk(self, chunk: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
-        
-        """Logic for processing one chunk of files."""
-        
-        results = []
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
-            
-            # 1. Prepare files (copy with index prefix)
-            input_paths = self._prepare_temp_files(chunk, tmp_path)
-            
-            # 2. Run the conversion
-            success = self._run_libreoffice_command(input_paths, tmp_path)
-            
-            # 3. if command was successful, collect results
-            if success:
-                results = self._collect_results(chunk, tmp_path)
-                
-        return results
-   
-    def _prepare_temp_files(self, chunk: list[tuple[int, Path]], tmp_path: Path) -> list[str]:
+    
+    def _run_libreoffice_format_conversion(self,*, input_paths: list[Path], out_dir: Path):
+
+        """xls to xlsx conversion"""
+
+        command = [
+            self.soffice_path, '--headless', 
+            '--convert-to', 'xlsx', 
+            '--outdir', str(out_dir)
+        ] + [str(p) for p in input_paths]
+    
+        try:
+            subprocess.run(command, check = True, capture_output = True)
+            # Видаляємо старі .xls, щоб не плуталися
+            for p in input_paths:
+                if p.exists(): p.unlink()
+        except Exception as e:
+            logger.error(f"❌ Batch XLS conversion error: {e}")
+
+    def _prepare_temp_files(self,*, chunk: list[tuple[int, Path]], tmp_path: Path) -> list[str]:
         
         """Copy files in temporary directory with index prefix."""
 
@@ -77,7 +80,73 @@ class LibreOfficeConverter(BaseConverter):
             paths.append(str(temp_file_path))
         return paths
    
-    def _run_libreoffice_command(self, input_paths: list[str], out_dir: Path) -> bool:
+    def _convert_chunk(self,*, chunk: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
+        
+        """Logic for processing one chunk of files."""
+        
+        results = []
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            
+            # 1. Prepare files (copy with index prefix)
+            all_tmp_paths = self._prepare_temp_files(chunk=chunk, tmp_path=tmp_path)
+            xls_to_convert = [p for p in all_tmp_paths if p.suffix.lower() == ".xls"]
+            if xls_to_convert:
+                self._run_libreoffice_format_conversion(xls_to_convert, tmp_path)
+                all_tmp_paths = [
+                    p.with_suffix(".xlsx") if p.suffix.lower()==".xls" else p for p in all_tmp_paths
+                ]
+            for path in all_tmp_paths:
+                if path.suffix.lower() == ".xlsx":
+                    self._prepare_excel_scaling(path)
+            input_paths=[str(p) for p in all_tmp_paths]
+            # 2. Run the conversion
+            success = self._run_libreoffice_command(input_paths, tmp_path)
+            
+            # 3. if command was successful, collect results
+            if success:
+                results = self._collect_results(chunk, tmp_path)
+                
+        return results
+    
+    def _prepare_excel_scaling(self, file_path: Path):
+        """
+        Configures Excel print settings to prevent table 'breaking'.
+        """
+        try:
+            wb = openpyxl.load_workbook(str(file_path))
+        
+            for sheet in wb.worksheets:
+                # Detecting sheet orientation.
+                max_col=sheet.max_column
+                if max_col>10:
+                    sheet.page_setup.orientation=sheet.ORIENTATION_LANDSCAPE
+                else:
+                    sheet.page_setup.orientation = sheet.ORIENTATION_PORTRAIT
+            
+                # Scaling: Fit all columns to one page width.
+                sheet.page_setup.fitToWidth = 1
+                sheet.page_setup.fitToHeight = 0
+            
+                # Enabling scaling mode (required for fitToWidth to take effect).
+                sheet.sheet_properties.pageSetUpPr.fitToPage = True
+            
+                # Paper Size: Set to A4 (as a fallback/safety measure)
+                sheet.page_setup.paperSize = sheet.PAPERSIZE_A4
+            
+                # Margins: Set to minimum to maximize usable area
+                sheet.page_margins.left = 0.15
+                sheet.page_margins.right = 0.15
+                sheet.page_margins.top = 0.2
+                sheet.page_margins.bottom = 0.2
+
+            wb.save(str(file_path))
+            wb.close()
+        
+        except Exception as e:
+            logger.error(f"⚠️ Failed to scale Excel file {file_path.name}: {e}")
+
+    def _run_libreoffice_command(self,*, input_paths: list[str], out_dir: Path) -> bool:
         
         """Run the LibreOffice conversion command."""
 
@@ -94,7 +163,7 @@ class LibreOfficeConverter(BaseConverter):
             logger.error(f"❌ LibreOffice error: {e}", exc_info = True)
             return False
     
-    def _collect_results(self, chunk: list[tuple[int, Path]], tmp_path: Path) -> list[tuple[int, bytes]]:
+    def _collect_results(self,*, chunk: list[tuple[int, Path]], tmp_path: Path) -> list[tuple[int, bytes]]:
         
         """Reads created PDF files into memory."""
 
@@ -106,10 +175,3 @@ class LibreOfficeConverter(BaseConverter):
             else:
                 logger.warning(f"❌ File not found: {expected_pdf.name}")
         return chunk_results
-   
-   
-   
-
-
-
-    

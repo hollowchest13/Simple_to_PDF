@@ -24,6 +24,7 @@ class BaseConverter(ABC):
     def convert_to_pdf(self,*, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
 
         """Abstract method that all classes must implement"""
+        
         pass
 
     def is_pdf_file(self,*, file_path: Path) -> bool:
@@ -49,7 +50,7 @@ class BaseConverter(ABC):
                     img.save(buffer,format = "PDF")
                     pdfs.append((idx,buffer.getvalue()))
                 except Exception as e:
-                     logger.error(f"⚠️ [{idx}] Error: failed to convert image {path} ({e})", exc_info=True)
+                     logger.error(f"⚠️ [{idx}] Error: failed to convert image {path} ({e})", exc_info = True)
             else:
                 logger.warning(f"⚠️ [{idx}] Skipped: {path} (not an image or missing)")
         return pdfs
