@@ -1,7 +1,7 @@
 from pathlib import Path
-from src.simple_to_pdf.converters.base_converter import BaseConverter
 import tempfile
 import win32com.client as win32
+from src.simple_to_pdf.converters.base_converter import BaseConverter
 import logging
 
 logger = logging.getLogger(__name__)
@@ -166,4 +166,3 @@ class MSOfficeConverter(BaseConverter):
                 temp_pdf_path.unlink()
                 
         return pdf_bytes
-    

@@ -24,7 +24,7 @@ class BaseConverter(ABC):
     def convert_to_pdf(self,*, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
 
         """Abstract method that all classes must implement"""
-        
+
         pass
 
     def is_pdf_file(self,*, file_path: Path) -> bool:
@@ -65,6 +65,3 @@ class BaseConverter(ABC):
             report[sheet_name] = width
         workbook.close
         return report
-            
-
-

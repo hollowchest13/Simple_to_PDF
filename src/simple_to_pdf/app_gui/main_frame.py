@@ -11,11 +11,29 @@ class MainFrame(tk.Frame):
 
     def __init__(self, parent:tk.Tk):
         super().__init__(parent)
+        self.ui: dict[str, tk.Widget] = {}
 
-        self.filebox = self._build_file_batch_area()
-        self.progress_bar,self.progress_label = self._build_progress_bar()
-        self.status_text = self._build_status_area()
+        # Create and register all components
+        raw_components = {
+            'filebox': self._build_file_batch_area(),
+            'status_text': self._build_status_area(),
+        }
 
+        # Then build progress bar and label because it returns two widgets
+        p_bar, p_label = self._build_progress_bar()
+        raw_components['progress_bar'] = p_bar
+        raw_components['progress_label'] = p_label
+
+        # 2. set attributes and register in self.ui
+        self._register_components(raw_components)
+
+    def _register_components(self, components: dict[str, tk.Widget]):
+
+        """Adds components to self and self.ui for easy access."""
+        
+        for key, widget in components.items():
+            setattr(self, key, widget)  
+            self.ui[key] = widget       
 
     def _build_file_batch_area(self) -> tk.Listbox:
 
