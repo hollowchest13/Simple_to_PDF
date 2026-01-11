@@ -36,7 +36,8 @@ class LibreOfficeConverter(BaseConverter):
                     docs.append((idx,path))
                 elif self.is_image_file(file_path = path):
                     imgs.append((idx,path))
-                
+                    
+        converted.extend(self._convert_docs_to_pdf(files = exls))
         converted.extend(self._convert_docs_to_pdf(files = docs))
         converted.extend(self.convert_images_to_pdf(files = imgs))
         pdfs.extend(converted)

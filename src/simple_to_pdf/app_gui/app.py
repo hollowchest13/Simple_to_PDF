@@ -238,7 +238,7 @@ class PDFMergerGUI(tk.Tk):
         if not out: 
             return
 
-        self._run_merge_worker(files=files, output_path=out)
+        self._run_merge_worker(files = files, output_path=out)
 
     @ui_locker
     def _run_merge_worker(self, files, output_path):
