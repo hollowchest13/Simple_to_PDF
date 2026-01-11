@@ -2,6 +2,8 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox,scrolledtext
 import threading
+import webbrowser
+import requests
 from src.simple_to_pdf.pdf import PdfMerger, PageExtractor
 from src.simple_to_pdf.app_gui.main_frame import MainFrame
 from src.simple_to_pdf.app_gui.list_controls_frame import ListControlsFrame
@@ -11,6 +13,19 @@ from src.simple_to_pdf.app_gui.utils import get_text, get_files, get_pages
 import logging
 
 logger = logging.getLogger(__name__)
+
+# --- App constants ---
+APP_VERSION = "0.9.8"
+GITHUB_USER = "hollowchest13"
+GITHUB_REPO = "Simple_to_PDF"
+
+# Dynamically constructing URLs for easier modification.
+GITHUB_REPO_URL = f"https://github.com/{{GITHUB_USER}}/{{GITHUB_REPO}}"
+
+# Path to the version.json file in the cli directory
+VERSION_JSON_URL = f"https://raw.githubusercontent.com/{{GITHUB_USER}}/{{GITHUB_REPO}}/main/cli/version.json"
+README_URL = f"{{GITHUB_REPO_URL}}#readme"
+RELEASES_URL = f"{GITHUB_REPO_URL}/releases"
 
 class PDFMergerGUI(tk.Tk):
 
@@ -68,6 +83,7 @@ class PDFMergerGUI(tk.Tk):
         help_menu = tk.Menu(menu_bar, tearoff = 0)
         help_menu.add_command(label = "License", command = callbacks['license'])
         help_menu.add_command(label = "How to use", command = callbacks['documentation'])
+        help_menu.add_command(label = "About", command = callbacks['about'])
         help_menu.add_command(label = "Check updates", command = callbacks['update'])
         menu_bar.add_cascade(label = "Help", menu = help_menu)
 
@@ -91,11 +107,65 @@ class PDFMergerGUI(tk.Tk):
             }
         return handlers
     
-    def check_updates(self) -> None:
-        pass
+    def check_updates(self):
 
-    def show_about(self) -> None:
-        pass
+        """Fetches the latest version info from GitHub and prompts for update."""
+
+        try:
+            # Requesting the version file
+            response = requests.get(VERSION_JSON_URL, timeout = 5)
+            response.raise_for_status()
+        
+            data = response.json()
+            latest_version = data.get("version")
+            release_notes = data.get("notes", "No release notes provided.")
+
+            if latest_version == APP_VERSION:
+                messagebox.showinfo("Update Check", f"You are up to date!\nVersion {APP_VERSION} is the latest.")
+            else:
+                # New version found
+                message = (
+                    f"A new version is available: {latest_version}\n\n"
+                    f"What's new:\n{release_notes}\n\n"
+                    "Would you like to visit the download page?"
+                )
+                if messagebox.askyesno("Update Available", message):
+                   webbrowser.open(RELEASES_URL)
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Update check failed (Network error): {e}")
+            messagebox.showerror("Update Error", "Could not connect to the update server.\nPlease check your internet connection.")
+        except Exception as e:
+            logger.error(f"Update check failed (Parse error): {e}")
+            messagebox.showerror("Update Error", f"An unexpected error occurred:\n{e}")
+
+    def show_about(self):
+
+        """Displays a modal window with application information."""
+
+        about_window = tk.Toplevel(self)
+        about_window.title("About")
+        about_window.geometry("380x280")
+        about_window.resizable(False, False)
+        about_window.transient(self)
+        about_window.grab_set()
+
+        # App Title & Version
+        tk.Label(about_window, text = GITHUB_REPO, font=("Arial", 12, "bold")).pack(pady=15)
+        tk.Label(about_window, text=f"Application Version: {APP_VERSION}").pack()
+    
+        # Engine Info (Dynamic check)
+        engine_class = getattr(self.merger.converter, '__class__', None)
+        engine_name = engine_class.__name__ if engine_class else "Unknown"
+        tk.Label(about_window, text=f"Conversion Engine: {engine_name}", fg = "gray").pack(pady=5)
+
+        # Description
+        desc = "A professional tool for batch converting\nand merging documents into PDF."
+        tk.Label(about_window, text = desc, justify = "center", pady = 10).pack()
+
+        # Footer
+        tk.Label(about_window, text = "© 2026 All Rights Reserved", font = ("Arial", 8)).pack(side = "bottom", pady = 10)
+    
+        tk.Button(about_window, text = "Project GitHub", width = 20, command = lambda: webbrowser.open(GITHUB_REPO_URL)).pack(pady=5)
 
     def show_license(self) -> None:
         license_file_name: str = "LICENSE"
@@ -118,13 +188,13 @@ class PDFMergerGUI(tk.Tk):
         btn_close.pack(pady = 5)
 
     def show_documentation(self) -> None:
-        pass
+        webbrowser.open(README_URL)
 
     def on_merge(self):
 
         """Handler for Merge button click"""
 
-        # 1. Preparing data (quick operation, doing in main thread)
+        # Preparing data (quick operation, doing in main thread)
         files = self.main_panel.load_from_listbox()
         self.callback.progress_bar_reset()
 
@@ -161,6 +231,8 @@ class PDFMergerGUI(tk.Tk):
             )
             self.after(0, lambda: self.callback.show_status_message(f"Merged PDF saved to:\n{output_path}"))
         except Exception as e:
+            self.after(0, self.callback.progress_bar_reset)
+            logger.error(f"❌ Error during merging: {e}", exc_info = True)
             self.after(0, lambda: self.callback.show_status_message(f"❌ Error: Could not merge files: \n{e}"))
         
         
@@ -254,6 +326,7 @@ class PDFMergerGUI(tk.Tk):
                 self.after(0, lambda: messagebox.showerror("Extraction Error", error_msg))
             else:   
                 self.callback.show_status_message(f"❌ {error_msg}")
+                logger.error(f"❌ Error during page extraction: {e}", exc_info = True)
             
 def run_gui():
     app = PDFMergerGUI()

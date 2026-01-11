@@ -47,10 +47,40 @@ class LibreOfficeConverter(BaseConverter):
        for chunk in self.make_chunks(files, self.chunk_size):
             
             # Call the new method that handles one chunk
-            all_results.extend(self._convert_chunk(chunk))
+            all_results.extend(self._convert_chunk(chunk = chunk))
        return all_results
+    
+    def _run_libreoffice_format_conversion(self,*, input_paths: list[Path], out_dir: Path):
+
+        """xls to xlsx conversion"""
+
+        command = [
+            self.soffice_path, '--headless', 
+            '--convert-to', 'xlsx', 
+            '--outdir', str(out_dir)
+        ] + [str(p) for p in input_paths]
+    
+        try:
+            subprocess.run(command, check = True, capture_output = True)
+            # Видаляємо старі .xls, щоб не плуталися
+            for p in input_paths:
+                if p.exists(): p.unlink()
+        except Exception as e:
+            logger.error(f"❌ Batch XLS conversion error: {e}")
+
+    def _prepare_temp_files(self,*, chunk: list[tuple[int, Path]], tmp_path: Path) -> list[str]:
+        
+        """Copy files in temporary directory with index prefix."""
+
+        paths = []
+        for idx, original_path in chunk:
+            temp_name = f"{idx}_{original_path.name}"
+            temp_file_path = tmp_path / temp_name
+            shutil.copy2(original_path, temp_file_path)
+            paths.append(str(temp_file_path))
+        return paths
    
-    def _convert_chunk(self, chunk: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
+    def _convert_chunk(self,*, chunk: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
         
         """Logic for processing one chunk of files."""
         
@@ -59,10 +89,10 @@ class LibreOfficeConverter(BaseConverter):
             tmp_path = Path(tmp_dir)
             
             # 1. Prepare files (copy with index prefix)
-            all_tmp_paths = self._prepare_temp_files(chunk, tmp_path)
-            xls_to_convert = [p for p in all_tmp_paths if p.suffix.lower()==".xls"]
+            all_tmp_paths = self._prepare_temp_files(chunk=chunk, tmp_path=tmp_path)
+            xls_to_convert = [p for p in all_tmp_paths if p.suffix.lower() == ".xls"]
             if xls_to_convert:
-                self.__run_libreoffice_format_conversion(xls_to_convert, tmp_path)
+                self._run_libreoffice_format_conversion(xls_to_convert, tmp_path)
                 all_tmp_paths = [
                     p.with_suffix(".xlsx") if p.suffix.lower()==".xls" else p for p in all_tmp_paths
                 ]
@@ -78,31 +108,33 @@ class LibreOfficeConverter(BaseConverter):
                 results = self._collect_results(chunk, tmp_path)
                 
         return results
+    
     def _prepare_excel_scaling(self, file_path: Path):
         """
-        Налаштовує параметри друку Excel для запобігання 'розриву' таблиць.
+        Configures Excel print settings to prevent table 'breaking'.
         """
         try:
-            # data_only=False, щоб зберегти формули, якщо вони там є
             wb = openpyxl.load_workbook(str(file_path))
         
             for sheet in wb.worksheets:
-                # 1. Орієнтація: Альбомна (Landscape) зазвичай краща для таблиць
-                sheet.page_setup.orientation = sheet.ORIENTATION_LANDSCAPE
+                # Detecting sheet orientation.
+                max_col=sheet.max_column
+                if max_col>10:
+                    sheet.page_setup.orientation=sheet.ORIENTATION_LANDSCAPE
+                else:
+                    sheet.page_setup.orientation = sheet.ORIENTATION_PORTRAIT
             
-                # 2. Масштабування: Втиснути всі колонки в одну сторінку по ширині
-                # fitToWidth = 1 (одна сторінка в ширину)
-                # fitToHeight = 0 (автоматична кількість сторінок у довжину)
+                # Scaling: Fit all columns to one page width.
                 sheet.page_setup.fitToWidth = 1
                 sheet.page_setup.fitToHeight = 0
             
-                # 3. Активуємо режим масштабування (без цього fitToWidth не спрацює)
+                # Enabling scaling mode (required for fitToWidth to take effect).
                 sheet.sheet_properties.pageSetUpPr.fitToPage = True
             
-                # 4. Папір: Встановлюємо A4 (про всяк випадок)
+                # Paper Size: Set to A4 (as a fallback/safety measure)
                 sheet.page_setup.paperSize = sheet.PAPERSIZE_A4
             
-                # 5. Поля: Мінімальні, щоб дати таблиці більше місця
+                # Margins: Set to minimum to maximize usable area
                 sheet.page_margins.left = 0.15
                 sheet.page_margins.right = 0.15
                 sheet.page_margins.top = 0.2
@@ -112,37 +144,9 @@ class LibreOfficeConverter(BaseConverter):
             wb.close()
         
         except Exception as e:
-            logger.error(f"⚠️ Не вдалося масштабувати Excel {file_path.name}: {e}")
+            logger.error(f"⚠️ Failed to scale Excel file {file_path.name}: {e}")
 
-    def _run_libreoffice_format_conversion(self, input_paths: list[Path], out_dir: Path):
-        """Швидка конвертація пачки XLS у XLSX одним процесом."""
-        command = [
-            self.soffice_path, '--headless', 
-            '--convert-to', 'xlsx', 
-            '--outdir', str(out_dir)
-        ] + [str(p) for p in input_paths]
-    
-        try:
-            subprocess.run(command, check=True, capture_output=True)
-            # Видаляємо старі .xls, щоб не плуталися
-            for p in input_paths:
-                if p.exists(): p.unlink()
-        except Exception as e:
-            logger.error(f"❌ Batch XLS conversion error: {e}")
-
-    def _prepare_temp_files(self, chunk: list[tuple[int, Path]], tmp_path: Path) -> list[str]:
-        
-        """Copy files in temporary directory with index prefix."""
-
-        paths = []
-        for idx, original_path in chunk:
-            temp_name = f"{idx}_{original_path.name}"
-            temp_file_path = tmp_path / temp_name
-            shutil.copy2(original_path, temp_file_path)
-            paths.append(str(temp_file_path))
-        return paths
-   
-    def _run_libreoffice_command(self, input_paths: list[str], out_dir: Path) -> bool:
+    def _run_libreoffice_command(self,*, input_paths: list[str], out_dir: Path) -> bool:
         
         """Run the LibreOffice conversion command."""
 
@@ -159,7 +163,7 @@ class LibreOfficeConverter(BaseConverter):
             logger.error(f"❌ LibreOffice error: {e}", exc_info = True)
             return False
     
-    def _collect_results(self, chunk: list[tuple[int, Path]], tmp_path: Path) -> list[tuple[int, bytes]]:
+    def _collect_results(self,*, chunk: list[tuple[int, Path]], tmp_path: Path) -> list[tuple[int, bytes]]:
         
         """Reads created PDF files into memory."""
 
@@ -171,10 +175,3 @@ class LibreOfficeConverter(BaseConverter):
             else:
                 logger.warning(f"❌ File not found: {expected_pdf.name}")
         return chunk_results
-   
-   
-   
-
-
-
-    

@@ -9,9 +9,9 @@ class GUICallback:
         self.main_frame = main_frame
 
     def safe_callback(self, **kwargs) -> None:
-        """
-        Using self.app.after, because after belongs to the main window.
-        """
+
+        """ Using self.app.after, because after belongs to the main window."""
+
         data = kwargs.copy()
         status_message = data.pop('status_message', None)
 
@@ -23,8 +23,6 @@ class GUICallback:
 
     def progress_bar_update(self,*, stage: str = "Processing", progress_bar_mode: str = "indeterminate", current: int = 0, total: int = 0, filename: str = "") -> None:
         
-        # 2. Check types for specific widgets (now pb.start() methods will be highlighted)
-        # Using ttk.Progressbar, because it has start/stop methods
         pb: ttk.Progressbar = self.main_frame.progress_bar
         pl: tk.Label = self.main_frame.progress_label
 
