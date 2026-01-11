@@ -1,8 +1,10 @@
 import os
 import logging
 import tkinter as tk
+import functools
 from tkinter import messagebox
 from tkinter import filedialog
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -80,3 +82,29 @@ def reselect_items(*, all_items: list, selected_values: list,listbox: tk.Listbox
     for idx, val in enumerate(all_items):
         if val in selected_values:
             listbox.selection_set(idx)
+
+def change_state(*, widgets_dict: dict[str, tk.Widget], state: str) -> None:
+
+    """Universal state switcher for a group of widgets."""
+
+    for widget in widgets_dict.values():
+        try:
+            widget.config(state = state)
+        except tk.TclError:
+            # Skip if widget doesn't have a state parameter (e.g., Frame)
+            pass
+
+def ui_locker(func):
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        self.toggle_ui(active = False) # Блокуємо (в головному потоці)
+        
+        def run():
+            try:
+                func(self, *args, **kwargs) # Виконуємо в фоні
+            finally:
+                # Розблоковуємо через after, щоб повернутися в головний потік
+                self.after(0, lambda: self.toggle_ui(active=True))
+        
+        threading.Thread(target = run, daemon = True).start()
+    return wrapper

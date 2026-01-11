@@ -1,14 +1,13 @@
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox,scrolledtext
-import threading
 import webbrowser
 import requests
 from src.simple_to_pdf.pdf import PdfMerger, PageExtractor
 from src.simple_to_pdf.app_gui.main_frame import MainFrame
 from src.simple_to_pdf.app_gui.list_controls_frame import ListControlsFrame
 from src.simple_to_pdf.app_gui.gui_callback import GUICallback
-from src.simple_to_pdf.app_gui.utils import get_text, get_files, get_pages
+from src.simple_to_pdf.app_gui.utils import get_text, get_files, get_pages, change_state,ui_locker
 
 import logging
 
@@ -49,6 +48,34 @@ class PDFMergerGUI(tk.Tk):
         self.callback = GUICallback(main_frame = self.main_panel)
         self.merger = PdfMerger()
         self.page_extractor = PageExtractor()
+
+    def _toggle_menu_items(self,*,menu_obj: tk.Menu, active: bool):
+        state = tk.NORMAL if active else tk.DISABLED
+        # index_count gets the index of the last menu item
+        last_item = menu_obj.index("end") 
+    
+        if last_item is not None:
+            for i in range(last_item + 1):
+                try:
+                    menu_obj.entryconfig(i, state=state)
+                except:
+                    continue # Skip separators
+
+    def toggle_ui(self,*, active: bool) -> None:
+
+        """Enable or disable the entire UI."""
+
+        if active:
+           btns_state = tk.NORMAL
+           menu_active = True
+        else:
+            btns_state = tk.DISABLED
+            menu_active = False
+        
+        # Disable all buttons and menu items
+        change_state(widgets_dict = self.btns_panel.ui, state = btns_state)
+        # You can also disabled specific panels if needed
+        self._toggle_menu_items(menu_obj = self.menu, active = menu_active)
 
     def build_gui(self,*, parent: tk.Tk, callbacks: dict[str, callable]) -> dict[str, tk.Widget]:
 
@@ -211,15 +238,9 @@ class PDFMergerGUI(tk.Tk):
         if not out: 
             return
 
-        # 3. START THREAD
-        # Pass data (files and out) via args
-        thread = threading.Thread(
-            target = self._run_merge_worker, 
-            kwargs={"files": files, "output_path": out},
-            daemon = True
-        )
-        thread.start()
+        self._run_merge_worker(files=files, output_path=out)
 
+    @ui_locker
     def _run_merge_worker(self, files, output_path):
         try:
             
@@ -305,16 +326,13 @@ class PDFMergerGUI(tk.Tk):
         # Close input window and start the background worker thread
         win.destroy()
 
-        threading.Thread(
-            target=self._run_page_extractor_worker,
-            kwargs={
-                "input_path": input_path, 
-                "pages": pages, 
-                "output_path": output_path
-            },
-            daemon=True
-        ).start()
-
+        self._run_page_extractor_worker(
+            input_path=input_path,
+            pages=pages,
+            output_path=output_path
+        )
+     
+    @ui_locker
     def _run_page_extractor_worker(self, input_path, pages, output_path):
         try:
             self.page_extractor.extract_pages(input_path = input_path, pages_to_extract = pages, output_path = output_path, callback = self.callback.safe_callback)

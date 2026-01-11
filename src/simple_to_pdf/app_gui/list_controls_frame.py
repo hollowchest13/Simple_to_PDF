@@ -9,10 +9,11 @@ class ListControlsFrame(tk.Frame):
 
     def __init__(self,*, parent: tk.Tk):
         super().__init__(parent)
+
               
     def init_btns(self,*,callbacks: dict[str,callable]) -> None:
-        btns_list: dict[str,tk.Widget] = self._build_right_controls_area(callbacks = callbacks)
-        for key, value in btns_list.items():
+        self.ui: dict[str,tk.Widget] = self._build_right_controls_area(callbacks = callbacks)
+        for key, value in self.ui.items():
             setattr(self, key, value)
    
     def _build_right_controls_area(self,*, callbacks: dict[str, callable]) -> dict[str, tk.Button]:
