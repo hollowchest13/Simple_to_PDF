@@ -20,7 +20,6 @@ class LibreOfficeConverter(BaseConverter):
     
     def convert_to_pdf(self,*, files: list[tuple[int, str]]) -> list[tuple[int, bytes]]:
         docs: list[tuple[int, Path]] = []
-        exls: list[tuple[int, Path]] = []
         imgs: list[tuple[int, Path]] = []
         pdfs: list[tuple[int, bytes]] = []
         converted: list[tuple[int, bytes]] = []
@@ -30,14 +29,11 @@ class LibreOfficeConverter(BaseConverter):
             if path.exists():
                 if self.is_pdf_file(file_path = path):
                      pdfs.append((idx,path.read_bytes()))
-                elif self.is_excel_file(file_path = path):
-                    exls.append((idx,path))
-                elif self.is_word_file(file_path = path):
+                elif self.is_excel_file(file_path = path) or self.is_word_file(file_path = path):
                     docs.append((idx,path))
                 elif self.is_image_file(file_path = path):
                     imgs.append((idx,path))
-                    
-        converted.extend(self._convert_docs_to_pdf(files = exls))
+
         converted.extend(self._convert_docs_to_pdf(files = docs))
         converted.extend(self.convert_images_to_pdf(files = imgs))
         pdfs.extend(converted)
@@ -63,22 +59,22 @@ class LibreOfficeConverter(BaseConverter):
     
         try:
             subprocess.run(command, check = True, capture_output = True)
-            # Видаляємо старі .xls, щоб не плуталися
+            # Deleting old xls
             for p in input_paths:
                 if p.exists(): p.unlink()
         except Exception as e:
             logger.error(f"❌ Batch XLS conversion error: {e}")
 
-    def _prepare_temp_files(self,*, chunk: list[tuple[int, Path]], tmp_path: Path) -> list[str]:
+    def _prepare_temp_files(self,*, chunk: list[tuple[int, Path]], tmp_path: Path) -> list[Path]:
         
         """Copy files in temporary directory with index prefix."""
 
-        paths = []
+        paths:Path = []
         for idx, original_path in chunk:
             temp_name = f"{idx}_{original_path.name}"
             temp_file_path = tmp_path / temp_name
             shutil.copy2(original_path, temp_file_path)
-            paths.append(str(temp_file_path))
+            paths.append(temp_file_path)
         return paths
    
     def _convert_chunk(self,*, chunk: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
@@ -89,28 +85,43 @@ class LibreOfficeConverter(BaseConverter):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
             
-            # 1. Prepare files (copy with index prefix)
-            all_tmp_paths = self._prepare_temp_files(chunk=chunk, tmp_path=tmp_path)
-            xls_to_convert = [p for p in all_tmp_paths if p.suffix.lower() == ".xls"]
+            # Prepare files (copy with index prefix)
+            all_tmp_paths:Path = self._prepare_temp_files(chunk = chunk, tmp_path = tmp_path)
+            xls_to_convert:list[Path] = [p for p in all_tmp_paths if p.suffix.lower() == ".xls"]
             if xls_to_convert:
-                self._run_libreoffice_format_conversion(xls_to_convert, tmp_path)
-                all_tmp_paths = [
-                    p.with_suffix(".xlsx") if p.suffix.lower()==".xls" else p for p in all_tmp_paths
-                ]
+                self._run_libreoffice_format_conversion(input_paths = xls_to_convert, out_dir = tmp_path)
+                all_tmp_paths = self._update_paths(all_paths = all_tmp_paths)
             for path in all_tmp_paths:
                 if path.suffix.lower() == ".xlsx":
-                    self._prepare_excel_scaling(path)
+                    self._prepare_excel_scaling(file_path = path)
             input_paths=[str(p) for p in all_tmp_paths]
-            # 2. Run the conversion
-            success = self._run_libreoffice_command(input_paths, tmp_path)
+
+            # Run the conversion
+            success = self._run_libreoffice_command(input_paths = input_paths, out_dir = tmp_path)
             
-            # 3. if command was successful, collect results
+            # if command was successful, collect results
             if success:
-                results = self._collect_results(chunk, tmp_path)
+                results = self._collect_results(chunk = chunk, tmp_path = tmp_path)
                 
         return results
     
-    def _prepare_excel_scaling(self, file_path: Path):
+    def _update_paths(self, *, all_paths: list[Path]) -> list[Path]:
+        updated = []
+        for p in all_paths:
+            if p.suffix.lower() == ".xls":
+                expected = p.with_suffix(".xlsx")
+                if expected.exists():
+                    updated.append(expected)
+                else:
+                    logger.warning(f"⚠️ Conversion failed for {p.name}, keeping as .xls")
+                    updated.append(p)
+            else:
+                # If it's .xlsx or any other file - just adding it back
+                updated.append(p)
+        return updated
+    
+    def _prepare_excel_scaling(self,*, file_path: Path):
+        
         """
         Configures Excel print settings to prevent table 'breaking'.
         """
@@ -140,13 +151,17 @@ class LibreOfficeConverter(BaseConverter):
                 sheet.page_margins.right = 0.15
                 sheet.page_margins.top = 0.2
                 sheet.page_margins.bottom = 0.2
-
-            wb.save(str(file_path))
-            wb.close()
+                wb.save(str(file_path))
         
         except Exception as e:
             logger.error(f"⚠️ Failed to scale Excel file {file_path.name}: {e}")
-
+        finally:
+            if wb:
+                try:
+                    wb.close()
+                except:
+                    pass
+            
     def _run_libreoffice_command(self,*, input_paths: list[str], out_dir: Path) -> bool:
         
         """Run the LibreOffice conversion command."""

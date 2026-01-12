@@ -54,10 +54,4 @@ class GUICallback:
         st.see(tk.END)
         st.config(state = "disabled")
 
-    def progress_bar_reset(self):
-        pb: ttk.Progressbar = self.main_frame.progress_bar
-        pl: tk.Label = self.main_frame.progress_label
-        pb.stop()
-        pb.config(mode='determinate', value = 0, maximum = 100)
-        pl.config(text = "Progress: Ready")
-        self.main_frame.update_idletasks()
+    

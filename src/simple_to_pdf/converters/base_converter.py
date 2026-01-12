@@ -39,6 +39,10 @@ class BaseConverter(ABC):
     def is_word_file(self,*, file_path: Path) -> bool:
         return file_path.suffix.lower() in {".doc", ".docx"}
     
+    def is_presentation_file(self,*, file_path: Path) -> bool:
+        return file_path.suffix.lower() in {".ppt", ".pptx"}
+
+    
     def convert_images_to_pdf(self,*, files: list[tuple[int,str]]) -> list[tuple[int, bytes]]:
         pdfs: list[tuple[int,bytes]] = []
         for idx,path_str in files:

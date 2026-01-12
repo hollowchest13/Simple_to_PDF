@@ -221,9 +221,9 @@ class PDFMergerGUI(tk.Tk):
 
         """Handler for Merge button click"""
 
+       
         # Preparing data (quick operation, doing in main thread)
         files = self.main_panel.load_from_listbox()
-        self.callback.progress_bar_reset()
 
         if not files:
             messagebox.showwarning("Warning", "No files to merge")
@@ -243,7 +243,9 @@ class PDFMergerGUI(tk.Tk):
     @ui_locker
     def _run_merge_worker(self, files, output_path):
         try:
-            
+            # Reset progress bar
+            self.main_panel.progress_bar_reset()
+
             # Give this safe wrapper to the engine
             self.merger.merge_to_pdf(
                 files = files, 
@@ -252,10 +254,11 @@ class PDFMergerGUI(tk.Tk):
             )
             self.after(0, lambda: self.callback.show_status_message(f"Merged PDF saved to:\n{output_path}"))
         except Exception as e:
-            self.after(0, self.callback.progress_bar_reset)
-            logger.error(f"❌ Error during merging: {e}", exc_info = True)
-            self.after(0, lambda: self.callback.show_status_message(f"❌ Error: Could not merge files: \n{e}"))
-        
+            err_msg = f"❌ Error: Could not merge files: \n{e}"
+            logger.error(err_msg, exc_info = True)
+            self.after(0, lambda: self.callback.show_status_message(err_msg))
+            if self.main_panel.progress_bar['mode'] == "indeterminate":
+                self.after(0,lambda: self.main_panel.set_progress_determinate())
         
     def prompt_pages_to_remove(self):
         input_path: str = get_files(filetypes = "*.pdf", multiple = False)
@@ -291,6 +294,7 @@ class PDFMergerGUI(tk.Tk):
         ).pack(pady = 12)
 
     def on_confirm(self, *, raw_input: str, input_path: str, win: tk.Toplevel) -> None:
+
         # Parse string input into a list of page indices
         pages = get_pages(raw = raw_input.strip())
 
@@ -335,16 +339,19 @@ class PDFMergerGUI(tk.Tk):
     @ui_locker
     def _run_page_extractor_worker(self, input_path, pages, output_path):
         try:
+             # Reset progress bar
+            self.main_panel.progress_bar_reset()
             self.page_extractor.extract_pages(input_path = input_path, pages_to_extract = pages, output_path = output_path, callback = self.callback.safe_callback)
             self.callback.show_status_message(f"✅ Extraction completed successfully! Extracted pages saved to:\n{output_path}")
 
         except Exception as e:
-            error_msg = f" Error during page extraction: {e}"
+            error_msg = f"❌ Error during page extraction: {e}"
             if isinstance(e, ValueError):
                 self.after(0, lambda: messagebox.showerror("Extraction Error", error_msg))
             else:   
-                self.callback.show_status_message(f"❌ {error_msg}")
-                logger.error(f"❌ Error during page extraction: {e}", exc_info = True)
+                self.callback.show_status_message(status_message = error_msg)
+                logger.error(error_msg, exc_info = True)
+                self.after(0,lambda: self.main_panel.progress_bar_reset())
             
 def run_gui():
     app = PDFMergerGUI()
