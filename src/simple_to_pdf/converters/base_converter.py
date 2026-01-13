@@ -9,6 +9,14 @@ logger = logging.getLogger(__name__)
 
 class BaseConverter(ABC):
 
+    SUPPORTED_FORMATS = {
+        "pdf": {".pdf"},
+        "excel": {".xls", ".xlsx"},
+        "word": {".doc", ".docx"},
+        "image": {".jpg", ".jpeg", ".png"},
+        "presentation": {".ppt", ".pptx"}
+    }
+
     def __init__(self,*, chunk_size: int = 10):
         self.chunk_size = chunk_size
 
@@ -27,20 +35,27 @@ class BaseConverter(ABC):
 
         pass
 
+    @classmethod
+    def get_supported_formats(cls):
+        all_exts = []
+        for exts in cls.SUPPORTED_FORMATS.values():
+            all_exts.extend(exts)
+        return tuple(all_exts)
+
     def is_pdf_file(self,*, file_path: Path) -> bool:
-        return file_path.suffix.lower() == ".pdf"
+        return file_path.suffix.lower() == self.SUPPORTED_FORMATS['pdf']
         
     def is_excel_file(self,*, file_path: Path) -> bool:
-         return file_path.suffix.lower() in {".xls", ".xlsx"}
+         return file_path.suffix.lower() in self.SUPPORTED_FORMATS['excel']
            
     def is_image_file(self,*, file_path: Path) -> bool:
-        return file_path.suffix.lower() in {".jpg", ".jpeg", ".png"}
+        return file_path.suffix.lower() in self.SUPPORTED_FORMATS['image']
     
     def is_word_file(self,*, file_path: Path) -> bool:
-        return file_path.suffix.lower() in {".doc", ".docx"}
+        return file_path.suffix.lower() in self.SUPPORTED_FORMATS['word']
     
     def is_presentation_file(self,*, file_path: Path) -> bool:
-        return file_path.suffix.lower() in {".ppt", ".pptx"}
+        return file_path.suffix.lower() in self.SUPPORTED_FORMATS['presentation']
 
     
     def convert_images_to_pdf(self,*, files: list[tuple[int,str]]) -> list[tuple[int, bytes]]:

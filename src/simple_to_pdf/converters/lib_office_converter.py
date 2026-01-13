@@ -29,7 +29,7 @@ class LibreOfficeConverter(BaseConverter):
             if path.exists():
                 if self.is_pdf_file(file_path = path):
                      pdfs.append((idx,path.read_bytes()))
-                elif self.is_excel_file(file_path = path) or self.is_word_file(file_path = path):
+                elif self.is_excel_file(file_path = path) or self.is_word_file(file_path = path) or self.is_presentation_file(file_path = path):
                     docs.append((idx,path))
                 elif self.is_image_file(file_path = path):
                     imgs.append((idx,path))

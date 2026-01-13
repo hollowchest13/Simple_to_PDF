@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk,messagebox
 from src.simple_to_pdf.app_gui.utils import clear_text_widget,get_files,get_selected_values,list_update,reselect_items,listbox_clear
-
+from src.simple_to_pdf.converters.base_converter import BaseConverter
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,6 +15,7 @@ class MainFrame(tk.Frame):
         
         # 2. set attributes and register in self.ui
         self._register_components(self._setup_layout())
+        
 
     def _setup_layout(self):
         raw_components = {}
@@ -106,10 +107,9 @@ class MainFrame(tk.Frame):
     def add_files(self):
 
         """Add files of selected types."""
-
+        
         # Supported list the extensions 
-        types = ("xls", "xlsx", "doc", "docx", "jpg", "png", "pdf")
-
+        types = BaseConverter.get_supported_formats()
         new_files_paths: list[str] =  list(get_files(filetypes = types, multiple = True))
 
         if not new_files_paths:
@@ -121,6 +121,7 @@ class MainFrame(tk.Frame):
         files_paths: list[str] = saved_files_paths + new_files_paths
         
         if files_paths: 
+            self.progress_bar_reset()
             list_update(files = files_paths,listbox = self.filebox)
     
     def remove_files(self) -> None:
@@ -142,6 +143,7 @@ class MainFrame(tk.Frame):
         for file in sel_files:
             if file in all_files:
                 all_files.remove(file)
+        self.progress_bar_reset()
         list_update(files = all_files,listbox = self.filebox)
        
     # Move selected items in the listbox
@@ -170,6 +172,7 @@ class MainFrame(tk.Frame):
                     items[i], items[i - 1] = items[i - 1], items[i]
                     sel_idxs[sel_idxs.index(i)] -= 1
 
+        self.progress_bar_reset()
         list_update(files = items,listbox = self.filebox)
         reselect_items(all_items = items, selected_values = selected_values,listbox = self.filebox)
 
@@ -180,5 +183,19 @@ class MainFrame(tk.Frame):
         pb.config(mode='determinate', value = 0, maximum = 100)
         pl.config(text = "Progress: Ready")
         self.update_idletasks()
+
+    def set_progress_determinate(self, max_value=100):
+        """
+        Safely switches the progress bar to determinate mode.
+        This method should be called via .after() if triggered from a worker thread.
+        """
+        if self.progress_bar.winfo_exists():
+            self.progress_bar.stop()  # Stop indeterminate animation
+            self.progress_bar.config(
+            mode = 'determinate',
+            value = 0,
+            maximum = max_value
+            )
+            self.update_idletasks() # Refresh the UI immediately
     
     
