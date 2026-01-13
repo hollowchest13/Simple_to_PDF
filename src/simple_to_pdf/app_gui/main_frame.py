@@ -12,20 +12,33 @@ class MainFrame(tk.Frame):
     def __init__(self, parent:tk.Tk):
         super().__init__(parent)
         self.ui: dict[str, tk.Widget] = {}
+        
+        # 2. set attributes and register in self.ui
+        self._register_components(self._setup_layout())
+
+    def _setup_layout(self):
+        raw_components = {}
+
+        status_area = tk.Frame(self)
+        status_area.pack(side = "bottom", fill = "x", padx = 12, pady = 4)
+
+        file_batch_area = tk.Frame(self)
+        file_batch_area.pack(fill = "both", expand = True, padx = 12, pady = 8)
+
+        progress_area = tk.Frame(self)
+        progress_area.pack(side = "top", fill = "x", padx = (12, 22), pady = (2, 16))
 
         # Create and register all components
         raw_components = {
-            'filebox': self._build_file_batch_area(),
-            'status_text': self._build_status_area(),
+            'filebox': self._setup_file_batch_area(mid = file_batch_area),
+            'status_text': self._setup_status_area(status_frame = status_area)
         }
-
+    
         # Then build progress bar and label because it returns two widgets
-        p_bar, p_label = self._build_progress_bar()
+        p_bar, p_label = self._setup_progress_bar_area(progress_frame = progress_area)
         raw_components['progress_bar'] = p_bar
         raw_components['progress_label'] = p_label
-
-        # 2. set attributes and register in self.ui
-        self._register_components(raw_components)
+        return raw_components
 
     def _register_components(self, components: dict[str, tk.Widget]):
 
@@ -35,12 +48,9 @@ class MainFrame(tk.Frame):
             setattr(self, key, widget)  
             self.ui[key] = widget       
 
-    def _build_file_batch_area(self) -> tk.Listbox:
+    def _setup_file_batch_area(self,mid:tk.Frame) -> tk.Listbox:
 
         """Builds the central Listbox area for displaying files."""
-
-        mid = tk.Frame(self)
-        mid.pack(fill = "both", expand = True, padx = 12, pady = 8)
         
         scrollbar = tk.Scrollbar(mid)
         scrollbar.pack(side = "right", fill = "y")
@@ -57,9 +67,7 @@ class MainFrame(tk.Frame):
         return listbox
 
 
-    def _build_status_area(self) -> tk.Text:
-        status_frame = tk.Frame(self)
-        status_frame.pack(fill = "x", padx = 12, pady = 4)
+    def _setup_status_area(self,status_frame: tk.Frame) -> tk.Text:
         
         scrollbar = tk.Scrollbar(status_frame)
         scrollbar.pack(side = "right", fill = "y")
@@ -73,9 +81,7 @@ class MainFrame(tk.Frame):
         scrollbar.config(command = text.yview)
         return text
     
-    def _build_progress_bar(self) -> tuple[ttk.Progressbar, tk.Label]:
-        progress_frame = tk.Frame(self)
-        progress_frame.pack(side = "top", fill = "x", padx = (12, 22), pady = (2, 16))
+    def _setup_progress_bar_area(self, progress_frame: tk.Frame) -> tuple[ttk.Progressbar, tk.Label]:
         
         label = tk.Label(progress_frame, text = "Progress:")
         label.pack(pady = 4)
@@ -166,5 +172,13 @@ class MainFrame(tk.Frame):
 
         list_update(files = items,listbox = self.filebox)
         reselect_items(all_items = items, selected_values = selected_values,listbox = self.filebox)
+
+    def progress_bar_reset(self):
+        pb: ttk.Progressbar = self.progress_bar
+        pl: tk.Label = self.progress_label
+        pb.stop()
+        pb.config(mode='determinate', value = 0, maximum = 100)
+        pl.config(text = "Progress: Ready")
+        self.update_idletasks()
     
     

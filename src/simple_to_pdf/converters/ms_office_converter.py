@@ -15,19 +15,22 @@ class MSOfficeConverter(BaseConverter):
         exls: list[tuple[int, Path]] = []
         wrds: list[tuple[int, Path]] = []
         imgs: list[tuple[int, Path]] = []
+        ppts: list[tuple[int, Path]] = []
         final_results: list[tuple[int, bytes]] = []
 
         for idx, path_str in files:
             path = Path(path_str)
             if not path.exists():
                 continue
-            if self.is_pdf_file(file_path=path):
+            if self.is_pdf_file(file_path = path):
                 final_results.append((idx, path.read_bytes()))
-            elif self.is_excel_file(file_path=path):
+            elif self.is_excel_file(file_path = path):
                 exls.append((idx, path))
-            elif self.is_word_file(file_path=path):
+            elif self.is_word_file(file_path = path):
                 wrds.append((idx, path))
-            elif self.is_image_file(file_path=path):
+            elif self.is_ppt_file(file_path = path):
+                ppts.append((idx,path))
+            elif self.is_image_file(file_path = path):
                 imgs.append((idx, path))
 
         if exls:
@@ -36,9 +39,15 @@ class MSOfficeConverter(BaseConverter):
             final_results.extend(self._convert_word_to_pdf(word_files = wrds))
         if imgs:
             final_results.extend(self.convert_images_to_pdf(files = imgs))
+        if ppts:
+            final_results.extend(self._convert_presentation_to_pdf(files = ppts))
 
-        final_results.sort(key=lambda x: x[0])
+        final_results.sort(key = lambda x: x[0])
         return final_results
+    
+    def _convert_presentation_to_pdf(self, *, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
+        result:list[tuple[int,bytes]]=[]
+        for chunk in self.make_chunks(files,self.chunk_size):
     
     def _convert_excel_to_pdf(self, *, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
         all_results = []

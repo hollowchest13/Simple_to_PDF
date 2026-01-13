@@ -97,13 +97,13 @@ def change_state(*, widgets_dict: dict[str, tk.Widget], state: str) -> None:
 def ui_locker(func):
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        self.toggle_ui(active = False) # Блокуємо (в головному потоці)
+        self.toggle_ui(active = False) # lock in main thread
         
         def run():
             try:
-                func(self, *args, **kwargs) # Виконуємо в фоні
+                func(self, *args, **kwargs) # run in background thread
             finally:
-                # Розблоковуємо через after, щоб повернутися в головний потік
+                # unlock in main thread
                 self.after(0, lambda: self.toggle_ui(active=True))
         
         threading.Thread(target = run, daemon = True).start()
