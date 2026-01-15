@@ -29,7 +29,7 @@ class MSOfficeConverter(BaseConverter):
                 exls.append((idx, path))
             elif self.is_word_file(file_path = path):
                 wrds.append((idx, path))
-            elif self.is_ppt_file(file_path = path):
+            elif self.is_presentation_file(file_path = path):
                 ppts.append((idx,path))
             elif self.is_image_file(file_path = path):
                 imgs.append((idx, path))
@@ -46,7 +46,7 @@ class MSOfficeConverter(BaseConverter):
         final_results.sort(key = lambda x: x[0])
         return final_results
     
-    def _convert_ppt_to_pdf(self, *, ppt_files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
+    def _convert_presentation_to_pdf(self, *, ppt_files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
         all_results = []
         # Розбиваємо на чанки, щоб не перевантажувати пам'ять
         for chunk in self.make_chunks(ppt_files, n = self.chunk_size):

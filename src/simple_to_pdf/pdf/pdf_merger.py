@@ -10,42 +10,58 @@ class PdfMerger:
     def __init__(self):
         self.converter = get_converter()
 
+
     def _get_pdfs_bytes(self, files: list[tuple[int, str]], callback = None) -> list[tuple[int, bytes]]:
 
         """Step 1: Convert files to PDF bytes."""
 
-        total_inputs = len(files)
-    
-        # Massege to GUI, about starting (progress bar is at 0, but text has changed)
+        # total_inputs = len(files)
 
+        # Massege to GUI, about starting (progress bar is at 0, but text has changed)
+        # stage = "Processing"
+        pdf_bytes:list[tuple[int,bytes]] = []
+        to_conversion:list[tuple[int,Path]] = []
+        total_inputs: int = len(files)
+
+        for idx, path_str in files:
+            path = Path(path_str)
+            if not path.exists():
+                continue
+            if self.converter.is_pdf_file(file_path = path):
+                pdf_bytes.append((idx, path.read_bytes()))
+            elif self.converter.needs_conversion(file_path = path):
+                to_conversion.append((idx,path))
+        total_to_conversion: int = len(to_conversion)
+
+        if not total_to_conversion:
+            return pdf_bytes
+        stage:str = "Conversion"
         if callback:
-            start_status_message = f"Starting conversion of {total_inputs} files to PDF..."
+           
+            start_status_message = f"Starting conversion of {total_to_conversion} files to PDF..."
             callback(
-                stage = "Conversion", 
+                stage = stage, 
                 progress_bar_mode = "indeterminate",
                 current = 0, 
+                total=total_inputs, 
+                status_message = start_status_message
+            )
+        converted: list[tuple[int,bytes]] = self.converter.convert_to_pdf(files = to_conversion)
+        total_converted: int = len(converted)
+        if callback:
+            start_status_message = f"✅ Converted {total_converted} of {total_to_conversion} files."
+            callback(
+                stage = stage, 
+                progress_bar_mode = "determinate",
+                current = 100, 
                 total = total_inputs, 
                 status_message = start_status_message
             )
+        pdf_bytes.extend(converted)
+        pdf_bytes.sort(key = lambda x: x[0])
+        return pdf_bytes
 
-        # Conversion process 
-        converted_pdfs = self.converter.convert_to_pdf(files = files)
-    
-        total_converted = len(converted_pdfs)
         
-        #  Update GUI after completion of the stage
-        if callback:
-            end_status_message = f"✅ Converted {total_converted} of {total_inputs} files."
-            logger.info(end_status_message)
-            callback(
-            stage = "Conversion", 
-            progress_bar_mode = "determinate",
-            current = total_inputs, # Full progress
-            total = total_inputs, 
-            status_message = end_status_message
-        )
-        return converted_pdfs
-    
     def merge_to_pdf(self, *, files: list[tuple[int, str]], output_path: str | Path, callback = None) -> Path:
 
         """Merges multiple files into a single PDF."""

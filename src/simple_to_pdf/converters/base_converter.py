@@ -56,7 +56,26 @@ class BaseConverter(ABC):
     
     def is_presentation_file(self,*, file_path: Path) -> bool:
         return file_path.suffix.lower() in self.SUPPORTED_FORMATS['presentation']
+    
+    from pathlib import Path
 
+    def needs_conversion(self,*,file_path: Path) -> bool:
+
+        """ Checks if the file extension is in SUPPORTED_FORMATS (excluding PDF)."""
+
+        # Create a flat set of all extensions that need conversion
+        # We skip 'pdf' during this process
+        convertible_exts = {
+            ext 
+            for category, exts in self.SUPPORTED_FORMATS.items() 
+            if category != "pdf" 
+            for ext in exts
+        }
+        # Get the extension of the input file and check
+        file_ext = file_path.suffix.lower()
+        return file_ext in convertible_exts
+
+    
     
     def convert_images_to_pdf(self,*, files: list[tuple[int,str]]) -> list[tuple[int, bytes]]:
         pdfs: list[tuple[int,bytes]] = []

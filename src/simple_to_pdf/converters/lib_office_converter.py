@@ -21,23 +21,18 @@ class LibreOfficeConverter(BaseConverter):
     def convert_to_pdf(self,*, files: list[tuple[int, str]]) -> list[tuple[int, bytes]]:
         docs: list[tuple[int, Path]] = []
         imgs: list[tuple[int, Path]] = []
-        pdfs: list[tuple[int, bytes]] = []
-        converted: list[tuple[int, bytes]] = []
+        final_result: list[tuple[int, bytes]] = []
 
-        for idx, path_str in files:
-            path = Path(path_str)
+        for idx, path in files:
             if path.exists():
-                if self.is_pdf_file(file_path = path):
-                     pdfs.append((idx,path.read_bytes()))
-                elif self.is_excel_file(file_path = path) or self.is_word_file(file_path = path) or self.is_presentation_file(file_path = path):
+                if self.is_excel_file(file_path = path) or self.is_word_file(file_path = path) or self.is_presentation_file(file_path = path):
                     docs.append((idx,path))
                 elif self.is_image_file(file_path = path):
                     imgs.append((idx,path))
 
-        converted.extend(self._convert_docs_to_pdf(files = docs))
-        converted.extend(self.convert_images_to_pdf(files = imgs))
-        pdfs.extend(converted)
-        return pdfs
+        final_result.extend(self._convert_docs_to_pdf(files = docs))
+        final_result.extend(self.convert_images_to_pdf(files = imgs))
+        return final_result
    
     def _convert_docs_to_pdf(self,*, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
        all_results = []
