@@ -2,32 +2,36 @@ from pathlib import Path
 import tempfile
 import win32com.client as win32
 import gc
-from src.simple_to_pdf.converters.base_converter import BaseConverter
+from src.simple_to_pdf.converters.img_converter import ImageConverter
 import logging
 
 logger = logging.getLogger(__name__)
 
-class MSOfficeConverter(BaseConverter):
+class MSOfficeConverter(ImageConverter):
+
+    SUPPORTED_FORMATS = {
+        "table": {".xls", ".xlsx"},
+        "document": {".doc", ".docx"},
+        "presentation": {".ppt", ".pptx"}
+    }
+
     def __init__(self, chunk_size: int = 30):  # Додай цей параметр
         super().__init__()
         self.chunk_size = chunk_size
 
-    def convert_to_pdf(self, *, files: list[tuple[int, str]]) -> list[tuple[int, bytes]]:
+    def convert_to_pdf(self, *, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
         exls: list[tuple[int, Path]] = []
         wrds: list[tuple[int, Path]] = []
         imgs: list[tuple[int, Path]] = []
         ppts: list[tuple[int, Path]] = []
         final_results: list[tuple[int, bytes]] = []
 
-        for idx, path_str in files:
-            path = Path(path_str)
+        for idx, path in files:
             if not path.exists():
                 continue
-            if self.is_pdf_file(file_path = path):
-                final_results.append((idx, path.read_bytes()))
-            elif self.is_excel_file(file_path = path):
+            if self.is_table_file(file_path = path):
                 exls.append((idx, path))
-            elif self.is_word_file(file_path = path):
+            elif self.is_document_file(file_path = path):
                 wrds.append((idx, path))
             elif self.is_presentation_file(file_path = path):
                 ppts.append((idx,path))
@@ -35,25 +39,24 @@ class MSOfficeConverter(BaseConverter):
                 imgs.append((idx, path))
 
         if exls:
-            final_results.extend(self._convert_excel_to_pdf(files = exls))
-        if wrds:
-            final_results.extend(self._convert_word_to_pdf(word_files = wrds))
-        if imgs:
+            final_results.extend(self._convert_tables_to_pdf(files = exls))
+        elif wrds:
+            final_results.extend(self._convert_documents_to_pdf(word_files = wrds))
+        elif imgs:
             final_results.extend(self.convert_images_to_pdf(files = imgs))
-        if ppts:
-            final_results.extend(self._convert_presentation_to_pdf(files = ppts))
+        elif ppts:
+            final_results.extend(self._convert_presentations_to_pdf(files = ppts))
 
-        final_results.sort(key = lambda x: x[0])
         return final_results
     
-    def _convert_presentation_to_pdf(self, *, ppt_files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
+    def _convert_presentations_to_pdf(self, *, ppt_files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
         all_results = []
         # Розбиваємо на чанки, щоб не перевантажувати пам'ять
         for chunk in self.make_chunks(ppt_files, n = self.chunk_size):
-            all_results.extend(self._process_ppt_chunk(chunk))
+            all_results.extend(self._process_presentation_chunk(chunk))
         return all_results
 
-    def _process_ppt_chunk(self,*, chunk: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
+    def _process_presentation_chunk(self,*, chunk: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
     
         results = []
         # Important for workers in background threads
@@ -107,15 +110,15 @@ class MSOfficeConverter(BaseConverter):
                 
         return pdf_bytes
     
-    def _convert_excel_to_pdf(self,*, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
+    def _convert_tables_to_pdf(self,*, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
         all_results = []
         # Split for chunks
         for chunk in self.make_chunks(files, n = self.chunk_size):
-            all_results.extend(self._process_excel_chunk(chunk))
+            all_results.extend(self._process_table_chunk(chunk))
         
         return all_results
 
-    def _process_excel_chunk(self, chunk: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
+    def _process_table_chunk(self, chunk: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
         results = []
         # Run Excel only for this chunk
         pythoncom.CoInitialize()
@@ -126,7 +129,7 @@ class MSOfficeConverter(BaseConverter):
             excel.Visible = False
             excel.DisplayAlerts = False # Disable alerts to prevent pop-ups
             for idx, f in chunk:
-                pdf_data = self._convert_single_excel(excel, f)
+                pdf_data = self._convert_single_table(excel, f)
                 if pdf_data:
                     results.append((idx, pdf_data))
         finally:
@@ -134,7 +137,7 @@ class MSOfficeConverter(BaseConverter):
         pythoncom.CoUninitialize()
         return results
     
-    def _prepare_excel_for_export(self, wb):
+    def _prepare_table_for_export(self, wb):
 
         """Setup printing options"""
 
@@ -149,7 +152,7 @@ class MSOfficeConverter(BaseConverter):
             sheet.PageSetup.FitToPagesWide = 1
             sheet.PageSetup.FitToPagesTall = False
 
-    def _convert_single_excel(self, excel_app, file_path: Path) -> bytes | None:
+    def _convert_single_table(self, excel_app, file_path: Path) -> bytes | None:
 
         """Converting a single file inside the opened application."""
 
@@ -162,7 +165,7 @@ class MSOfficeConverter(BaseConverter):
             
         try:
             wb = excel_app.Workbooks.Open(str(input_file), ReadOnly = True)
-            self._prepare_excel_for_export(wb = wb)
+            self._prepare_table_for_export(wb = wb)
             wb.ExportAsFixedFormat(0, str(temp_pdf_path))
             pdf_bytes = temp_pdf_path.read_bytes()
         except Exception as e:
@@ -175,16 +178,16 @@ class MSOfficeConverter(BaseConverter):
                 
         return pdf_bytes
                
-    def _convert_word_to_pdf(self, *, word_files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
+    def _convert_documents_to_pdf(self, *, word_files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
         all_results = []
         
         # Convert by chunks of 30 files
         for chunk in self.make_chunks(word_files, n=self.chunk_size):
-            all_results.extend(self._process_word_chunk(chunk))
+            all_results.extend(self._process_documents_chunk(chunk))
             
         return all_results
 
-    def _process_word_chunk(self, chunk: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
+    def _process_documents_chunk(self, chunk: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
         results = []
         pythoncom.CoInitialize()
         app_name: str = "Word.Application"

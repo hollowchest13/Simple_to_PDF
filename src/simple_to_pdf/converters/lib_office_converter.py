@@ -3,13 +3,19 @@ import tempfile
 import shutil
 import openpyxl
 from pathlib import Path
-from src.simple_to_pdf.converters.base_converter import BaseConverter
+from src.simple_to_pdf.converters.img_converter import ImageConverter
 
 import logging
 
 logger = logging.getLogger(__name__)
 
-class LibreOfficeConverter(BaseConverter):
+class LibreOfficeConverter(ImageConverter):
+
+    SUPPORTED_FORMATS = {
+        "table": {".xls", ".xlsx"},
+        "document": {".doc", ".docx"},
+        "presentation": {".ppt", ".pptx"}
+    }
     def __init__(self,*, soffice_path: str, chunk_size: int = 30):
         
         # Call constructor of base class, so it can initialize its data
@@ -18,17 +24,18 @@ class LibreOfficeConverter(BaseConverter):
         self.soffice_path = soffice_path
         self.chunk_size = chunk_size
     
-    def convert_to_pdf(self,*, files: list[tuple[int, str]]) -> list[tuple[int, bytes]]:
+    def convert_to_pdf(self,*, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
         docs: list[tuple[int, Path]] = []
         imgs: list[tuple[int, Path]] = []
         final_result: list[tuple[int, bytes]] = []
 
         for idx, path in files:
-            if path.exists():
-                if self.is_excel_file(file_path = path) or self.is_word_file(file_path = path) or self.is_presentation_file(file_path = path):
-                    docs.append((idx,path))
-                elif self.is_image_file(file_path = path):
-                    imgs.append((idx,path))
+            if not path.exists():
+                continue
+            if self.is_excel_file(file_path = path) or self.is_word_file(file_path = path) or self.is_presentation_file(file_path = path):
+                docs.append((idx,path))
+            elif self.is_image_file(file_path = path):
+                imgs.append((idx,path))
 
         final_result.extend(self._convert_docs_to_pdf(files = docs))
         final_result.extend(self.convert_images_to_pdf(files = imgs))
@@ -186,3 +193,14 @@ class LibreOfficeConverter(BaseConverter):
             else:
                 logger.warning(f"❌ File not found: {expected_pdf.name}")
         return chunk_results
+    
+    def get_excel_width(self,*, file_path: Path) -> dict[Path,int]:
+        
+        workbook = openpyxl.load_workbook(filename = file_path, data_only = True)
+        report: dict[str,int] = {}
+        for sheet_name in workbook.sheetnames:
+            sheet = workbook[sheet_name]
+            width = sheet.max_column if sheet.max_column else 0
+            report[sheet_name] = width
+        workbook.close
+        return report

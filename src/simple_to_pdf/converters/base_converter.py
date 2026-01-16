@@ -1,7 +1,4 @@
 from abc import ABC, abstractmethod
-from pathlib import Path
-from PIL import Image
-import io
 import openpyxl
 import logging
 
@@ -10,12 +7,8 @@ logger = logging.getLogger(__name__)
 class BaseConverter(ABC):
 
     SUPPORTED_FORMATS = {
-        "pdf": {".pdf"},
-        "excel": {".xls", ".xlsx"},
-        "word": {".doc", ".docx"},
-        "image": {".jpg", ".jpeg", ".png"},
-        "presentation": {".ppt", ".pptx"}
-    }
+        "pdf": {".pdf"}
+        }
 
     def __init__(self,*, chunk_size: int = 10):
         self.chunk_size = chunk_size
@@ -36,23 +29,31 @@ class BaseConverter(ABC):
         pass
 
     @classmethod
-    def get_supported_formats(cls):
-        all_exts = []
-        for exts in cls.SUPPORTED_FORMATS.values():
-            all_exts.extend(exts)
-        return tuple(all_exts)
-
+    def get_all_supported_formats(cls) -> dict:
+        """
+        Збирає словники по всьому ланцюжку спадкування.
+        Метод лежить у Base, але знає про формати нащадків через cls.
+        """
+        combined = {}
+        # reversed(cls.__mro__) іде від object -> BaseConverter -> Нащадок
+        for base in reversed(cls.__mro__):
+            # getattr(base, ...) шукає атрибут саме в поточному класі в циклі
+            formats = getattr(base, 'SUPPORTED_FORMATS', {})
+            # .update() замінює старі значення новими або додає нові ключі
+            combined.update(formats)
+        return combined
+    
     def is_pdf_file(self,*, file_path: Path) -> bool:
         return file_path.suffix.lower() == self.SUPPORTED_FORMATS['pdf']
         
     def is_excel_file(self,*, file_path: Path) -> bool:
-         return file_path.suffix.lower() in self.SUPPORTED_FORMATS['excel']
+         return file_path.suffix.lower() in self.SUPPORTED_FORMATS['table']
            
     def is_image_file(self,*, file_path: Path) -> bool:
         return file_path.suffix.lower() in self.SUPPORTED_FORMATS['image']
     
     def is_word_file(self,*, file_path: Path) -> bool:
-        return file_path.suffix.lower() in self.SUPPORTED_FORMATS['word']
+        return file_path.suffix.lower() in self.SUPPORTED_FORMATS['document']
     
     def is_presentation_file(self,*, file_path: Path) -> bool:
         return file_path.suffix.lower() in self.SUPPORTED_FORMATS['presentation']
@@ -74,32 +75,3 @@ class BaseConverter(ABC):
         # Get the extension of the input file and check
         file_ext = file_path.suffix.lower()
         return file_ext in convertible_exts
-
-    
-    
-    def convert_images_to_pdf(self,*, files: list[tuple[int,str]]) -> list[tuple[int, bytes]]:
-        pdfs: list[tuple[int,bytes]] = []
-        for idx,path_str in files:
-            path=Path(path_str)
-            if path.exists():
-                try:
-                    img = Image.open(path).convert("RGB")
-                    buffer = io.BytesIO()
-                    img.save(buffer,format = "PDF")
-                    pdfs.append((idx,buffer.getvalue()))
-                except Exception as e:
-                     logger.error(f"⚠️ [{idx}] Error: failed to convert image {path} ({e})", exc_info = True)
-            else:
-                logger.warning(f"⚠️ [{idx}] Skipped: {path} (not an image or missing)")
-        return pdfs
-    
-    def get_excel_width(self,*, file_path: Path) -> dict[Path,int]:
-        
-        workbook = openpyxl.load_workbook(filename = file_path, data_only = True)
-        report: dict[str,int] = {}
-        for sheet_name in workbook.sheetnames:
-            sheet = workbook[sheet_name]
-            width = sheet.max_column if sheet.max_column else 0
-            report[sheet_name] = width
-        workbook.close
-        return report

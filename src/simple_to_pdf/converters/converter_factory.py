@@ -52,7 +52,7 @@ class ConverterFactory:
                     logger.debug("All conversion engines failed on Windows.")
                     raise RuntimeError("Neither MS Office or LibreOffice converters are available.") from le
                     
-        else:
+        elif os_name == "Linux":
             # For Linux similarly: either path, or shutil.which, or error
             actual_soffice = soffice_path or shutil.which("soffice")
             if not actual_soffice:
@@ -62,3 +62,6 @@ class ConverterFactory:
             logger.info(f"Using LibreOffice on Linux: {actual_soffice}")    
             from src.simple_to_pdf.converters.lib_office_converter import LibreOfficeConverter
             return LibreOfficeConverter(soffice_path = actual_soffice, chunk_size = chunk_size)
+        else:
+             from src.simple_to_pdf.converters.img_converter import ImageConverter
+             return MSOfficeConverter(chunk_size = chunk_size)
