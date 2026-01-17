@@ -19,11 +19,11 @@ GITHUB_USER = "hollowchest13"
 GITHUB_REPO = "Simple_to_PDF"
 
 # Dynamically constructing URLs for easier modification.
-GITHUB_REPO_URL = f"https://github.com/{{GITHUB_USER}}/{{GITHUB_REPO}}"
+GITHUB_REPO_URL = f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}"
 
 # Path to the version.json file in the cli directory
-VERSION_JSON_URL = f"https://raw.githubusercontent.com/{{GITHUB_USER}}/{{GITHUB_REPO}}/main/cli/version.json"
-README_URL = f"{{GITHUB_REPO_URL}}#readme"
+VERSION_JSON_URL = f"{GITHUB_REPO_URL}/main/cli/version.json"
+README_URL = f"{GITHUB_REPO_URL}#readme"
 RELEASES_URL = f"{GITHUB_REPO_URL}/releases"
 
 class PDFMergerGUI(tk.Tk):
@@ -220,7 +220,6 @@ class PDFMergerGUI(tk.Tk):
     def on_merge(self):
 
         """Handler for Merge button click"""
-
        
         # Preparing data (quick operation, doing in main thread)
         files = self.main_panel.load_from_listbox()
@@ -252,7 +251,7 @@ class PDFMergerGUI(tk.Tk):
                 output_path = output_path, 
                 callback = self.callback.safe_callback # Use the wrapper
             )
-            self.after(0, lambda: self.callback.show_status_message(f"Merged PDF saved to:\n{output_path}"))
+            self.main_panel.after(0, lambda: self.callback.show_status_message(f"Merged PDF saved to:\n{output_path}"))
         except Exception as e:
             err_msg = f"❌ Error: Could not merge files: \n{e}"
             logger.error(err_msg, exc_info = True)

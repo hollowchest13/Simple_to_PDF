@@ -28,7 +28,7 @@ def get_files(*, filetypes: tuple[str, ...] = (".pdf",), multiple = True):
 
         """
         # Create mask for all extensions together: "*.pdf *.docx *.xlsx"
-        all_supported_mask = " ".join([f"*.{ext}" for ext in filetypes])
+        all_supported_mask = " ".join([f"*{ext}" for ext in filetypes])
         
         # Form the list of filters
         # First item — all supported types together
@@ -36,7 +36,7 @@ def get_files(*, filetypes: tuple[str, ...] = (".pdf",), multiple = True):
         
         # Then each type separately (for convenience)
         for ext in filetypes:
-            filters.append((f"{ext.upper()} files", f"*.{ext}"))
+            filters.append((f"{ext.upper()} files", f"*{ext}"))
 
         if multiple:
             return filedialog.askopenfilenames(filetypes = filters)
