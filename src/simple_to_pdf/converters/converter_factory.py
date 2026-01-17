@@ -6,8 +6,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 class ConverterFactory:
-   @staticmethod
-   def _find_soffice_windows() -> str:
+    def __init__(self):
+        self.chunk_size = 30
+
+    def _find_soffice_windows(self) -> str:
         
         """Strict search for LibreOffice on Windows."""
         
@@ -33,35 +35,61 @@ class ConverterFactory:
             "Please specify the path manually via the 'soffice_path' parameter."
         )
 
-   @staticmethod
-   def get_converter(chunk_size: int = 30, soffice_path: str = None):
-        os_name = platform.system()
+    def _get_libre_path(self,*,custom_path: str = None) -> str:
 
-        if os_name == "Windows":
-            try:
-                from src.simple_to_pdf.converters.ms_office_converter import MSOfficeConverter
-                return MSOfficeConverter(chunk_size = chunk_size)
-            except Exception as e:
-                logger.warning(f"MS Office converter unavailable: {e}. Trying fallback to LibreOffice.")
-                # if MS Office not found, we MUST find LibreOffice or fail with a clear error
-                try:
-                    actual_soffice = soffice_path or ConverterFactory._find_soffice_windows()
-                    from src.simple_to_pdf.converters.lib_office_converter import LibreOfficeConverter
-                    return LibreOfficeConverter(soffice_path = actual_soffice, chunk_size = chunk_size)
-                except Exception as le:
-                    logger.debug("All conversion engines failed on Windows.")
-                    raise RuntimeError("Neither MS Office or LibreOffice converters are available.") from le
-                    
-        elif os_name == "Linux":
-            # For Linux similarly: either path, or shutil.which, or error
-            actual_soffice = soffice_path or shutil.which("soffice")
-            if not actual_soffice:
-                logger.debug("LibreOffice ('soffice') conversion engine failed on Linux.")
-                raise FileNotFoundError("LibreOffice ('soffice') not found in Linux system.")
+        """Find path to LibreOffice depending on the system"""
+        
+        if custom_path:
+            return custom_path
+        
+        if platform.system() == "Windows":
+            return self._find_soffice_windows()
+        return shutil.which("soffice")
+       
+    def _try_ms_office(self,*,chunk_size: int):
+
+        "Encapsulates import and creation of MSOfficeConverter"
+
+        from src.simple_to_pdf.converters.ms_office_converter import MSOfficeConverter
+        return MSOfficeConverter(chunk_size = chunk_size)
+    
+    def _try_libre_office(self,*, chunk_size: int):
+
+        """Encapsulates import and creation of LibreOfficeConverter"""
+        
+        actual_path = self._get_libre_path()
+
+        if not actual_path:
+            raise FileNotFoundError("LibreOffice ('soffice') not found.")
             
-            logger.info(f"Using LibreOffice on Linux: {actual_soffice}")    
-            from src.simple_to_pdf.converters.lib_office_converter import LibreOfficeConverter
-            return LibreOfficeConverter(soffice_path = actual_soffice, chunk_size = chunk_size)
-        else:
-             from src.simple_to_pdf.converters.img_converter import ImageConverter
-             return MSOfficeConverter(chunk_size = chunk_size)
+        from src.simple_to_pdf.converters.lib_office_converter import LibreOfficeConverter
+        return LibreOfficeConverter(soffice_path = actual_path, chunk_size = chunk_size)
+    
+    def _try_image_only(self,*,chunk_size: int):
+
+        """Encapsulates import and creation of ImageConverter"""
+
+        from src.simple_to_pdf.converters.img_converter import ImageConverter
+        return ImageConverter(chunk_size = chunk_size)
+    
+    def get_converter(self):
+        os_name = platform.system()
+        logger.info(f"Operating System detected: {os_name}")
+        strategies = []
+        if os_name == "Windows":
+            strategies = [
+                lambda: self._try_ms_office(chunk_size = self.chunk_size),
+                lambda: self._try_libre_office(soffice_path = self.soffice_path, chunk_size = self.chunk_size)
+            ]
+        elif os_name == "Linux":
+            strategies = [
+                lambda: self._try_libre_office(soffice_path = self.soffice_path, chunk_size = self.chunk_size)
+            ]
+        strategies.append(lambda: self._try_image_only(chunk_size = self.chunk_size))
+        for strategy in strategies:
+            try:
+                converter = strategy()
+                logger.info(f"Using converter: {converter.__class__.__name__}")
+                return converter
+            except Exception as e:
+                logger.warning(f"Converter initialization failed: {e}", exc_info = True)

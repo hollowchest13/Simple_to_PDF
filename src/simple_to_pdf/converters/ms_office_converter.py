@@ -1,6 +1,7 @@
 from pathlib import Path
 import tempfile
 import win32com.client as win32
+import pythoncom
 import gc
 from src.simple_to_pdf.converters.img_converter import ImageConverter
 import logging
@@ -15,7 +16,7 @@ class MSOfficeConverter(ImageConverter):
         "presentation": {".ppt", ".pptx"}
     }
 
-    def __init__(self, chunk_size: int = 30):  # Додай цей параметр
+    def __init__(self, chunk_size: int = 30):  
         super().__init__()
         self.chunk_size = chunk_size
 

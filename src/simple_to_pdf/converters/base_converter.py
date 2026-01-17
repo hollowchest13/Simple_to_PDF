@@ -1,10 +1,10 @@
-from abc import ABC, abstractmethod
-import openpyxl
+from pathlib import Path
+
 import logging
 
 logger = logging.getLogger(__name__)
 
-class BaseConverter(ABC):
+class BaseConverter():
 
     SUPPORTED_FORMATS = {
         "pdf": {".pdf"}
@@ -21,30 +21,23 @@ class BaseConverter(ABC):
         for i in range(0, len(lst), n):
             yield lst[i:i + n]
     
-    @abstractmethod
-    def convert_to_pdf(self,*, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
-
-        """Abstract method that all classes must implement"""
-
-        pass
-
     @classmethod
-    def get_all_supported_formats(cls) -> dict:
+    def get_supported_formats(cls) -> dict:
         """
-        Збирає словники по всьому ланцюжку спадкування.
-        Метод лежить у Base, але знає про формати нащадків через cls.
+        Gets dictionaries from all inheritance chain.
+        Method lies in Base, but knows about descendants' formats via cls.
         """
         combined = {}
         # reversed(cls.__mro__) іде від object -> BaseConverter -> Нащадок
         for base in reversed(cls.__mro__):
-            # getattr(base, ...) шукає атрибут саме в поточному класі в циклі
+            # getattr(base, ...) finds SUPPORTED_FORMATS in each class
             formats = getattr(base, 'SUPPORTED_FORMATS', {})
-            # .update() замінює старі значення новими або додає нові ключі
+            # .update() replaces old values with new ones or adds new keys
             combined.update(formats)
         return combined
     
     def is_pdf_file(self,*, file_path: Path) -> bool:
-        return file_path.suffix.lower() == self.SUPPORTED_FORMATS['pdf']
+        return file_path.suffix.lower() in self.SUPPORTED_FORMATS['pdf']
         
     def is_excel_file(self,*, file_path: Path) -> bool:
          return file_path.suffix.lower() in self.SUPPORTED_FORMATS['table']
