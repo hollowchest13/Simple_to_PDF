@@ -36,21 +36,32 @@ class BaseConverter():
             combined.update(formats)
         return combined
     
-    def is_pdf_file(self,*, file_path: Path) -> bool:
-        return file_path.suffix.lower() in self.SUPPORTED_FORMATS['pdf']
+    def _check_extension(self,*, file_path: Path, category: str) -> bool:
+
+        """Check Extensions."""
+
+        # 1. Get FULL dictionary of formats (with all descendants)
+        all_formats = self.get_supported_formats()
         
+        # 2. Use .get() to avoid KeyError if category doesn't exist
+        allowed_exts = all_formats.get(category, set())
+        return file_path.suffix.lower() in allowed_exts
+    
+    def is_pdf_file(self,*, file_path: Path) -> bool:
+        return self._check_extension(file_path = file_path, category = "pdf")
+
     def is_excel_file(self,*, file_path: Path) -> bool:
-         return file_path.suffix.lower() in self.SUPPORTED_FORMATS['table']
+         return self._check_extension(file_path = file_path, category = "table")
            
     def is_image_file(self,*, file_path: Path) -> bool:
-        return file_path.suffix.lower() in self.SUPPORTED_FORMATS['image']
+        return self._check_extension(file_path = file_path, category = "image")
     
     def is_word_file(self,*, file_path: Path) -> bool:
-        return file_path.suffix.lower() in self.SUPPORTED_FORMATS['document']
+        return self._check_extension(file_path = file_path, category = "document")
     
     def is_presentation_file(self,*, file_path: Path) -> bool:
-        return file_path.suffix.lower() in self.SUPPORTED_FORMATS['presentation']
-    
+        return self._check_extension(file_path = file_path, category = "presentation")
+
     from pathlib import Path
 
     def needs_conversion(self,*,file_path: Path) -> bool:
