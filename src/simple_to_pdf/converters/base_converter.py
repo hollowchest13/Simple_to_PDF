@@ -50,19 +50,17 @@ class BaseConverter():
     def is_pdf_file(self,*, file_path: Path) -> bool:
         return self._check_extension(file_path = file_path, category = "pdf")
 
-    def is_excel_file(self,*, file_path: Path) -> bool:
+    def is_table_file(self,*, file_path: Path) -> bool:
          return self._check_extension(file_path = file_path, category = "table")
            
     def is_image_file(self,*, file_path: Path) -> bool:
         return self._check_extension(file_path = file_path, category = "image")
     
-    def is_word_file(self,*, file_path: Path) -> bool:
+    def is_document_file(self,*, file_path: Path) -> bool:
         return self._check_extension(file_path = file_path, category = "document")
     
     def is_presentation_file(self,*, file_path: Path) -> bool:
         return self._check_extension(file_path = file_path, category = "presentation")
-
-    from pathlib import Path
 
     def needs_conversion(self,*,file_path: Path) -> bool:
 

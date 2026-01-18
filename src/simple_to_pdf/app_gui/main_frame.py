@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk,messagebox
 from src.simple_to_pdf.app_gui.utils import clear_text_widget,get_files,get_selected_values,list_update,reselect_items,listbox_clear
-from src.simple_to_pdf.converters.base_converter import BaseConverter
+from src.simple_to_pdf.pdf.pdf_merger import PdfMerger
 import logging
 
 logger = logging.getLogger(__name__)
@@ -9,12 +9,13 @@ logger = logging.getLogger(__name__)
 class MainFrame(tk.Frame):
 
 
-    def __init__(self, parent:tk.Tk):
+    def __init__(self, parent:tk.Tk, merger: PdfMerger):
         super().__init__(parent)
         self.ui: dict[str, tk.Widget] = {}
         
         # 2. set attributes and register in self.ui
         self._register_components(self._setup_layout())
+        self.merger = merger
         
 
     def _setup_layout(self):
@@ -103,13 +104,39 @@ class MainFrame(tk.Frame):
             result.append((i, text))
         return result
     
+
+    def _get_formatted_filetypes(self) -> list[tuple[str, str]]:
+
+        """Converts a dictionary of formats into a list of tuples for the dialog window."""
+
+        supported_dict = self.merger.converter.get_supported_formats()
+        formatted_types = []
+
+        # 1.Get all extensions for the general filter
+        all_exts = []
+        for exts in supported_dict.values():
+            all_exts.extend(exts)
+
+        # Create a string like "*.pdf *.docx *.png"
+        all_pattern = " ".join([f"*{e}" for e in all_exts])
+        formatted_types.append(("All supported files", all_pattern))
+
+        # 2. Add each category separately
+        # Sort keys so PDF is always at the top or logically first
+        for category in sorted(supported_dict.keys()):
+            exts = supported_dict[category]
+            label = f"{category.capitalize()} files"
+            pattern = " ".join([f"*{e}" for e in exts])
+            formatted_types.append((label, pattern))
+        return formatted_types
+    
      # Add files to the listbox
     def add_files(self):
 
         """Add files of selected types."""
         
         # Supported list the extensions 
-        types = BaseConverter.get_supported_formats()
+        types = self._get_formatted_filetypes()
         new_files_paths: list[str] =  list(get_files(filetypes = types, multiple = True))
 
         if not new_files_paths:

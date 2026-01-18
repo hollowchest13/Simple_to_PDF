@@ -11,10 +11,10 @@ logger = logging.getLogger(__name__)
 class MSOfficeConverter(ImageConverter):
 
     SUPPORTED_FORMATS = {
-        "table": {".xls", ".xlsx"},
-        "document": {".doc", ".docx"},
-        "presentation": {".ppt", ".pptx"}
-    }
+        "table": {".xls", ".xlsx", ".xlsm", ".xlsb"},
+        "document": {".doc", ".docx", ".docm", ".rtf", ".txt"},
+        "presentation": {".ppt", ".pptx", ".pptm", ".pps", ".ppsx"}
+        }
 
     def __init__(self, chunk_size: int = 30):  
         super().__init__()
@@ -41,11 +41,11 @@ class MSOfficeConverter(ImageConverter):
 
         if exls:
             final_results.extend(self._convert_tables_to_pdf(files = exls))
-        elif wrds:
+        if wrds:
             final_results.extend(self._convert_documents_to_pdf(word_files = wrds))
-        elif imgs:
+        if imgs:
             final_results.extend(self.convert_images_to_pdf(files = imgs))
-        elif ppts:
+        if ppts:
             final_results.extend(self._convert_presentations_to_pdf(files = ppts))
 
         return final_results
@@ -152,6 +152,7 @@ class MSOfficeConverter(ImageConverter):
             sheet.PageSetup.Zoom = False
             sheet.PageSetup.FitToPagesWide = 1
             sheet.PageSetup.FitToPagesTall = False
+            sheet.PageSetup.FitToPagesTall = False
 
     def _convert_single_table(self, excel_app, file_path: Path) -> bytes | None:
 
@@ -170,7 +171,7 @@ class MSOfficeConverter(ImageConverter):
             wb.ExportAsFixedFormat(0, str(temp_pdf_path))
             pdf_bytes = temp_pdf_path.read_bytes()
         except Exception as e:
-            logger.error(f"❌  Excel file error in {file_path.name}: {e}", exc_info = True)
+            logger.error(f"❌  Table file error in {file_path.name}: {e}", exc_info = True)
         finally:
             if wb:
                 wb.Close(SaveChanges=False)
@@ -203,7 +204,7 @@ class MSOfficeConverter(ImageConverter):
                     results.append((idx, pdf_data))
         finally:
             self._safe_release_com_object(obj = word,app_name = app_name)
-        pythoncom.CoUnInitialize()
+        pythoncom.CoUninitialize()
         return results
 
     def _convert_single_document(self, word_app, file_path: Path) -> bytes | None:
@@ -226,7 +227,7 @@ class MSOfficeConverter(ImageConverter):
             pdf_bytes = temp_pdf_path.read_bytes()
             
         except Exception as e:
-            logger.error(f"❌  Word file error in {file_path.name}: {e}", exc_info = True)
+            logger.error(f"❌  Document file error in {file_path.name}: {e}", exc_info = True)
         finally:
             if doc:
                 doc.Close(SaveChanges=0) # 0 = wdDoNotSaveChanges

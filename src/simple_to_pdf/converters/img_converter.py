@@ -10,7 +10,11 @@ logger = logging.getLogger(__name__)
 class ImageConverter(BaseConverter):
 
     SUPPORTED_FORMATS = {
-        "image": {".jpg", ".jpeg", ".png"}
+        "image": {
+        ".jpg", ".jpeg", ".png", ".bmp", ".gif", 
+        ".tiff", ".tif", ".webp", ".ppm", ".icns", 
+        ".ico", ".jfif", ".jpe", ".tga"
+    }
     }
 
     def __init__(self,*, chunk_size: int = 30):  
