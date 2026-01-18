@@ -11,15 +11,17 @@ class ImageConverter(BaseConverter):
 
     SUPPORTED_FORMATS = {
         "image": {
-        ".jpg", ".jpeg", ".png", ".bmp", ".gif", 
-        ".tiff", ".tif", ".webp", ".ppm", ".icns", 
-        ".ico", ".jfif", ".jpe", ".tga"
-    }
+            ".jpg", ".jpeg", ".png", ".bmp", ".gif", 
+            ".tiff", ".tif", ".webp", ".ppm", ".icns", 
+            ".ico", ".jfif", ".jpe", ".tga"
+        }
     }
 
     def __init__(self,*, chunk_size: int = 30):  
         super().__init__()
         self.chunk_size = chunk_size
+        self.SUPPORTED_FORMATS = self.get_supported_formats()
+
     
     def convert_images_to_pdf(self,*, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
        all_results = []
@@ -29,19 +31,59 @@ class ImageConverter(BaseConverter):
             all_results.extend(self._convert_images_chunk(chunk = chunk))
        return all_results
 
-    def _convert_images_chunk(self,*, chunk: list[tuple[int,str]]) -> list[tuple[int, bytes]]:
-        pdfs: list[tuple[int,bytes]] = []
-        for idx,path_str in chunk:
-            path = Path(path_str)
-            if path.exists():
-                try:
-                    with Image.open(path).convert("RGB") as img:
-                        rgb_img = img.convert("RGB")
+    def _convert_images_chunk(self,*, chunk: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
+        """
+        Converts a chunk of images to PDF format.
+        Handles multi-page images (TIFF/GIF) and ensures RGB compatibility.
+        """
+        pdfs: list[tuple[int, bytes]] = []
+    
+        for idx, path in chunk:
+            # Ensure path is a Path object
+            path = Path(path)
+        
+            if not path.exists():
+                logger.warning(f"⚠️ [{idx}] File not found: {path}")
+                continue
+
+            try:
+                # Open the image file
+                with Image.open(path) as img:
+                    # Force loading to prevent 'closed file' errors during save
+                    img.load() 
+                
+                    frames = []
+                    # Check for multiple frames (e.g., multi-page TIFFs or animated GIFs)
+                    n_frames = getattr(img, "n_frames", 1)
+                
+                    for i in range(n_frames):
+                        img.seek(i)
+                        # Convert to RGB mode: mandatory for PDF format (removes alpha channel)
+                        # Using .copy() ensures data remains in memory after file is closed
+                        frame_rgb = img.convert("RGB")
+                        frames.append(frame_rgb)
+
+                    if frames:
                         buffer = io.BytesIO()
-                        rgb_img.save(buffer, format="PDF")
-                        pdfs.append((idx, buffer.getvalue()))
-                except Exception as e:
-                         logger.error(f"⚠️ [{idx}] Error: failed to convert image {path} ({e})", exc_info = True)
-            else:
-                logger.warning(f"⚠️ [{idx}] Skipped: {path} (not an image or missing)")
+                        # Save the first frame as PDF and append others as additional pages
+                        frames[0].save(
+                            buffer,
+                            format="PDF",
+                            save_all=True,
+                            append_images=frames[1:] if len(frames) > 1 else []
+                        )
+                    
+                        pdf_data = buffer.getvalue()
+                        if pdf_data:
+                            pdfs.append((idx, pdf_data))
+                    
+                        buffer.close()
+                
+                    # Explicitly close each frame object to free memory
+                    for f in frames:
+                        f.close()
+
+            except Exception as e:
+                logger.error(f"❌ [{idx}] Image conversion error for {path.name}: {e}", exc_info=True)
+            
         return pdfs

@@ -24,6 +24,7 @@ class LibreOfficeConverter(ImageConverter):
         
         self.soffice_path = soffice_path
         self.chunk_size = chunk_size
+        self.SUPPORTED_FORMATS = self.get_supported_formats()
     
     def convert_to_pdf(self,*, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
         docs: list[tuple[int, Path]] = []

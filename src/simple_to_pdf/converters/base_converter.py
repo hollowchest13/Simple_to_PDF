@@ -10,7 +10,7 @@ class BaseConverter():
         "pdf": {".pdf"}
         }
 
-    def __init__(self,*, chunk_size: int = 10):
+    def __init__(self,*, chunk_size: int = 30):
         self.chunk_size = chunk_size
 
     @staticmethod
