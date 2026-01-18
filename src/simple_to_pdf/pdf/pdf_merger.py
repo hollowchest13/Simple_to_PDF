@@ -26,6 +26,7 @@ class PdfMerger:
 
         for idx, path_str in files:
             path = Path(path_str)
+            print(f"CHECK: {path.name} | Needs conversion? {self.converter.needs_conversion(file_path=path)}")
             if not path.exists():
                 continue
             if self.converter.is_pdf_file(file_path = path):
