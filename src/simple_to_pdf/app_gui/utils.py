@@ -21,26 +21,29 @@ def get_text(*,file_name: str,file_path: str) -> str:
             messagebox.showerror("Error", err_msg)
             return
 
-def get_files(*, filetypes: tuple[str, ...] = (".pdf",), multiple = True):
+def get_files(*, filetypes: list | tuple = (".pdf",), multiple = True):
+    """
+    Open dialog window to select files.
+    Supports both raw extensions: (".pdf", ".docx") 
+    and ready-made filters: [("Label", "*.ext"), ...]
+    """
 
-        """
-        Open dialog window to select files.
-
-        """
-        # Create mask for all extensions together: "*.pdf *.docx *.xlsx"
+    # Check if filetypes is already in (label, pattern) format
+    if isinstance(filetypes, list) and len(filetypes) > 0 and isinstance(filetypes[0], tuple):
+        filters = filetypes
+    else:
+        # Logic for raw extensions
         all_supported_mask = " ".join([f"*{ext}" for ext in filetypes])
-        
-        # Form the list of filters
-        # First item — all supported types together
         filters = [("All supported types", all_supported_mask)]
         
-        # Then each type separately (for convenience)
         for ext in filetypes:
-            filters.append((f"{ext.upper()} files", f"*{ext}"))
+            if isinstance(ext, str):
+                filters.append((f"{ext.upper()} files", f"*{ext}"))
+    if multiple:
+        return filedialog.askopenfilenames(filetypes = filters)
 
-        if multiple:
-            return filedialog.askopenfilenames(filetypes = filters)
-        return filedialog.askopenfilename(filetypes = [("PDF files", "*.pdf")])
+    # For single selection, it's better to use dynamic filters instead of hardcoded PDF
+    return filedialog.askopenfilename(filetypes = filters)
 
 def get_pages(*, raw: str) -> list[int] | None:
         pages: list[int] = []

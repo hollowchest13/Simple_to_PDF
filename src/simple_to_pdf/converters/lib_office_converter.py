@@ -12,10 +12,11 @@ logger = logging.getLogger(__name__)
 class LibreOfficeConverter(ImageConverter):
 
     SUPPORTED_FORMATS = {
-        "table": {".xls", ".xlsx"},
-        "document": {".doc", ".docx"},
-        "presentation": {".ppt", ".pptx"}
+        "table": {".xlsx", ".xlsm", ".xltx", ".xltm", ".xls", ".xlsb", ".ods", ".csv"},
+        "document": {".doc", ".docx", ".odt", ".rtf", ".txt"},
+        "presentation": {".ppt", ".pptx", ".odp"}
     }
+
     def __init__(self,*, soffice_path: str, chunk_size: int = 30):
         
         # Call constructor of base class, so it can initialize its data
@@ -32,7 +33,7 @@ class LibreOfficeConverter(ImageConverter):
         for idx, path in files:
             if not path.exists():
                 continue
-            if self.is_excel_file(file_path = path) or self.is_word_file(file_path = path) or self.is_presentation_file(file_path = path):
+            if self.is_table_file(file_path = path) or self.is_document_file(file_path = path) or self.is_presentation_file(file_path = path):
                 docs.append((idx,path))
             elif self.is_image_file(file_path = path):
                 imgs.append((idx,path))
@@ -51,7 +52,7 @@ class LibreOfficeConverter(ImageConverter):
     
     def _run_libreoffice_format_conversion(self,*, input_paths: list[Path], out_dir: Path):
 
-        """xls to xlsx conversion"""
+        """all tables to xlsx conversion"""
 
         command = [
             self.soffice_path, '--headless', 
@@ -84,15 +85,20 @@ class LibreOfficeConverter(ImageConverter):
         """Logic for processing one chunk of files."""
         
         results = []
+        to_convert_exts:list[str] = [".xls", ".xlsb", ".ods", ".csv"]
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
             
             # Prepare files (copy with index prefix)
             all_tmp_paths:Path = self._prepare_temp_files(chunk = chunk, tmp_path = tmp_path)
-            xls_to_convert:list[Path] = [p for p in all_tmp_paths if p.suffix.lower() == ".xls"]
+           # Відбираємо ВСЕ, що потребує конвертації в .xlsx перед роботою openpyxl
+            xls_to_convert: list[Path] = [
+            p for p in all_tmp_paths 
+            if p.suffix.lower() in to_convert_exts
+            ]
             if xls_to_convert:
                 self._run_libreoffice_format_conversion(input_paths = xls_to_convert, out_dir = tmp_path)
-                all_tmp_paths = self._update_paths(all_paths = all_tmp_paths)
+                all_tmp_paths = self._update_paths(all_paths = all_tmp_paths, to_check_exts = to_convert_exts)
             for path in all_tmp_paths:
                 if path.suffix.lower() == ".xlsx":
                     self._prepare_excel_scaling(file_path = path)
@@ -107,15 +113,15 @@ class LibreOfficeConverter(ImageConverter):
                 
         return results
     
-    def _update_paths(self, *, all_paths: list[Path]) -> list[Path]:
+    def _update_paths(self, *, all_paths: list[Path],to_check_exts:list[str]) -> list[Path]:
         updated = []
         for p in all_paths:
-            if p.suffix.lower() == ".xls":
+            if p.suffix.lower() in to_check_exts:
                 expected = p.with_suffix(".xlsx")
                 if expected.exists():
                     updated.append(expected)
                 else:
-                    logger.warning(f"⚠️ Conversion failed for {p.name}, keeping as .xls")
+                    logger.warning(f"⚠️ Conversion failed for {p.name}, keeping as {p.suffix}")
                     updated.append(p)
             else:
                 # If it's .xlsx or any other file - just adding it back

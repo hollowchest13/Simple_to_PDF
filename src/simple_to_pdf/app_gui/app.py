@@ -30,22 +30,25 @@ class PDFMergerGUI(tk.Tk):
 
     def __init__(self):
         super().__init__()
-        self.init_panels()
         self._init_services()
+        self.init_panels()
+        self.init_connections()
         self.build_gui
         handlers = self._setup_handlers()
         self.list_controls: dict[str,tk.Widget] = self.btns_panel.init_btns(callbacks = handlers)
         self.build_gui(parent = self,callbacks = handlers)
     
     def init_panels(self) -> None:
-        self.main_panel: MainFrame = MainFrame(parent = self)
+        self.main_panel: MainFrame = MainFrame(parent = self, merger = self.merger)
         self.btns_panel: ListControlsFrame = ListControlsFrame (parent = self)
+
+    def init_connections(self) -> None:
+        self.callback = GUICallback(main_frame = self.main_panel)
     
     def _init_services(self) -> None:
 
         """Initialize internal logic and services."""
 
-        self.callback = GUICallback(main_frame = self.main_panel)
         self.merger = PdfMerger()
         self.page_extractor = PageExtractor()
 
@@ -84,7 +87,7 @@ class PDFMergerGUI(tk.Tk):
         # Window settings
         parent.title("Simple to PDF - PDF Merger")
         parent.geometry("700x400")
-        self.menu = self._build_menu_bar(parent = parent,callbacks = callbacks)
+        self.menu = self._build_menu_bar(parent = parent, callbacks = callbacks)
         self.main_panel.pack(side = "left", fill = "both", expand = True)
         self.btns_panel.pack(side = "right", fill = "both")
 
