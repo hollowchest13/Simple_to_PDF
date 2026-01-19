@@ -92,7 +92,7 @@ class LibreOfficeConverter(ImageConverter):
             
             # Prepare files (copy with index prefix)
             all_tmp_paths:Path = self._prepare_temp_files(chunk = chunk, tmp_path = tmp_path)
-           # Відбираємо ВСЕ, що потребує конвертації в .xlsx перед роботою openpyxl
+           # Selecting EVERYTHING that requires conversion to .xlsx before running openpyxl
             xls_to_convert: list[Path] = [
             p for p in all_tmp_paths 
             if p.suffix.lower() in to_convert_exts

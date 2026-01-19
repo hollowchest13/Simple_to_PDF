@@ -2,7 +2,10 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox,scrolledtext
 import webbrowser
+import platform
 import requests
+import subprocess
+import os
 from src.simple_to_pdf.pdf import PdfMerger, PageExtractor
 from src.simple_to_pdf.app_gui.main_frame import MainFrame
 from src.simple_to_pdf.app_gui.list_controls_frame import ListControlsFrame
@@ -115,9 +118,43 @@ class PDFMergerGUI(tk.Tk):
         help_menu.add_command(label = "How to use", command = callbacks['documentation'])
         help_menu.add_command(label = "About", command = callbacks['about'])
         help_menu.add_command(label = "Check updates", command = callbacks['update'])
+        help_menu.add_command(label= "Show logs", command = callbacks['logs'])
         menu_bar.add_cascade(label = "Help", menu = help_menu)
 
         return menu_bar
+    
+    def open_log_folder(self):
+        # "The path must match the one in setup_logger
+        log_dir = Path.home() / ".simple_to_pdf" / "logs"
+    
+        # "If the folder in home doesn't exist, checking the local folde
+        if not log_dir.exists():
+            log_dir = Path("logs")
+    
+        # If the folder still doesn't exist (the program hasn't written anything yet)
+        if not log_dir.exists():
+            log_dir.mkdir(parents=True, exist_ok=True)
+
+        path_str = str(log_dir.absolute())
+
+        if platform.system() == "Windows":
+            # "Opening Windows Explorer" (або "Opens Windows Explorer")
+            os.startfile(path_str)
+        elif platform.system() == "Linux":
+            # for Linux
+            clean_env = os.environ.copy()
+             # Removing variables related to my Python
+            clean_env.pop("PYTHONPATH", None)
+            clean_env.pop("PYTHONHOME", None)
+            try:
+                subprocess.Popen(
+                    ["xdg-open",path_str],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+                )
+            except Exception as e:
+                logger.error(f":Could not open folder: {e}")
+            
 
     def _setup_handlers(self) -> dict:
 
@@ -133,7 +170,8 @@ class PDFMergerGUI(tk.Tk):
             'documentation':self.show_documentation,
             'update': self.check_updates,
             'about': self.show_about,
-            'clear_status': self.main_panel.clear_status_text
+            'clear_status': self.main_panel.clear_status_text,
+            'logs': self.open_log_folder
             }
         return handlers
     
