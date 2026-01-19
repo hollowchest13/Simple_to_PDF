@@ -57,13 +57,13 @@ class ConverterFactory:
 
         """Encapsulates import and creation of LibreOfficeConverter"""
         
-        actual_path = self._get_libre_path()
+        self.soffice_path = self._get_libre_path()
 
-        if not actual_path:
+        if not self.soffice_path:
             raise FileNotFoundError("LibreOffice ('soffice') not found.")
             
         from src.simple_to_pdf.converters.lib_office_converter import LibreOfficeConverter
-        return LibreOfficeConverter(soffice_path = actual_path, chunk_size = chunk_size)
+        return LibreOfficeConverter(soffice_path = self.soffice_path, chunk_size = chunk_size)
     
     def _try_image_only(self,*,chunk_size: int):
 
@@ -79,11 +79,11 @@ class ConverterFactory:
         if os_name == "Windows":
             strategies = [
                 lambda: self._try_ms_office(chunk_size = self.chunk_size),
-                lambda: self._try_libre_office(soffice_path = self.soffice_path, chunk_size = self.chunk_size)
+                lambda: self._try_libre_office(chunk_size = self.chunk_size)
             ]
         elif os_name == "Linux":
             strategies = [
-                lambda: self._try_libre_office(soffice_path = self.soffice_path, chunk_size = self.chunk_size)
+                lambda: self._try_libre_office(chunk_size = self.chunk_size)
             ]
         strategies.append(lambda: self._try_image_only(chunk_size = self.chunk_size))
         for strategy in strategies:
