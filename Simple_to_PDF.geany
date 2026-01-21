@@ -27,18 +27,14 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=4
+current_page=0
 FILE_NAME_0=9673;Python;0;EUTF-8;1;1;0;%2Fhome%2Fhollowchest13%2FStudying%2FPython%2FSimple_to_PDF%2Fsrc%2Fsimple_to_pdf%2Fapp_gui%2Fapp.py;0;4
-FILE_NAME_1=299;Python;0;EUTF-8;1;1;0;%2Fhome%2Fhollowchest13%2FStudying%2FPython%2FSimple_to_PDF%2Fsrc%2Fsimple_to_pdf%2Fcli%2F__main__.py;0;4
-FILE_NAME_2=508;Python;0;EUTF-8;1;1;0;%2Fhome%2Fhollowchest13%2FStudying%2FPython%2FSimple_to_PDF%2Fsrc%2Fsimple_to_pdf%2Fapp_gui%2Fmain_frame.py;0;4
-FILE_NAME_3=0;Python;0;EUTF-8;1;1;0;%2Fhome%2Fhollowchest13%2FStudying%2FPython%2FSimple_to_PDF%2Fsrc%2Fsimple_to_pdf%2Fconverters%2Fconverter_factory.py;0;4
-FILE_NAME_4=2437;Python;0;EUTF-8;1;1;0;%2Fhome%2Fhollowchest13%2FStudying%2FPython%2FSimple_to_PDF%2Fsrc%2Fsimple_to_pdf%2Fconverters%2Flib_office_converter.py;0;4
 
 [VTE]
-last_dir=/home/hollowchest13/Studying/Python/Simple_to_PDF/src/simple_to_pdf/converters
+last_dir=/home/hollowchest13/Studying/Python/Simple_to_PDF/src/simple_to_pdf/app_gui
 
 [prjorg]
-expanded_paths=/home/hollowchest13/Studying/Python/Simple_to_PDF/src/simple_to_pdf/app_gui;/home/hollowchest13/Studying/Python/Simple_to_PDF/src/simple_to_pdf/cli;/home/hollowchest13/Studying/Python/Simple_to_PDF/src/simple_to_pdf/converters;
+expanded_paths=
 source_patterns=*.c;*.C;*.cpp;*.cxx;*.c++;*.cc;*.m;
 header_patterns=*.h;*.H;*.hpp;*.hxx;*.h++;*.hh;
 ignored_dirs_patterns=.*;CVS;
