@@ -20,7 +20,7 @@ class MainFrame(tk.Frame):
         super().__init__(parent)
         self.ui: dict[str, tk.Widget] = {}
 
-        # 2. set attributes and register in self.ui
+        # Set attributes and register in self.ui
         self._register_components(self._setup_layout())
         self.merger = merger
 

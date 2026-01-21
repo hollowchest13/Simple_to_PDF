@@ -79,7 +79,7 @@ class LibreOfficeConverter(ImageConverter):
                 if p.exists():
                     p.unlink()
         except Exception as e:
-            logger.error(f"❌ Batch XLS conversion error: {e}")
+            logger.error(f"❌ Batch XLS conversion error: {e}",exc_info=True)
 
     def _prepare_temp_files(
         self, *, chunk: list[tuple[int, Path]], tmp_path: Path
