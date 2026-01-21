@@ -13,7 +13,7 @@ def setup_logger():
     except Exception:
         # If there are no permissions to create a folder in home, creating it next to the code
         log_dir = Path("logs")
-        log_dir.mkdir(exist_ok=True)
+        log_dir.mkdir(parents=True, exist_ok=True)
 
     log_file = log_dir / "app.log"
 

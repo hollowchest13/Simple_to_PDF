@@ -447,5 +447,8 @@ class PDFMergerGUI(tk.Tk):
 
 
 def run_gui():
-    app = PDFMergerGUI()
-    app.mainloop()
+    try:
+        app = PDFMergerGUI()
+        app.mainloop()
+    except Exception as e:
+        logger.fatal(f"❌ GUI Runtime error: {e}", exc_info=True)

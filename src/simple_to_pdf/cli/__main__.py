@@ -1,5 +1,9 @@
+import logging
+
 from src.simple_to_pdf.app_gui.app import run_gui
 from src.simple_to_pdf.cli.logger import setup_logger
+
+logger = logging.getLogger(__name__)
 
 
 def main():

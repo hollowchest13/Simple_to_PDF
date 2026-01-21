@@ -20,7 +20,7 @@ class MainFrame(tk.Frame):
         super().__init__(parent)
         self.ui: dict[str, tk.Widget] = {}
 
-        # 2. set attributes and register in self.ui
+        # Set attributes and register in self.ui
         self._register_components(self._setup_layout())
         self.merger = merger
 
@@ -187,13 +187,16 @@ class MainFrame(tk.Frame):
             )
             if answer:
                 listbox_clear(listbox=self.filebox)
+                self.reset_progress_widgets()
                 return
 
-        for file in sel_files:
-            if file in all_files:
-                all_files.remove(file)
+        remaining_files = [f for f in all_files if f not in set(sel_files)]
+        list_update(files=remaining_files, listbox=self.filebox)
+        self.reset_progress_widgets()
+
+    def reset_progress_widgets(self):
         self.progress_bar_reset()
-        list_update(files=all_files, listbox=self.filebox)
+        self.clear_status_text()
 
     # Move selected items in the listbox
     def move_on_listbox(self, *, direction: str):

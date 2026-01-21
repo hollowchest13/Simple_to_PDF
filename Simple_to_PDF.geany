@@ -28,12 +28,13 @@ long_line_column=72
 
 [files]
 current_page=0
+FILE_NAME_0=9673;Python;0;EUTF-8;1;1;0;%2Fhome%2Fhollowchest13%2FStudying%2FPython%2FSimple_to_PDF%2Fsrc%2Fsimple_to_pdf%2Fapp_gui%2Fapp.py;0;4
 
 [VTE]
-last_dir=/home/hollowchest13
+last_dir=/home/hollowchest13/Studying/Python/Simple_to_PDF/src/simple_to_pdf/app_gui
 
 [prjorg]
-expanded_paths=/home/hollowchest13/Studying/Python/Simple_to_PDF/src/simple_to_pdf/app_gui;/home/hollowchest13/Studying/Python/Simple_to_PDF/src/simple_to_pdf/cli;
+expanded_paths=
 source_patterns=*.c;*.C;*.cpp;*.cxx;*.c++;*.cc;*.m;
 header_patterns=*.h;*.H;*.hpp;*.hxx;*.h++;*.hh;
 ignored_dirs_patterns=.*;CVS;
