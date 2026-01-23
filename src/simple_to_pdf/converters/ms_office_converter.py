@@ -51,7 +51,7 @@ class MSOfficeConverter(ImageConverter):
         if imgs:
             final_results.extend(self.convert_images_to_pdf(files=imgs))
         if ppts:
-            final_results.extend(self._convert_presentations_to_pdf(files=ppts))
+            final_results.extend(self._convert_presentations_to_pdf(ppt_files=ppts))
 
         return final_results
 
@@ -61,11 +61,11 @@ class MSOfficeConverter(ImageConverter):
         all_results = []
         # Розбиваємо на чанки, щоб не перевантажувати пам'ять
         for chunk in self.make_chunks(ppt_files, n=self.chunk_size):
-            all_results.extend(self._process_presentation_chunk(chunk))
+            all_results.extend(self._process_presentation_chunk(chunk=chunk))
         return all_results
 
     def _process_presentation_chunk(
-        self, *, chunk: list[tuple[int, Path]]
+        self,*, chunk: list[tuple[int, Path]]
     ) -> list[tuple[int, bytes]]:
         results = []
         # Important for workers in background threads
