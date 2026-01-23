@@ -162,7 +162,7 @@ class PDFMergerGUI(tk.Tk):
                     stderr=subprocess.DEVNULL,
                 )
             except Exception as e:
-                logger.error(f":Could not open folder: {e}")
+                logger.error(f":Could not open folder: {e}", exc_info=True)
 
     def _setup_handlers(self) -> dict:
         """Create a dictionary of commands to pass to the Builder."""

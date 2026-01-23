@@ -59,7 +59,7 @@ class MSOfficeConverter(ImageConverter):
         self, *, ppt_files: list[tuple[int, Path]]
     ) -> list[tuple[int, bytes]]:
         all_results = []
-        # Розбиваємо на чанки, щоб не перевантажувати пам'ять
+        # Splitting into chunks to avoid overloading memory
         for chunk in self.make_chunks(ppt_files, n=self.chunk_size):
             all_results.extend(self._process_presentation_chunk(chunk))
         return all_results
