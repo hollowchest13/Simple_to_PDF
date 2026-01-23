@@ -5,6 +5,7 @@ from pathlib import Path
 from pypdf import PdfReader, PdfWriter
 
 from src.simple_to_pdf.converters import ConverterFactory
+from src.simple_to_pdf.converters.models import ConversionResult
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class PdfMerger:
         stage: str = "Conversion"
         if callback:
             start_status_message = (
-                f"Starting conversion of {total_to_conversion} files to PDF..."
+                f"Starting conversion of {total_to_conversion} files from {total_inputs} added to PDF..."
             )
             callback(
                 stage=stage,
@@ -49,22 +50,35 @@ class PdfMerger:
                 total=total_inputs,
                 status_message=start_status_message,
             )
-        converted: list[tuple[int, bytes]] = self.converter.convert_to_pdf(
+        conversion_res:ConversionResult = self.converter.convert_to_pdf(
             files=to_conversion
         )
-        total_converted: int = len(converted)
+        total_success = len(conversion_res.successful)
+        status_message = f"✅ Converted {total_success} of {total_to_conversion} files."
+        
+        if len(conversion_res.failed) > 0:
+           failed_objs = [p for _, p in conversion_res.failed]
+
+           if failed_objs:
+           # Format each line: extract only .name if it's a Path object. Add a hasattr check in case bytes are passed again
+            formatted_failed = [
+            f"- ❌ Conversion failed: {obj.name if hasattr(obj, 'name') else 'Unknown File'}" 
+             for obj in failed_objs
+            ]
+    
+            # Add header and file list
+            status_message += "\n" + "\n".join(formatted_failed)
+
         if callback:
-            start_status_message = (
-                f"✅ Converted {total_converted} of {total_to_conversion} files."
-            )
+            
             callback(
                 stage=stage,
                 progress_bar_mode="determinate",
                 current=100,
                 total=total_inputs,
-                status_message=start_status_message,
+                status_message=status_message,
             )
-        pdf_bytes.extend(converted)
+        pdf_bytes.extend(conversion_res.successful)
         pdf_bytes.sort(key=lambda x: x[0])
         return pdf_bytes
 

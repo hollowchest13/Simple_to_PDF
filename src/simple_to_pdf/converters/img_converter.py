@@ -5,7 +5,7 @@ from pathlib import Path
 from PIL import Image
 
 from src.simple_to_pdf.converters.base_converter import BaseConverter
-
+from src.simple_to_pdf.converters.models import ConversionResult
 logger = logging.getLogger(__name__)
 
 
@@ -36,21 +36,23 @@ class ImageConverter(BaseConverter):
 
     def convert_images_to_pdf(
         self, *, files: list[tuple[int, Path]]
-    ) -> list[tuple[int, bytes]]:
-        all_results = []
+    ) -> ConversionResult:
+        all_results:ConversionResult=ConversionResult()
         for chunk in self.make_chunks(files, self.chunk_size):
             # Call the new method that handles one chunk
-            all_results.extend(self._convert_images_chunk(chunk=chunk))
+            chunk_res: ConversionResult = self._convert_images_chunk(chunk=chunk)
+            all_results.successful.extend(chunk_res.successful)
+            all_results.failed.extend(chunk_res.failed)
         return all_results
 
     def _convert_images_chunk(
         self, *, chunk: list[tuple[int, Path]]
-    ) -> list[tuple[int, bytes]]:
+    ) -> ConversionResult:
         """
         Converts a chunk of images to PDF format.
         Handles multi-page images (TIFF/GIF) and ensures RGB compatibility.
         """
-        pdfs: list[tuple[int, bytes]] = []
+        res: ConversionResult = ConversionResult()
 
         for idx, path in chunk:
             # Ensure path is a Path object
@@ -58,6 +60,7 @@ class ImageConverter(BaseConverter):
 
             if not path.exists():
                 logger.warning(f"⚠️ [{idx}] File not found: {path}")
+                res.failed.append((idx,path))
                 continue
 
             try:
@@ -89,7 +92,7 @@ class ImageConverter(BaseConverter):
 
                         pdf_data = buffer.getvalue()
                         if pdf_data:
-                            pdfs.append((idx, pdf_data))
+                            res.successful.append((idx, pdf_data))
 
                         buffer.close()
 
@@ -98,9 +101,10 @@ class ImageConverter(BaseConverter):
                         f.close()
 
             except Exception as e:
+                res.failed.append((idx,path))
                 logger.error(
                     f"❌ [{idx}] Image conversion error for {path.name}: {e}",
                     exc_info=True,
                 )
 
-        return pdfs
+        return res
