@@ -38,6 +38,8 @@ RELEASES_URL = f"{GITHUB_REPO_URL}/releases"
 
 
 class PDFMergerGUI(tk.Tk):
+    APP_NAME: str = "Simple2PDF"
+
     def __init__(self):
         super().__init__()
         self._init_services()
@@ -96,7 +98,7 @@ class PDFMergerGUI(tk.Tk):
         """Builds the main GUI layout and returns a dictionary of widgets."""
 
         # Window settings
-        parent.title("Simple to PDF - PDF Merger")
+        parent.title(f"{self.APP_NAME} - PDF Merger")
         parent.geometry("700x400")
         self.menu = self._build_menu_bar(parent=parent, callbacks=callbacks)
         self.main_panel.pack(side="left", fill="both", expand=True)
@@ -229,7 +231,7 @@ class PDFMergerGUI(tk.Tk):
         about_window.grab_set()
 
         # App Title & Version
-        tk.Label(about_window, text=GITHUB_REPO, font=("Arial", 12, "bold")).pack(
+        tk.Label(about_window, text=self.APP_NAME, font=("Arial", 12, "bold")).pack(
             pady=15
         )
         tk.Label(about_window, text=f"Application Version: {APP_VERSION}").pack()

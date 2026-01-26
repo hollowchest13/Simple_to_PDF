@@ -1,9 +1,9 @@
-# Simple to PDF 📄🚀
+# Simple2PDF 📄🚀
 
 ## 📄 License
 MIT License
 
-**Simple to PDF** is a lightweight and powerful Python-based tool designed for batch converting office documents, spreadsheets, presentations, and images into a single, cohesive PDF file. It also features a built-in PDF utility for extracting specific page ranges from existing documents.
+**Simple2PDF** is a lightweight and powerful Python-based tool designed for batch converting office documents, spreadsheets, presentations, and images into a single, cohesive PDF file. It also features a built-in PDF utility for extracting specific page ranges from existing documents.
 
 The project is built for **Linux (Mint, Ubuntu)** and **Windows** users, providing an intuitive Graphical User Interface (GUI) for complex file processing.
 
@@ -18,7 +18,7 @@ The project is built for **Linux (Mint, Ubuntu)** and **Windows** users, providi
 <p align="center">
   <img src="screenshots/extract.png" alt="PDF Extraction" width="600">
   <br>
-  <em>Process of extracting images from PDF</em>
+  <em>Process of extracting pages from PDF</em>
 </p>
 
 ## 📌 Project Status
@@ -32,6 +32,23 @@ The project is built for **Linux (Mint, Ubuntu)** and **Windows** users, providi
 - MS Office automation works only on Windows
 
 ---
+
+## 🛠 Requirements
+- **PPython 3.10+ (developed and tested on Python 3.12.3)**
+The application requires one of the following to be installed for documents conversion:
+
+1. **Microsoft Office** (Windows only) — detected automatically via COM interface.
+2. **LibreOffice** (Windows or Linux) — Used as a fallback or primary engine.
+
+ **Note for Windows users:** If you prefer LibreOffice, please ensure it is installed in one of the default locations:
+ `C:\Program Files\LibreOffice`
+ `C:\Program Files (x86)\LibreOffice`
+---
+
+### 🔄 Conversion Priority (Windows)
+The application follows a specific priority order when choosing a conversion engine:
+1. **Microsoft Office** (Primary) — If detected, it will be used by default for the best formatting accuracy.
+2. **LibreOffice** (Fallback) — If Microsoft Office is not found, the app will automatically look for LibreOffice in the default system paths.
 
 ## ✨ Key Features
 - **Batch Conversion:** Merge dozens of different file types into one PDF with a single click.
@@ -64,6 +81,7 @@ If no office suite is detected, the app functions as a robust image-to-PDF conve
 ---
 
 ## 🚀 Installation & Usage
+
 
 ### Clone the Repository
 ```bash
@@ -113,6 +131,8 @@ venv\Scripts\activate
 ```bash
 pip install -r requirements.txt
 ```
+---
+
 ## 🛠 Technology Stack
 Simple2PDF utilizes a multi-layered approach to handle various file formats efficiently:
 
@@ -137,6 +157,8 @@ Python 3.12.3: The heart of the application.
 ### 📝 Reliability & Maintenance
 **Logging:** Comprehensive system logs with automated rotation to ensure the app remains easy to debug without wasting disk space.
 
+---
+
 ## 📬 Support
 If you encounter any issues or the program behaves unexpectedly:
 
@@ -147,3 +169,9 @@ If you encounter any issues or the program behaves unexpectedly:
 Send the logs along with a short description of what happened to:
 
 📧 **hollowchest13@gmail.com**
+
+---
+
+## 🤝 Contributing
+Issues and pull requests are welcome.
+Please open an issue before proposing major changes.
