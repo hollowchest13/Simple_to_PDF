@@ -34,7 +34,7 @@ FILE_NAME_0=9673;Python;0;EUTF-8;1;1;0;%2Fhome%2Fhollowchest13%2FStudying%2FPyth
 last_dir=/home/hollowchest13/Studying/Python/Simple_to_PDF/src/simple_to_pdf/app_gui
 
 [prjorg]
-expanded_paths=
+expanded_paths=/home/hollowchest13/Studying/Python/Simple_to_PDF/src/simple_to_pdf/app_gui;
 source_patterns=*.c;*.C;*.cpp;*.cxx;*.c++;*.cc;*.m;
 header_patterns=*.h;*.H;*.hpp;*.hxx;*.h++;*.hh;
 ignored_dirs_patterns=.*;CVS;
