@@ -247,6 +247,19 @@ class PDFMergerGUI(tk.Tk):
         )
         tk.Label(about_window, text=desc, justify="center", pady=10).pack()
 
+        # Disclaimer (Відмова від гарантій)
+        disclaimer = (
+            "Provided 'as is' without any warranties.\n"
+            "The author is not responsible for any data loss."
+        )
+        tk.Label(
+            about_window,
+            text=disclaimer,
+            font=("Arial", 7, "italic"),
+            fg="gray",
+            justify="center",
+        ).pack(pady=5)
+
         # Footer
         tk.Label(
             about_window, text="© 2026 All Rights Reserved", font=("Arial", 8)
@@ -341,7 +354,7 @@ class PDFMergerGUI(tk.Tk):
                 self.after(0, lambda: self.main_panel.set_progress_determinate())
 
     def prompt_pages_to_remove(self):
-        input_path: str = get_files(filetypes="*.pdf", multiple=False)
+        input_path: str = get_files(filetypes=[("PDF files", "*.pdf")], multiple=False)
 
         if not input_path:
             return

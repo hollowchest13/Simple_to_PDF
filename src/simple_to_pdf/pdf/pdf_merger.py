@@ -122,7 +122,6 @@ class PdfMerger:
                         progress_bar_mode="determinate",
                         current=i,
                         total=total,
-                        filename=f"Document {current_filename}",
                     )
             except Exception as e:
                 failed += 1
