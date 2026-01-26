@@ -8,8 +8,18 @@ MIT License
 The project is built for **Linux (Mint, Ubuntu)** and **Windows** users, providing an intuitive Graphical User Interface (GUI) for complex file processing.
 
 ## 🖼 Screenshots
-![Main Window](screenshots/main.png)
-![PDF Extraction](screenshots/extract.png)
+
+<p align="center">
+  <img src="screenshots/main.png" alt="Main Window" width="600">
+  <br>
+  <em>Main application window interface</em>
+</p>
+
+<p align="center">
+  <img src="screenshots/extract.png" alt="PDF Extraction" width="600">
+  <br>
+  <em>Process of extracting images from PDF</em>
+</p>
 
 ## 📌 Project Status
 🟡 Actively developed  
