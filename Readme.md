@@ -41,8 +41,8 @@ The application requires one of the following to be installed for documents conv
 2. **LibreOffice** (Windows or Linux) — Used as a fallback or primary engine.
 
 **Note for Windows users:** If you prefer LibreOffice, please ensure it is installed in one of the default locations:
- `C:\Program Files\LibreOffice`
- `C:\Program Files (x86)\LibreOffice`
+ C:\Program Files\LibreOffice
+ C:\Program Files (x86)\LibreOffice
 ---
 
 ### 🔄 Conversion Priority (Windows)
