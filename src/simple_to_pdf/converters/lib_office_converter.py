@@ -3,10 +3,11 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from src.simple_to_pdf.converters.models import ConversionResult
+
 import openpyxl
 
 from src.simple_to_pdf.converters.img_converter import ImageConverter
+from src.simple_to_pdf.converters.models import ConversionResult
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ class LibreOfficeConverter(ImageConverter):
     ) -> list[tuple[int, bytes]]:
         docs: list[tuple[int, Path]] = []
         imgs: list[tuple[int, Path]] = []
-        final_result: ConversionResult =  ConversionResult()
+        final_result: ConversionResult = ConversionResult()
 
         for idx, path in files:
             if not path.exists():
@@ -51,7 +52,7 @@ class LibreOfficeConverter(ImageConverter):
         final_result.failed.extend(docs_res.failed)
         final_result.successful.extend(img_res.successful)
         final_result.failed.extend(img_res.failed)
-        
+
         return final_result
 
     def _convert_docs_to_pdf(
@@ -101,9 +102,7 @@ class LibreOfficeConverter(ImageConverter):
             paths.append(temp_file_path)
         return paths
 
-    def _convert_chunk(
-        self, *, chunk: list[tuple[int, Path]]
-    ) -> ConversionResult:
+    def _convert_chunk(self, *, chunk: list[tuple[int, Path]]) -> ConversionResult:
         """Logic for processing one chunk of files."""
 
         to_convert_exts: list[str] = [".xls", ".xlsb", ".ods", ".csv"]
@@ -137,9 +136,11 @@ class LibreOfficeConverter(ImageConverter):
 
             # if command was successful, collect results
             if success:
-                results:ConversionResult = self._collect_results(chunk=chunk, tmp_path=tmp_path)
+                chunk_res: ConversionResult = self._collect_results(
+                    chunk=chunk, tmp_path=tmp_path
+                )
 
-        return results
+        return chunk_res
 
     def _update_paths(
         self, *, all_paths: list[Path], to_check_exts: list[str]
@@ -222,7 +223,7 @@ class LibreOfficeConverter(ImageConverter):
 
     def _collect_results(
         self, *, chunk: list[tuple[int, Path]], tmp_path: Path
-    ) ->ConversionResult:
+    ) -> ConversionResult:
         """Reads created PDF files into memory."""
         res = ConversionResult()
         for idx, original_path in chunk:

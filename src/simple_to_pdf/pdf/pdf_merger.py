@@ -40,9 +40,7 @@ class PdfMerger:
             return pdf_bytes
         stage: str = "Conversion"
         if callback:
-            start_status_message = (
-                f"Starting conversion of {total_to_conversion} files from {total_inputs} added to PDF..."
-            )
+            start_status_message = f"Starting conversion of {total_to_conversion} files from {total_inputs} added to PDF..."
             callback(
                 stage=stage,
                 progress_bar_mode="indeterminate",
@@ -50,27 +48,26 @@ class PdfMerger:
                 total=total_inputs,
                 status_message=start_status_message,
             )
-        conversion_res:ConversionResult = self.converter.convert_to_pdf(
+        conversion_res: ConversionResult = self.converter.convert_to_pdf(
             files=to_conversion
         )
         total_success = len(conversion_res.successful)
         status_message = f"✅ Converted {total_success} of {total_to_conversion} files."
-        
-        if len(conversion_res.failed) > 0:
-           failed_objs = [p for _, p in conversion_res.failed]
 
-           if failed_objs:
-           # Format each line: extract only .name if it's a Path object. Add a hasattr check in case bytes are passed again
-            formatted_failed = [
-            f"- ❌ Conversion failed: {obj.name if hasattr(obj, 'name') else 'Unknown File'}" 
-             for obj in failed_objs
-            ]
-    
-            # Add header and file list
-            status_message += "\n" + "\n".join(formatted_failed)
+        if len(conversion_res.failed) > 0:
+            failed_objs = [p for _, p in conversion_res.failed]
+
+            if failed_objs:
+                # Format each line: extract only .name if it's a Path object. Add a hasattr check in case bytes are passed again
+                formatted_failed = [
+                    f"- ❌ Conversion failed: {obj.name if hasattr(obj, 'name') else 'Unknown File'}"
+                    for obj in failed_objs
+                ]
+
+                # Add header and file list
+                status_message += "\n" + "\n".join(formatted_failed)
 
         if callback:
-            
             callback(
                 stage=stage,
                 progress_bar_mode="determinate",
@@ -145,7 +142,7 @@ class PdfMerger:
                 progress_bar_mode="determinate",
                 current=total,
                 total=total,
-                status_message=f"Merged {total - failed}; Failed: {failed}",
+                status_message=f"Merged: {total - failed}; Failed: {failed}",
             )
         # 3. Saving the result
         output_file = Path(output_path).resolve()
