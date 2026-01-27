@@ -134,26 +134,34 @@ class PDFMergerGUI(tk.Tk):
         menu_bar.add_cascade(label="Help", menu=help_menu)
 
         return menu_bar
+    
+
+    def _get_log_dir(self)->Path:
+
+        """Returns the existing log directory path using fallback logic."""
+        
+        log_dir:Path = Path.home()/self.APP_NAME/"logs"
+        
+        if not log_dir.exists():
+            if hasattr(sys,'frozen'):
+                base_path=Path(sys.executable).parent
+            else:
+                base_path=Path(__file__).resolve().parent
+            
+            log_dir=base_path/"logs"
+            
+        try:
+            log_dir.mkdir(parents=True,exist_ok=True)
+        except Exception as e:
+            logger.error(f"Could not create log directory: {e}")
+        return log_dir
 
     def open_log_folder(self):
-        """
-        Opens the directory containing application logs in the system file explorer.
-        Handles environment variable conflicts caused by PyInstaller on Linux.
-        """
-        # 1. Primary path in the user's home directory
-        log_dir = Path.home() / ".simple_to_pdf" / "logs"
 
-        # 2. Fallback to a local 'logs' folder if the home directory path doesn't exist
-        if not log_dir.exists():
-            log_dir = Path("logs")
-
-        # 3. Create the folder if it doesn't exist yet (to avoid errors when opening)
-        if not log_dir.exists():
-            try:
-                log_dir.mkdir(parents=True, exist_ok=True)
-            except Exception as e:
-                logger.error(f"Could not create log directory: {e}")
-                return
+        """Handles the OS-specific logic to open the file explorer."""
+        
+        # Primary path in the user's home directory
+        log_dir = self._get_log_dir()
 
         # Get the absolute path as a string
         path_str = str(log_dir.absolute())
@@ -186,12 +194,6 @@ class PDFMergerGUI(tk.Tk):
             except Exception as e:
                 logger.error(f"Could not open folder on Linux: {e}", exc_info=True)
 
-        elif platform.system() == "Darwin":  # macOS support
-            try:
-                subprocess.Popen(["open", path_str])
-            except Exception as e:
-                logger.error(f"Could not open folder on macOS: {e}")
-
     def _setup_handlers(self) -> dict:
         """Create a dictionary of commands to pass to the Builder."""
 
@@ -222,8 +224,6 @@ class PDFMergerGUI(tk.Tk):
 
             if not latest_version:
                 raise ValueError("Version is missing in the response.")
-
-            latest_version = latest_version.lstrip("v")  # прибрати 'v' якщо є
 
             if version.parse(latest_version) <= version.parse(APP_VERSION):
                 messagebox.showinfo(
