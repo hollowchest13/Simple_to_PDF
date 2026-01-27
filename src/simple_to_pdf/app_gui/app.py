@@ -20,6 +20,7 @@ from src.simple_to_pdf.app_gui.utils import (
     get_pages,
     ui_locker,
 )
+from src.simple_to_pdf.cli.logger import get_log_dir
 from src.simple_to_pdf.pdf import PageExtractor, PdfMerger
 
 logger = logging.getLogger(__name__)
@@ -135,33 +136,12 @@ class PDFMergerGUI(tk.Tk):
 
         return menu_bar
     
-
-    def _get_log_dir(self)->Path:
-
-        """Returns the existing log directory path using fallback logic."""
-        
-        log_dir:Path = Path.home()/self.APP_NAME/"logs"
-        
-        if not log_dir.exists():
-            if hasattr(sys,'frozen'):
-                base_path=Path(sys.executable).parent
-            else:
-                base_path=Path(__file__).resolve().parent
-            
-            log_dir=base_path/"logs"
-            
-        try:
-            log_dir.mkdir(parents=True,exist_ok=True)
-        except Exception as e:
-            logger.error(f"Could not create log directory: {e}")
-        return log_dir
-
     def open_log_folder(self):
 
         """Handles the OS-specific logic to open the file explorer."""
         
         # Primary path in the user's home directory
-        log_dir = self._get_log_dir()
+        log_dir = get_log_dir()
 
         # Get the absolute path as a string
         path_str = str(log_dir.absolute())
