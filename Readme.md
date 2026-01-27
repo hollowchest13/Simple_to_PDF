@@ -1,9 +1,9 @@
-# Simple2PDF 📄🚀
+# Simple_to_PDF 📄🚀
 
 ## 📄 License
 MIT License
 
-**Simple2PDF** is a lightweight and powerful Python-based tool designed for batch converting office documents, spreadsheets, presentations, and images into a single, cohesive PDF file. It also features a built-in PDF utility for extracting specific page ranges from existing documents.
+**Simple_to_PDF** is a lightweight and powerful Python-based tool designed for batch converting office documents, spreadsheets, presentations, and images into a single, cohesive PDF file. It also features a built-in PDF utility for extracting specific page ranges from existing documents.
 
 The project is built for **Linux (Mint, Ubuntu)** and **Windows** users, providing an intuitive Graphical User Interface (GUI) for complex file processing.
 
@@ -136,7 +136,7 @@ pip install -r requirements.txt
 ---
 
 ## 🛠 Technology Stack
-Simple2PDF utilizes a multi-layered approach to handle various file formats efficiently:
+Simple_to_PDF utilizes a multi-layered approach to handle various file formats efficiently:
 
 ### 🐍 Core Logic & System
 Python 3.12.3: The heart of the application.

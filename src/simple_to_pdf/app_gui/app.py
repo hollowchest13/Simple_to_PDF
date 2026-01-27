@@ -40,7 +40,7 @@ RELEASES_URL = f"{GITHUB_REPO_URL}/releases"
 
 
 class PDFMergerGUI(tk.Tk):
-    APP_NAME: str = "Simple2PDF"
+    APP_NAME: str = "Simple_to_PDF"
 
     def __init__(self):
         super().__init__()
