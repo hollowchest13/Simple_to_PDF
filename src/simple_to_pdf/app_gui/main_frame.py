@@ -120,7 +120,11 @@ class MainFrame(tk.Frame):
         return bar, label
 
     def clear_status_text(self) -> None:
-        clear_text_widget(self.status_text)
+        content = self.status_text.get("1.0", "end-1c")
+        if content.strip():
+            clear_text_widget(self.status_text)
+        else:
+            messagebox.showinfo("Clear status","Status is already empty!")
 
     def load_from_listbox(self) -> list[tuple[int, str]]:
         result: list[tuple[int, str]] = []

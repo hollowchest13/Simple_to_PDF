@@ -2,6 +2,7 @@ import logging
 import os
 import platform
 import subprocess
+import sys
 import tkinter as tk
 import webbrowser
 from pathlib import Path
@@ -17,7 +18,6 @@ from src.simple_to_pdf.app_gui.utils import (
     change_state,
     get_files,
     get_pages,
-    get_text,
     ui_locker,
 )
 from src.simple_to_pdf.pdf import PageExtractor, PdfMerger
@@ -134,38 +134,65 @@ class PDFMergerGUI(tk.Tk):
         menu_bar.add_cascade(label="Help", menu=help_menu)
 
         return menu_bar
+    
+
+    def _get_log_dir(self)->Path:
+
+        """Returns the existing log directory path using fallback logic."""
+        
+        log_dir:Path = Path.home()/self.APP_NAME/"logs"
+        
+        if not log_dir.exists():
+            if hasattr(sys,'frozen'):
+                base_path=Path(sys.executable).parent
+            else:
+                base_path=Path(__file__).resolve().parent
+            
+            log_dir=base_path/"logs"
+            
+        try:
+            log_dir.mkdir(parents=True,exist_ok=True)
+        except Exception as e:
+            logger.error(f"Could not create log directory: {e}")
+        return log_dir
 
     def open_log_folder(self):
-        # "The path must match the one in setup_logger
-        log_dir = Path.home() / ".simple_to_pdf" / "logs"
 
-        # "If the folder in home doesn't exist, checking the local folde
-        if not log_dir.exists():
-            log_dir = Path("logs")
+        """Handles the OS-specific logic to open the file explorer."""
+        
+        # Primary path in the user's home directory
+        log_dir = self._get_log_dir()
 
-        # If the folder still doesn't exist (the program hasn't written anything yet)
-        if not log_dir.exists():
-            log_dir.mkdir(parents=True, exist_ok=True)
-
+        # Get the absolute path as a string
         path_str = str(log_dir.absolute())
 
         if platform.system() == "Windows":
-            # "Opening Windows Explorer" (або "Opens Windows Explorer")
-            os.startfile(path_str)
-        elif platform.system() == "Linux":
-            # for Linux
-            clean_env = os.environ.copy()
-            # Removing variables related to my Python
-            clean_env.pop("PYTHONPATH", None)
-            clean_env.pop("PYTHONHOME", None)
+            # On Windows, os.startfile handles the explorer process correctly
             try:
+                os.startfile(path_str)
+            except Exception as e:
+                logger.error(f"Could not open folder on Windows: {e}")
+
+        elif platform.system() == "Linux":
+            # Create a clean environment copy to avoid library conflicts
+            # PyInstaller sets LD_LIBRARY_PATH which can break system apps like xdg-open
+            clean_env = os.environ.copy()
+
+            # Remove variables that might point to the bundled PyInstaller libraries
+            vars_to_remove = ["LD_LIBRARY_PATH", "PYTHONPATH", "PYTHONHOME"]
+            for var in vars_to_remove:
+                clean_env.pop(var, None)
+
+            try:
+                # Use xdg-open with the cleaned environment
                 subprocess.Popen(
                     ["xdg-open", path_str],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
+                    env=clean_env,  # Critical for bundled Linux applications
                 )
             except Exception as e:
-                logger.error(f":Could not open folder: {e}", exc_info=True)
+                logger.error(f"Could not open folder on Linux: {e}", exc_info=True)
 
     def _setup_handlers(self) -> dict:
         """Create a dictionary of commands to pass to the Builder."""
@@ -196,9 +223,7 @@ class PDFMergerGUI(tk.Tk):
             release_notes = data.get("notes", "No release notes provided.")
 
             if not latest_version:
-                raise ValueError("Версія у відповіді відсутня.")
-
-            latest_version = latest_version.lstrip("v")  # прибрати 'v' якщо є
+                raise ValueError("Version is missing in the response.")
 
             if version.parse(latest_version) <= version.parse(APP_VERSION):
                 messagebox.showinfo(
@@ -268,7 +293,7 @@ class PDFMergerGUI(tk.Tk):
 
         # Footer
         tk.Label(
-            about_window, text="© 2026 All Rights Reserved", font=("Arial", 8)
+            about_window, text="© 2025 All Rights Reserved", font=("Arial", 8)
         ).pack(side="bottom", pady=10)
 
         tk.Button(
@@ -279,14 +304,35 @@ class PDFMergerGUI(tk.Tk):
         ).pack(pady=5)
 
     def show_license(self) -> None:
-        license_file_name: str = "LICENSE"
-        license_path = Path(__file__).parent.parent / "LICENSE"
-        license_text: str = get_text(
-            file_name=license_file_name, file_path=license_path
-        )
-        if not license_text:
+        # Filename exactly as it is in your folder
+        license_name = "LICENSE"
+
+        # Path search logic
+        if hasattr(sys, "frozen"):
+            # sys.executable is the path to the executable file or the Python binary itself
+            base_path = Path(sys.executable).parent
+
+            # If running from .exe (PyInstaller unpacks everything to the _MEIPASS root)
+            if hasattr(sys, "_MEIPASS"):
+                base_path = Path(sys._MEIPASS)
+
+        else:
+            # If in development: main.py -> simple_to_pdf -> src -> project root
+            base_path = Path(__file__).resolve().parent.parent.parent.parent
+
+        license_path = base_path / license_name
+
+        # Reading file
+        if not license_path.exists():
+            logger.warning(f"⚠️ License file not found at path: {license_path}")
             return
-        self._create_text_window(title="LICENSE", text=license_text)
+
+        try:
+            # Explicitly specify UTF-8, as Windows might attempt to read it using CP1251
+            text = license_path.read_text(encoding="utf-8")
+            self._create_text_window(title="LICENSE", text=text)
+        except Exception as e:
+            logger.error(f"❌ Error reading license file: {e}")
 
     def _create_text_window(
         self,
