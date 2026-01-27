@@ -1,5 +1,5 @@
 {
-  "version": "1.2.1",
-  "release_date": "2026-01-11",
-  "notes": "Fixed the configuration path within the folder cli"
+  "version": "1.0",
+  "release_date": "2026-01-27",
+  "notes": "Fixed update bug"
 }

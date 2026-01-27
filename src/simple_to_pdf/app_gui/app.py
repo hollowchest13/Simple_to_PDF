@@ -34,7 +34,7 @@ GITHUB_REPO = "Simple_to_PDF"
 GITHUB_REPO_URL = f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}"
 
 # Path to the version.json file in the cli directory
-VERSION_JSON_URL = f"{GITHUB_REPO_URL}/main/cli/version.json"
+VERSION_JSON_URL = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/main/src/simple_to_pdf/cli/version.json"
 README_URL = f"{GITHUB_REPO_URL}#readme"
 RELEASES_URL = f"{GITHUB_REPO_URL}/releases"
 
