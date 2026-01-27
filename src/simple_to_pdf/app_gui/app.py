@@ -8,6 +8,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, scrolledtext
 
 import requests
+from packaging import version
 
 from src.simple_to_pdf.app_gui.gui_callback import GUICallback
 from src.simple_to_pdf.app_gui.list_controls_frame import ListControlsFrame
@@ -186,9 +187,7 @@ class PDFMergerGUI(tk.Tk):
 
     def check_updates(self):
         """Fetches the latest version info from GitHub and prompts for update."""
-
         try:
-            # Requesting the version file
             response = requests.get(VERSION_JSON_URL, timeout=5)
             response.raise_for_status()
 
@@ -196,13 +195,17 @@ class PDFMergerGUI(tk.Tk):
             latest_version = data.get("version")
             release_notes = data.get("notes", "No release notes provided.")
 
-            if latest_version == APP_VERSION:
+            if not latest_version:
+                raise ValueError("Версія у відповіді відсутня.")
+
+            latest_version = latest_version.lstrip("v")  # прибрати 'v' якщо є
+
+            if version.parse(latest_version) <= version.parse(APP_VERSION):
                 messagebox.showinfo(
                     "Update Check",
                     f"You are up to date!\nVersion {APP_VERSION} is the latest.",
                 )
             else:
-                # New version found
                 message = (
                     f"A new version is available: {latest_version}\n\n"
                     f"What's new:\n{release_notes}\n\n"
@@ -210,6 +213,7 @@ class PDFMergerGUI(tk.Tk):
                 )
                 if messagebox.askyesno("Update Available", message):
                     webbrowser.open(RELEASES_URL)
+
         except requests.exceptions.RequestException as e:
             logger.error(f"Update check failed (Network error): {e}")
             messagebox.showerror(
@@ -217,7 +221,7 @@ class PDFMergerGUI(tk.Tk):
                 "Could not connect to the update server.\nPlease check your internet connection.",
             )
         except Exception as e:
-            logger.error(f"Update check failed (Parse error): {e}")
+            logger.error(f"Update check failed: {e}")
             messagebox.showerror("Update Error", f"An unexpected error occurred:\n{e}")
 
     def show_about(self):
