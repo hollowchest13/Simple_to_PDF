@@ -192,7 +192,7 @@ class MainFrame(tk.Frame):
 
         remaining_files = [f for f in all_files if f not in set(sel_files)]
         list_update(files=remaining_files, listbox=self.filebox)
-        self.reset_progress_widgets()
+        self.progress_bar_reset()
 
     def reset_progress_widgets(self):
         self.progress_bar_reset()

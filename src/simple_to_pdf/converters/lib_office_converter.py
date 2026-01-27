@@ -80,14 +80,28 @@ class LibreOfficeConverter(ImageConverter):
             str(out_dir),
         ] + [str(p) for p in input_paths]
 
+        num_files = len(input_paths)
+        timeout = 10 + num_files * 5
+
         try:
-            subprocess.run(command, check=True, capture_output=True)
+            subprocess.run(command, check=True, capture_output=True, timeout=timeout)
             # Deleting old xls
             for p in input_paths:
                 if p.exists():
                     p.unlink()
+        except subprocess.TimeoutExpired:
+            logger.error(
+                f"❌ LibreOffice timed out after {timeout} seconds for {num_files} files: {[p.name for p in input_paths]}"
+            )
+        except subprocess.CalledProcessError as e:
+            logger.error(
+                f"❌ LibreOffice conversion error for {[p.name for p in input_paths]}: {e.stderr.decode()}",
+                exc_info=True,
+            )
         except Exception as e:
-            logger.error(f"❌ Batch XLS conversion error: {e}", exc_info=True)
+            logger.error(
+                f"❌ Unexpected error during table conversion: {e}", exc_info=True
+            )
 
     def _prepare_temp_files(
         self, *, chunk: list[tuple[int, Path]], tmp_path: Path
@@ -135,12 +149,10 @@ class LibreOfficeConverter(ImageConverter):
             )
 
             # if command was successful, collect results
+            chunk_res: ConversionResult = ConversionResult()  # створюємо завчасно
             if success:
-                chunk_res: ConversionResult = self._collect_results(
-                    chunk=chunk, tmp_path=tmp_path
-                )
-
-        return chunk_res
+                chunk_res = self._collect_results(chunk=chunk, tmp_path=tmp_path)
+            return chunk_res
 
     def _update_paths(
         self, *, all_paths: list[Path], to_check_exts: list[str]
@@ -153,7 +165,7 @@ class LibreOfficeConverter(ImageConverter):
                     updated.append(expected)
                 else:
                     logger.warning(
-                        f"⚠️ Conversion failed for {p.name}, keeping as {p.suffix}"
+                        f"⚠️ Failed to xlsx conversion {p.name}, keeping as {p.suffix}"
                     )
                     updated.append(p)
             else:
@@ -165,6 +177,7 @@ class LibreOfficeConverter(ImageConverter):
         """
         Configures Excel print settings to prevent table 'breaking'.
         """
+        wb = None
         try:
             wb = openpyxl.load_workbook(str(file_path))
 
@@ -192,14 +205,14 @@ class LibreOfficeConverter(ImageConverter):
                 sheet.page_margins.top = 0.2
                 sheet.page_margins.bottom = 0.2
         except Exception as e:
-            logger.error(f"⚠️ Failed to scale Excel file {file_path.name}: {e}")
+            logger.error(f"⚠️ Failed to scale table file {file_path.name}: {e}")
         finally:
-            if wb:
+            if wb is not None:
                 try:
                     wb.save(str(file_path))
                     wb.close()
-                except:  # noqa: E722
-                    pass
+                except Exception as e:
+                    logger.error(f"⚠️ Failed to save table file {file_path.name}: {e}")
 
     def _run_libreoffice_command(
         self, *, input_paths: list[str], out_dir: Path
@@ -214,12 +227,23 @@ class LibreOfficeConverter(ImageConverter):
             "--outdir",
             str(out_dir),
         ] + input_paths
+        num_files = len(input_paths)
+        timeout = 10 + num_files * 5
         try:
-            subprocess.run(command, check=True, capture_output=True)
+            subprocess.run(command, check=True, capture_output=True, timeout=timeout)
             return True
+        except subprocess.TimeoutExpired:
+            logger.error(
+                f"❌ LibreOffice timed out after {timeout} seconds for {num_files} files"
+            )
+            return False
         except subprocess.CalledProcessError as e:
             logger.error(f"❌ LibreOffice error: {e}", exc_info=True)
             return False
+        except Exception as e:
+            logger.error(
+                f"❌ Unexpected error during table conversion: {e}", exc_info=True
+            )
 
     def _collect_results(
         self, *, chunk: list[tuple[int, Path]], tmp_path: Path
@@ -231,7 +255,7 @@ class LibreOfficeConverter(ImageConverter):
             if expected_pdf.exists():
                 res.successful.append((idx, expected_pdf.read_bytes()))
             else:
-                logger.warning(f"❌ File not found: {expected_pdf.name}")
+                logger.warning(f"⚠️ Failed conversion to pdf: {expected_pdf.name}")
                 res.failed.append((idx, original_path))
         return res
 

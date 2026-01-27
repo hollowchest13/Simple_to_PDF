@@ -34,7 +34,7 @@ The project is built for **Linux (Mint, Ubuntu)** and **Windows** users, providi
 ---
 
 ## 🛠 Requirements
-- **PPython 3.10+ (developed and tested on Python 3.12.3)**
+- **Python 3.10+ (developed and tested on Python 3.12.3)**
 The application requires one of the following to be installed for documents conversion:
 
 1. **Microsoft Office** (Windows only) — detected automatically via COM interface.
@@ -42,8 +42,8 @@ The application requires one of the following to be installed for documents conv
 
 **Note for Windows users:** If you prefer LibreOffice, please ensure it is installed in one of the default locations:
 
- C:\Program Files\LibreOffice
- C:\Program Files (x86)\LibreOffice
+ - `C:\Program Files\LibreOffice`
+ - `C:\Program Files (x86)\LibreOffice`
 
 ---
 
