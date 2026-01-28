@@ -134,6 +134,11 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 ---
+4. Getting Started:
+
+```bash
+python -m src.simple_to_pdf.cli
+```
 
 ## 🛠 Technology Stack
 Simple_to_PDF utilizes a multi-layered approach to handle various file formats efficiently:
