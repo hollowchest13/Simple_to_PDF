@@ -1,12 +1,12 @@
 # Simple_to_PDF 📄🚀
 
-## 📄 License
-MIT License
-
 ## ⬇️ Download
 
 - 🪟 **Windows**: [Download .exe](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0/SimpleToPDF.exe)
 - 🐧 **Linux**: [Download AppImage](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0/SimpleToPDF)
+
+## 📄 License
+MIT License
 
 👉 No Python required. Just download & run.
 
