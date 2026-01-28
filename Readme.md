@@ -3,9 +3,17 @@
 ## 📄 License
 MIT License
 
+## ⬇️ Download
+
+- 🪟 **Windows**: [Download .exe](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0/SimpleToPDF.exe)
+- 🐧 **Linux**: [Download AppImage](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0/SimpleToPDF)
+
+👉 No Python required. Just download & run.
+
 **Simple_to_PDF** is a lightweight and powerful Python-based tool designed for batch converting office documents, spreadsheets, presentations, and images into a single, cohesive PDF file. It also features a built-in PDF utility for extracting specific page ranges from existing documents.
 
 The project is built for **Linux (Mint, Ubuntu)** and **Windows** users, providing an intuitive Graphical User Interface (GUI) for complex file processing.
+
 
 ## 🖼 Screenshots
 
