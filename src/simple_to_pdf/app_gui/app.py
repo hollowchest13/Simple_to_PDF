@@ -26,7 +26,7 @@ from src.simple_to_pdf.pdf import PageExtractor, PdfMerger
 logger = logging.getLogger(__name__)
 
 # --- App constants ---
-APP_VERSION = "1.0"
+APP_VERSION = "1.0.1"
 GITHUB_USER = "hollowchest13"
 GITHUB_REPO = "Simple_to_PDF"
 

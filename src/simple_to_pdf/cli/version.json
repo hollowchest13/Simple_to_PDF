@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
-  "release_date": "2026-01-27",
-  "notes": "Fixed update bug"
+  "version": "1.0.1",
+  "release_date": "2026-02-03",
+  "notes": "Fixed an issue where the script would kill all active Office processes instead of its own."
 }
