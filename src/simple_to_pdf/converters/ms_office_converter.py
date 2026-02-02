@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pythoncom  # pyright: ignore[reportMissingModuleSource]
 import win32com.client as win32  # pyright: ignore[reportMissingModuleSource]
-
 from src.simple_to_pdf.converters.img_converter import ImageConverter
 from src.simple_to_pdf.converters.models import ConversionResult
 
@@ -75,6 +74,34 @@ class MSOfficeConverter(ImageConverter):
             all_results.failed.extend(chunk_results.failed)
             
         return all_results
+    
+    def _get_app_instance(self,*,app_name: str):
+        """
+        Creates a robust COM application instance using a fallback mechanism.
+        If the early-bound (gencache) version fails due to corrupted cache, 
+        it falls back to a dynamic late-bound instance.
+        """
+        app = None
+        try:
+            # Primary Attempt: Standard DispatchEx (isolated process)
+            # May fail here if the win32com cache (gen_py) is corrupted
+            app = win32.DispatchEx(app_name)
+        
+            try:
+                # Try to upgrade to an early-bound instance for better performance/constants
+                return win32.gencache.EnsureDispatch(app)
+            except Exception as e:
+                logger.warning(f"⚠️ Gencache failed for {app_name}, using raw DispatchEx: {e}",exc_info=True)
+                return app
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Standard DispatchEx failed for {app_name}, trying dynamic fallback: {e}",exc_info=True)
+            try:
+                # Final Fallback: Dynamic Dispatch (completely ignores gen_py cache)
+                return win32.dynamic.DispatchEx(app_name)
+            except Exception as e_crit:
+                logger.error(f"❌ Critical Error: All launch methods failed for {app_name}: {e_crit}",exc_info=True)
+                return None
 
     def _process_presentation_chunk(
         self, *, chunk: list[tuple[int, Path]]
@@ -87,7 +114,10 @@ class MSOfficeConverter(ImageConverter):
         app_name = "PowerPoint.Application"
         try:
             # Using EnsureDispatch for stability in .exe (Nuitka)
-            powerpoint = win32.gencache.EnsureDispatch("PowerPoint.Application")
+            powerpoint = self._get_app_instance(app_name=app_name)
+
+            if powerpoint is None:
+                raise RuntimeError(f"❌ Could not initialize {app_name}.")
 
             for idx, pf in chunk:
                 pdf_data = None
@@ -107,6 +137,8 @@ class MSOfficeConverter(ImageConverter):
                     chunk_res.failed.append((idx,pf))
         finally:
             self._safe_release_com_object(obj=powerpoint, app_name=app_name)
+            powerpoint=None
+            gc.collect()
             pythoncom.CoUninitialize()
 
         return chunk_res
@@ -162,12 +194,16 @@ class MSOfficeConverter(ImageConverter):
         self, chunk: list[tuple[int, Path]]
     ) -> ConversionResult:
         chunk_res:ConversionResult=ConversionResult()
+
         # Run Excel only for this chunk
         pythoncom.CoInitialize()
         app_name: str = "Excel.Application"
 
         try:
-            excel = win32.gencache.EnsureDispatch("Excel.Application")
+            excel = self._get_app_instance(app_name=app_name)
+            if excel is None:
+                raise RuntimeError(f"❌ Could not initialize {app_name}.")
+            
             excel.Visible = False
             excel.DisplayAlerts = False  # Disable alerts to prevent pop-ups
             for idx, f in chunk:
@@ -185,7 +221,9 @@ class MSOfficeConverter(ImageConverter):
                     chunk_res.failed.append((idx,f))
         finally:
             self._safe_release_com_object(obj=excel, app_name=app_name)
-        pythoncom.CoUninitialize()
+            excel=None
+            gc.collect()
+            pythoncom.CoUninitialize()
         return chunk_res
 
     def _prepare_table_for_export(self, wb):
@@ -250,7 +288,9 @@ class MSOfficeConverter(ImageConverter):
         pythoncom.CoInitialize()
         app_name: str = "Word.Application"
         try:
-            word = win32.gencache.EnsureDispatch(app_name)
+            word = self._get_app_instance(app_name=app_name)
+            if word is None:
+                raise RuntimeError(f"❌ Could not initialize {app_name}.")
             # Run one Word process for the entire chunk (30 files)
             word.Visible = False
             word.DisplayAlerts = 0  # 0 = wdAlertsNone (disable all pop-up windows)
@@ -269,7 +309,9 @@ class MSOfficeConverter(ImageConverter):
                     chunk_res.failed.append((idx,wf))
         finally:
             self._safe_release_com_object(obj=word, app_name=app_name)
-        pythoncom.CoUninitialize()
+            word=None
+            gc.collect()
+            pythoncom.CoUninitialize()
         return chunk_res
 
     def _convert_single_document(self, word_app, file_path: Path) -> bytes | None:
@@ -313,13 +355,6 @@ class MSOfficeConverter(ImageConverter):
                 # Check for specific close methods
                 if hasattr(obj, "Quit"):
                     obj.Quit()
-                elif hasattr(obj, "Close"):
-                    obj.Close()
                 logger.info(f"✅ {app_name} closed successfully.")
             except Exception as e:
                 logger.warning(f"⚠️ Could not close {app_name} gracefully: {e}")
-            finally:
-                # Explicitly delete the reference and trigger garbage collection
-                # This is crucial for preventing 'zombie' processes in Task Manager
-                del obj
-                gc.collect()
