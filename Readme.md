@@ -2,7 +2,11 @@
 
 ## ⬇️ Download
 
+<<<<<<< HEAD
 - 🪟 **Windows**: [Download .exe](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.1/SimpleToPDF.exe)
+=======
+- 🪟 **Windows**: [Download .exe](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0/SimpleToPDF.exe)
+>>>>>>> eefae86 (Added AppImageLink)
 - 🐧 **Linux**: [Download AppImage](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.1/SimpleToPDF)
 
 👉 No Python required. Just download & run.
