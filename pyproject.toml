@@ -1,13 +1,35 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "simple-to-pdf"
 version = "1.0.1"
+description = "Simple_to_PDF is a lightweight, local multi-format converter"
+readme = "README.md"
+authors = [
+    {name = "hollowchest13", email = "hollowchest13@gmail.com"}
+]
+license = {text = "MIT"}
+# Вкажи мінімальну версію Python
+requires-python = ">=3.8"
+
+# ТУТ ВАЖЛИВО: Перелічи всі бібліотеки, які ти імпортуєш у коді
+dependencies = [
+    "customtkinter",  # Якщо перейдемо на нього
+    "fpdf2",         # Або інша бібліотека, яку ти використовуєш для PDF
+    "Pillow",        # Для роботи з картинками
+]
+
+[project.urls]
+Homepage = "https://github.com/hollowchest13/Simple_to_PDF"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+# Якщо ти хочеш, щоб користувач міг запустити програму командою "simple-pdf"
+[project.scripts]
+simple-pdf = "simple_to_pdf.main:main"
