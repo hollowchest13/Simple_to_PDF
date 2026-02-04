@@ -4,8 +4,8 @@ from pathlib import Path
 
 from pypdf import PdfReader, PdfWriter
 
-from src.simple_to_pdf.converters import ConverterFactory
-from src.simple_to_pdf.converters.models import ConversionResult
+from simple_to_pdf.converters import ConverterFactory
+from simple_to_pdf.converters.models import ConversionResult
 
 logger = logging.getLogger(__name__)
 

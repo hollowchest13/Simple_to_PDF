@@ -24,7 +24,6 @@ class BaseConverter:
         Method lies in Base, but knows about descendants' formats via cls.
         """
         combined = {}
-        # reversed(cls.__mro__) іде від object -> BaseConverter -> Нащадок
         for base in reversed(cls.__mro__):
             # getattr(base, ...) finds SUPPORTED_FORMATS in each class
             formats = getattr(base, "SUPPORTED_FORMATS", {})
@@ -35,10 +34,10 @@ class BaseConverter:
     def _check_extension(self, *, file_path: Path, category: str) -> bool:
         """Check Extensions."""
 
-        # 1. Get FULL dictionary of formats (with all descendants)
+        # Get FULL dictionary of formats (with all descendants)
         all_formats = self.get_supported_formats()
 
-        # 2. Use .get() to avoid KeyError if category doesn't exist
+        # Use .get() to avoid KeyError if category doesn't exist
         allowed_exts = all_formats.get(category, set())
         return file_path.suffix.lower() in allowed_exts
 

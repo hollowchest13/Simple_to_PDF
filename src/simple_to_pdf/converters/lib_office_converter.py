@@ -6,8 +6,8 @@ from pathlib import Path
 
 import openpyxl
 
-from src.simple_to_pdf.converters.img_converter import ImageConverter
-from src.simple_to_pdf.converters.models import ConversionResult
+from simple_to_pdf.converters.img_converter import ImageConverter
+from simple_to_pdf.converters.models import ConversionResult
 
 logger = logging.getLogger(__name__)
 

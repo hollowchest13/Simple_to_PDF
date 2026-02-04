@@ -1,35 +1,48 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
+# Tools required to build the project
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
+# Core project metadata (PEP 621)
 name = "simple-to-pdf"
 version = "1.0.1"
 description = "Simple_to_PDF is a lightweight, local multi-format converter"
 readme = "README.md"
-authors = [
-    {name = "hollowchest13", email = "hollowchest13@gmail.com"}
-]
+requires-python = ">=3.10"
 license = {text = "MIT"}
-# Вкажи мінімальну версію Python
-requires-python = ">=3.8"
+authors = [{name = "hollowchest13", email = "hollowchest13@gmail.com"}]
 
-# ТУТ ВАЖЛИВО: Перелічи всі бібліотеки, які ти імпортуєш у коді
+# Project dependencies to be installed via pip
 dependencies = [
-    "customtkinter",  # Якщо перейдемо на нього
-    "fpdf2",         # Або інша бібліотека, яку ти використовуєш для PDF
-    "Pillow",        # Для роботи з картинками
+    "openpyxl>=3.1.5",
+    "pypdf>=5.0.0",
+    "requests>=2.32.0",
+    "packaging>=24.0",
+    "pillow>=10.0.0",
 ]
 
 [project.urls]
+# External links for the project
 Homepage = "https://github.com/hollowchest13/Simple_to_PDF"
 
 [tool.setuptools]
+# Map the root package to the 'src' directory
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
+# Automatically discover packages in the 'src' folder
 where = ["src"]
 
-# Якщо ти хочеш, щоб користувач міг запустити програму командою "simple-pdf"
 [project.scripts]
+# Console script entry point: command = module.submodule:function
 simple-pdf = "simple_to_pdf.main:main"
+
+[tool.app_metadata]
+# Custom section for application UI (About dialog, versioning, etc.)
+release_date = "2024-05-22"
+release_notes = """
+- Added Excel (.xlsx) to PDF conversion support.
+- Fixed an issue with processing large files.
+- Improved image handling using Pillow library.
+"""

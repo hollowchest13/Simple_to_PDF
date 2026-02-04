@@ -4,8 +4,9 @@ from pathlib import Path
 
 from PIL import Image
 
-from src.simple_to_pdf.converters.base_converter import BaseConverter
-from src.simple_to_pdf.converters.models import ConversionResult
+from simple_to_pdf.converters.base_converter import BaseConverter
+from simple_to_pdf.converters.models import ConversionResult
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,7 +38,7 @@ class ImageConverter(BaseConverter):
     def convert_images_to_pdf(
         self, *, files: list[tuple[int, Path]]
     ) -> ConversionResult:
-        all_results:ConversionResult=ConversionResult()
+        all_results: ConversionResult = ConversionResult()
         for chunk in self.make_chunks(files, self.chunk_size):
             # Call the new method that handles one chunk
             chunk_res: ConversionResult = self._convert_images_chunk(chunk=chunk)
@@ -60,7 +61,7 @@ class ImageConverter(BaseConverter):
 
             if not path.exists():
                 logger.warning(f"⚠️ [{idx}] File not found: {path}")
-                res.failed.append((idx,path))
+                res.failed.append((idx, path))
                 continue
 
             try:
@@ -101,7 +102,7 @@ class ImageConverter(BaseConverter):
                         f.close()
 
             except Exception as e:
-                res.failed.append((idx,path))
+                res.failed.append((idx, path))
                 logger.error(
                     f"❌ [{idx}] Image conversion error for {path.name}: {e}",
                     exc_info=True,

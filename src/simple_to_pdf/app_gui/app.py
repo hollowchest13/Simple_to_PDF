@@ -11,17 +11,17 @@ from tkinter import filedialog, messagebox, scrolledtext
 import requests
 from packaging import version
 
-from src.simple_to_pdf.app_gui.gui_callback import GUICallback
-from src.simple_to_pdf.app_gui.list_controls_frame import ListControlsFrame
-from src.simple_to_pdf.app_gui.main_frame import MainFrame
-from src.simple_to_pdf.app_gui.utils import (
+from simple_to_pdf.app_gui.gui_callback import GUICallback
+from simple_to_pdf.app_gui.list_controls_frame import ListControlsFrame
+from simple_to_pdf.app_gui.main_frame import MainFrame
+from simple_to_pdf.app_gui.utils import (
     change_state,
     get_files,
     get_pages,
     ui_locker,
 )
-from src.simple_to_pdf.cli.logger import get_log_dir
-from src.simple_to_pdf.pdf import PageExtractor, PdfMerger
+from simple_to_pdf.cli.logger import get_log_dir
+from simple_to_pdf.pdf import PageExtractor, PdfMerger
 
 logger = logging.getLogger(__name__)
 
@@ -135,11 +135,10 @@ class PDFMergerGUI(tk.Tk):
         menu_bar.add_cascade(label="Help", menu=help_menu)
 
         return menu_bar
-    
-    def open_log_folder(self):
 
+    def open_log_folder(self):
         """Handles the OS-specific logic to open the file explorer."""
-        
+
         # Primary path in the user's home directory
         log_dir = get_log_dir()
 

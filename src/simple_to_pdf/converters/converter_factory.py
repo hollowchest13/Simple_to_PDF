@@ -48,7 +48,7 @@ class ConverterFactory:
     def _try_ms_office(self, *, chunk_size: int):
         "Encapsulates import and creation of MSOfficeConverter"
 
-        from src.simple_to_pdf.converters.ms_office_converter import MSOfficeConverter
+        from simple_to_pdf.converters.ms_office_converter import MSOfficeConverter
 
         return MSOfficeConverter(chunk_size=chunk_size)
 
@@ -60,7 +60,7 @@ class ConverterFactory:
         if not self.soffice_path:
             raise FileNotFoundError("LibreOffice ('soffice') not found.")
 
-        from src.simple_to_pdf.converters.lib_office_converter import (
+        from simple_to_pdf.converters.lib_office_converter import (
             LibreOfficeConverter,
         )
 
@@ -71,7 +71,7 @@ class ConverterFactory:
     def _try_image_only(self, *, chunk_size: int):
         """Encapsulates import and creation of ImageConverter"""
 
-        from src.simple_to_pdf.converters.img_converter import ImageConverter
+        from simple_to_pdf.converters.img_converter import ImageConverter
 
         return ImageConverter(chunk_size=chunk_size)
 

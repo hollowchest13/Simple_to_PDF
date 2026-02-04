@@ -1,7 +1,7 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 
-from src.simple_to_pdf.app_gui.main_frame import MainFrame
+from simple_to_pdf.app_gui.main_frame import MainFrame
 
 
 class GUICallback:

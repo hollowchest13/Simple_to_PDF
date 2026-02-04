@@ -2,7 +2,7 @@ import logging
 import tkinter as tk
 from tkinter import messagebox, ttk
 
-from src.simple_to_pdf.app_gui.utils import (
+from simple_to_pdf.app_gui.utils import (
     clear_text_widget,
     get_files,
     get_selected_values,
@@ -10,7 +10,7 @@ from src.simple_to_pdf.app_gui.utils import (
     listbox_clear,
     reselect_items,
 )
-from src.simple_to_pdf.pdf.pdf_merger import PdfMerger
+from simple_to_pdf.pdf.pdf_merger import PdfMerger
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +124,7 @@ class MainFrame(tk.Frame):
         if content.strip():
             clear_text_widget(self.status_text)
         else:
-            messagebox.showinfo("Clear status","Status is already empty!")
+            messagebox.showinfo("Clear status", "Status is already empty!")
 
     def load_from_listbox(self) -> list[tuple[int, str]]:
         result: list[tuple[int, str]] = []

@@ -5,8 +5,9 @@ from pathlib import Path
 
 import pythoncom  # pyright: ignore[reportMissingModuleSource]
 import win32com.client as win32  # pyright: ignore[reportMissingModuleSource]
-from src.simple_to_pdf.converters.img_converter import ImageConverter
-from src.simple_to_pdf.converters.models import ConversionResult
+
+from simple_to_pdf.converters.img_converter import ImageConverter
+from simple_to_pdf.converters.models import ConversionResult
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +24,7 @@ class MSOfficeConverter(ImageConverter):
         self.chunk_size = chunk_size
         self.SUPPORTED_FORMATS = self.get_supported_formats()
 
-    def convert_to_pdf(
-        self, *, files: list[tuple[int, Path]]
-    ) -> ConversionResult:
+    def convert_to_pdf(self, *, files: list[tuple[int, Path]]) -> ConversionResult:
         tables: list[tuple[int, Path]] = []
         docs: list[tuple[int, Path]] = []
         imgs: list[tuple[int, Path]] = []
@@ -45,40 +44,42 @@ class MSOfficeConverter(ImageConverter):
                 imgs.append((idx, path))
 
         if tables:
-            tables_res:ConversionResult=self._convert_tables_to_pdf(files=tables)
+            tables_res: ConversionResult = self._convert_tables_to_pdf(files=tables)
             final_results.successful.extend(tables_res.successful)
             final_results.failed.extend(tables_res.failed)
         if docs:
-            docs_res:ConversionResult=self._convert_documents_to_pdf(word_files=docs)
+            docs_res: ConversionResult = self._convert_documents_to_pdf(word_files=docs)
             final_results.successful.extend(docs_res.successful)
             final_results.failed.extend(docs_res.failed)
         if imgs:
-            imgs_res:ConversionResult=self.convert_images_to_pdf(files=imgs)
+            imgs_res: ConversionResult = self.convert_images_to_pdf(files=imgs)
             final_results.successful.extend(imgs_res.successful)
             final_results.failed.extend(imgs_res.failed)
         if pres:
-            pres_res:ConversionResult=self._convert_presentations_to_pdf(files=pres)
-            final_results.successful.extend( pres_res.successful)
-            final_results.failed.extend( pres_res.failed)
+            pres_res: ConversionResult = self._convert_presentations_to_pdf(files=pres)
+            final_results.successful.extend(pres_res.successful)
+            final_results.failed.extend(pres_res.failed)
 
         return final_results
 
     def _convert_presentations_to_pdf(
         self, *, files: list[tuple[int, Path]]
     ) -> ConversionResult:
-        all_results:ConversionResult = ConversionResult()
+        all_results: ConversionResult = ConversionResult()
         # Splitting into chunks to avoid overloading memory
         for chunk in self.make_chunks(files, n=self.chunk_size):
-            chunk_results:ConversionResult=self._process_presentation_chunk(chunk = chunk)
+            chunk_results: ConversionResult = self._process_presentation_chunk(
+                chunk=chunk
+            )
             all_results.successful.extend(chunk_results.successful)
             all_results.failed.extend(chunk_results.failed)
-            
+
         return all_results
-    
-    def _get_app_instance(self,*,app_name: str):
+
+    def _get_app_instance(self, *, app_name: str):
         """
         Creates a robust COM application instance using a fallback mechanism.
-        If the early-bound (gencache) version fails due to corrupted cache, 
+        If the early-bound (gencache) version fails due to corrupted cache,
         it falls back to a dynamic late-bound instance.
         """
         app = None
@@ -86,28 +87,36 @@ class MSOfficeConverter(ImageConverter):
             # Primary Attempt: Standard DispatchEx (isolated process)
             # May fail here if the win32com cache (gen_py) is corrupted
             app = win32.DispatchEx(app_name)
-        
+
             try:
                 # Try to upgrade to an early-bound instance for better performance/constants
                 return win32.gencache.EnsureDispatch(app)
             except Exception as e:
-                logger.warning(f"⚠️ Gencache failed for {app_name}, using raw DispatchEx: {e}",exc_info=True)
+                logger.warning(
+                    f"⚠️ Gencache failed for {app_name}, using raw DispatchEx: {e}",
+                    exc_info=True,
+                )
                 return app
-            
+
         except Exception as e:
-            logger.warning(f"⚠️ Standard DispatchEx failed for {app_name}, trying dynamic fallback: {e}",exc_info=True)
+            logger.warning(
+                f"⚠️ Standard DispatchEx failed for {app_name}, trying dynamic fallback: {e}",
+                exc_info=True,
+            )
             try:
                 # Final Fallback: Dynamic Dispatch (completely ignores gen_py cache)
                 return win32.dynamic.DispatchEx(app_name)
             except Exception as e_crit:
-                logger.error(f"❌ Critical Error: All launch methods failed for {app_name}: {e_crit}",exc_info=True)
+                logger.error(
+                    f"❌ Critical Error: All launch methods failed for {app_name}: {e_crit}",
+                    exc_info=True,
+                )
                 return None
 
     def _process_presentation_chunk(
         self, *, chunk: list[tuple[int, Path]]
     ) -> ConversionResult:
-        
-        chunk_res:ConversionResult=ConversionResult()
+        chunk_res: ConversionResult = ConversionResult()
 
         # Important for workers in background threads
         pythoncom.CoInitialize()
@@ -127,24 +136,23 @@ class MSOfficeConverter(ImageConverter):
                     )
                     chunk_res.successful.append((idx, pdf_data))
                 except Exception:
-                    chunk_res.failed.append((idx,pf))
+                    chunk_res.failed.append((idx, pf))
 
         except Exception as e:
             logger.error(f"❌ Presentations chunk error: {e}", exc_info=True)
             already_done = chunk_res.processed_ids
             for idx, pf in chunk:
                 if idx not in already_done:
-                    chunk_res.failed.append((idx,pf))
+                    chunk_res.failed.append((idx, pf))
         finally:
             self._safe_release_com_object(obj=powerpoint, app_name=app_name)
-            powerpoint=None
+            powerpoint = None
             gc.collect()
             pythoncom.CoUninitialize()
 
         return chunk_res
 
     def _convert_single_presentation(self, *, ppt_app, file_path: Path) -> bytes:
-
         """Conversion of a single PowerPoint presentation."""
 
         input_file = file_path.resolve()
@@ -182,18 +190,16 @@ class MSOfficeConverter(ImageConverter):
     def _convert_tables_to_pdf(
         self, *, files: list[tuple[int, Path]]
     ) -> ConversionResult:
-        all_results:ConversionResult = ConversionResult()
+        all_results: ConversionResult = ConversionResult()
         # Split for chunks
         for chunk in self.make_chunks(files, n=self.chunk_size):
-            chunk_res:ConversionResult=self._process_table_chunk(chunk=chunk)
+            chunk_res: ConversionResult = self._process_table_chunk(chunk=chunk)
             all_results.successful.extend(chunk_res.successful)
             all_results.failed.extend(chunk_res.failed)
         return all_results
 
-    def _process_table_chunk(
-        self, chunk: list[tuple[int, Path]]
-    ) -> ConversionResult:
-        chunk_res:ConversionResult=ConversionResult()
+    def _process_table_chunk(self, chunk: list[tuple[int, Path]]) -> ConversionResult:
+        chunk_res: ConversionResult = ConversionResult()
 
         # Run Excel only for this chunk
         pythoncom.CoInitialize()
@@ -203,25 +209,25 @@ class MSOfficeConverter(ImageConverter):
             excel = self._get_app_instance(app_name=app_name)
             if excel is None:
                 raise RuntimeError(f"❌ Could not initialize {app_name}.")
-            
+
             excel.Visible = False
             excel.DisplayAlerts = False  # Disable alerts to prevent pop-ups
             for idx, f in chunk:
-                pdf_data=None
+                pdf_data = None
                 try:
                     pdf_data = self._convert_single_table(excel, f)
-                    chunk_res.successful.append((idx,pdf_data))
+                    chunk_res.successful.append((idx, pdf_data))
                 except Exception:
-                     chunk_res.failed.append((idx,f))
+                    chunk_res.failed.append((idx, f))
         except Exception as e:
             logger.error(f"❌ Tables chunk error: {e}", exc_info=True)
             already_done = chunk_res.processed_ids
             for idx, f in chunk:
                 if idx not in already_done:
-                    chunk_res.failed.append((idx,f))
+                    chunk_res.failed.append((idx, f))
         finally:
             self._safe_release_com_object(obj=excel, app_name=app_name)
-            excel=None
+            excel = None
             gc.collect()
             pythoncom.CoUninitialize()
         return chunk_res
@@ -272,19 +278,19 @@ class MSOfficeConverter(ImageConverter):
     def _convert_documents_to_pdf(
         self, *, word_files: list[tuple[int, Path]]
     ) -> ConversionResult:
-        all_results:ConversionResult =ConversionResult()
-        
+        all_results: ConversionResult = ConversionResult()
+
         # Convert by chunks of 30 files
         for chunk in self.make_chunks(word_files, n=self.chunk_size):
-            chunk_res:ConversionResult=self._process_documents_chunk(chunk=chunk)
+            chunk_res: ConversionResult = self._process_documents_chunk(chunk=chunk)
             all_results.successful.extend(chunk_res.successful)
             all_results.failed.extend(chunk_res.failed)
         return all_results
 
     def _process_documents_chunk(
         self, chunk: list[tuple[int, Path]]
-    ) ->ConversionResult:
-        chunk_res:ConversionResult=ConversionResult()
+    ) -> ConversionResult:
+        chunk_res: ConversionResult = ConversionResult()
         pythoncom.CoInitialize()
         app_name: str = "Word.Application"
         try:
@@ -295,21 +301,21 @@ class MSOfficeConverter(ImageConverter):
             word.Visible = False
             word.DisplayAlerts = 0  # 0 = wdAlertsNone (disable all pop-up windows)
             for idx, wf in chunk:
-                pdf_data=None
+                pdf_data = None
                 try:
                     pdf_data = self._convert_single_document(word, wf)
-                    chunk_res.successful.append((idx,pdf_data))
+                    chunk_res.successful.append((idx, pdf_data))
                 except Exception:
-                    chunk_res.failed.append((idx,wf))
+                    chunk_res.failed.append((idx, wf))
         except Exception as e:
             logger.error(f"❌ Documents chunk error: {e}", exc_info=True)
             already_done = chunk_res.processed_ids
             for idx, wf in chunk:
                 if idx not in already_done:
-                    chunk_res.failed.append((idx,wf))
+                    chunk_res.failed.append((idx, wf))
         finally:
             self._safe_release_com_object(obj=word, app_name=app_name)
-            word=None
+            word = None
             gc.collect()
             pythoncom.CoUninitialize()
         return chunk_res

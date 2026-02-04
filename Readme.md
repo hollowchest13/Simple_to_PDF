@@ -1,19 +1,6 @@
 # Simple_to_PDF 📄🚀
 
-<<<<<<< HEAD
-## ⬇️ Download
-
-- 🪟 **Windows**: [Download .exe](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.1/SimpleToPDF.exe)
-
-- 🐧 **Linux**: [Download AppImage](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.1/SimpleToPDF)
-
-👉 No Python required. Just download & run.
-
-## 📄 License
-=======
-## License
->>>>>>> b5ff0f1 (Toml setup)
-MIT License
+[MIT License](https://github.com/hollowchest13/Simple_to_PDF?tab=MIT-1-ov-file)
 
 ## Screenshots
 
@@ -99,38 +86,38 @@ sudo apt update
 sudo apt install python3-venv python3-tk
 ```
 2. **Create and activate environment:**
+### For Linux in terminal:
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
-3. **Install requirements:**
-
-```bash
-pip install --upgrade pip
-pip install -r requirements.txt
-```
 ### For Windows:
-1. Create virtual environment in **PowerShell** or **CMD**:
+In**CMD**:
 
 ```bash
 python -m venv venv
-```
-In **CMD**:
-
-```bash
 venv\Scripts\activate
 ```
-3. Install requirements:
+## App installation and run:
 
 ```bash
-pip install -r requirements.txt
+pip install --upgrade pip
 ```
----
-4. Getting Started:
+If you just want use app:
 
 ```bash
-python -m src.simple_to_pdf.cli
+pip insrall .
+```
+Or if you want edit code:
+
+```bash
+pip insrall -e .
+```
+Getting Started:
+
+```bash
+python -m simple_to_pdf.cli
 ```
 
 ## Support
