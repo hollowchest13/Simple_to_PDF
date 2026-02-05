@@ -14,14 +14,11 @@ from packaging import version
 from simple_to_pdf.app_gui.gui_callback import GUICallback
 from simple_to_pdf.app_gui.list_controls_frame import ListControlsFrame
 from simple_to_pdf.app_gui.main_frame import MainFrame
-from simple_to_pdf.app_gui.utils import (
-    change_state,
-    get_files,
-    get_pages,
-    ui_locker,
-)
 from simple_to_pdf.cli.logger import get_log_dir
 from simple_to_pdf.pdf import PageExtractor, PdfMerger
+from simple_to_pdf.utils.file_tools import get_files
+from simple_to_pdf.utils.logic import get_pages
+from simple_to_pdf.utils.ui_tools import change_state, ui_locker
 
 logger = logging.getLogger(__name__)
 
@@ -42,9 +39,10 @@ RELEASES_URL = f"{GITHUB_REPO_URL}/releases"
 class PDFMergerGUI(tk.Tk):
     APP_NAME: str = "Simple_to_PDF"
 
-    def __init__(self):
+    def __init__(self, *, merger: PdfMerger, page_extractor: PageExtractor):
         super().__init__()
-        self._init_services()
+        self.merger = merger
+        self.page_extractor = page_extractor
         self.init_panels()
         self.init_connections()
         handlers = self._setup_handlers()
@@ -59,12 +57,6 @@ class PDFMergerGUI(tk.Tk):
 
     def init_connections(self) -> None:
         self.callback = GUICallback(main_frame=self.main_panel)
-
-    def _init_services(self) -> None:
-        """Initialize internal logic and services."""
-
-        self.merger = PdfMerger()
-        self.page_extractor = PageExtractor()
 
     def _toggle_menu_items(self, *, menu_obj: tk.Menu, active: bool):
         state = tk.NORMAL if active else tk.DISABLED
@@ -488,11 +480,3 @@ class PDFMergerGUI(tk.Tk):
                 self.callback.show_status_message(status_message=error_msg)
                 logger.error(error_msg, exc_info=True)
                 self.after(0, lambda: self.main_panel.progress_bar_reset())
-
-
-def run_gui():
-    try:
-        app = PDFMergerGUI()
-        app.mainloop()
-    except Exception as e:
-        logger.fatal(f"❌ GUI Runtime error: {e}", exc_info=True)

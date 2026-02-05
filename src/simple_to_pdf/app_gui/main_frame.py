@@ -2,15 +2,15 @@ import logging
 import tkinter as tk
 from tkinter import messagebox, ttk
 
-from simple_to_pdf.app_gui.utils import (
+from simple_to_pdf.pdf.pdf_merger import PdfMerger
+from simple_to_pdf.utils.file_tools import get_files
+from simple_to_pdf.utils.ui_tolls import (
     clear_text_widget,
-    get_files,
     get_selected_values,
     list_update,
     listbox_clear,
     reselect_items,
 )
-from simple_to_pdf.pdf.pdf_merger import PdfMerger
 
 logger = logging.getLogger(__name__)
 
