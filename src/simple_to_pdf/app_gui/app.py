@@ -1,12 +1,12 @@
 import logging
 import os
-import platform
 import subprocess
 import sys
 import tkinter as tk
 import webbrowser
 from pathlib import Path
 from tkinter import filedialog, messagebox, scrolledtext
+from typing import Callable
 
 import requests
 from packaging import version
@@ -46,9 +46,7 @@ class PDFMergerGUI(tk.Tk):
         self.init_panels()
         self.init_connections()
         handlers = self._setup_handlers()
-        self.list_controls: dict[str, tk.Widget] = self.btns_panel.init_btns(
-            callbacks=handlers
-        )
+        self.list_controls: dict[str, tk.Widget] = self.btns_panel.init_btns(callbacks=handlers)
         self.build_gui(parent=self, callbacks=handlers)
 
     def init_panels(self) -> None:
@@ -87,9 +85,9 @@ class PDFMergerGUI(tk.Tk):
         self._toggle_menu_items(menu_obj=self.menu, active=menu_active)
 
     def build_gui(
-        self, *, parent: tk.Tk, callbacks: dict[str, callable]
-    ) -> dict[str, tk.Widget]:
-        """Builds the main GUI layout and returns a dictionary of widgets."""
+        self, *, parent: tk.Tk, callbacks: dict[str, Callable]
+    ) -> None:
+        """Builds the main GUI layout"""
 
         # Window settings
         parent.title(f"{self.APP_NAME} - PDF Merger")
@@ -99,7 +97,7 @@ class PDFMergerGUI(tk.Tk):
         self.btns_panel.pack(side="right", fill="both")
 
     def _build_menu_bar(
-        self, *, parent: tk.Tk, callbacks: dict[str, callable]
+        self, *, parent: tk.Tk, callbacks: dict[str, Callable]
     ) -> tk.Menu:
         """Builds the menu bar for the application."""
 
@@ -137,14 +135,14 @@ class PDFMergerGUI(tk.Tk):
         # Get the absolute path as a string
         path_str = str(log_dir.absolute())
 
-        if platform.system() == "Windows":
+        if sys.platform == "win32":
             # On Windows, os.startfile handles the explorer process correctly
             try:
                 os.startfile(path_str)
             except Exception as e:
                 logger.error(f"Could not open folder on Windows: {e}")
 
-        elif platform.system() == "Linux":
+        elif sys.platform == "linux":
             # Create a clean environment copy to avoid library conflicts
             # PyInstaller sets LD_LIBRARY_PATH which can break system apps like xdg-open
             clean_env = os.environ.copy()
@@ -168,7 +166,7 @@ class PDFMergerGUI(tk.Tk):
     def _setup_handlers(self) -> dict:
         """Create a dictionary of commands to pass to the Builder."""
 
-        handlers: dict[str, callable] = {
+        handlers: dict[str, Callable] = {
             "add": self.main_panel.add_files,
             "merge": self.on_merge,
             "extract": self.prompt_pages_to_remove,
@@ -274,7 +272,7 @@ class PDFMergerGUI(tk.Tk):
             command=lambda: webbrowser.open(GITHUB_REPO_URL),
         ).pack(pady=5)
 
-    def show_license(self) -> None:
+    def _get_licence_path(self):
         # Filename exactly as it is in your folder
         license_name = "LICENSE"
 
@@ -282,22 +280,22 @@ class PDFMergerGUI(tk.Tk):
         if hasattr(sys, "frozen"):
             # sys.executable is the path to the executable file or the Python binary itself
             base_path = Path(sys.executable).parent
-
-            # If running from .exe (PyInstaller unpacks everything to the _MEIPASS root)
-            if hasattr(sys, "_MEIPASS"):
-                base_path = Path(sys._MEIPASS)
-
+        # If running from .exe (PyInstaller unpacks everything to the _MEIPASS root)
+        elif hasattr(sys, "_MEIPASS"):
+            base_path = Path(getattr(sys, "_MEIPASS"))
         else:
             # If in development: main.py -> simple_to_pdf -> src -> project root
             base_path = Path(__file__).resolve().parent.parent.parent.parent
 
-        license_path = base_path / license_name
+        return base_path / license_name
+
+    def show_license(self) -> None:
+        license_path=self._get_licence_path()
 
         # Reading file
         if not license_path.exists():
             logger.warning(f"⚠️ License file not found at path: {license_path}")
             return
-
         try:
             # Explicitly specify UTF-8, as Windows might attempt to read it using CP1251
             text = license_path.read_text(encoding="utf-8")
@@ -377,7 +375,7 @@ class PDFMergerGUI(tk.Tk):
                 self.after(0, lambda: self.main_panel.set_progress_determinate())
 
     def prompt_pages_to_remove(self):
-        input_path: str = get_files(filetypes=[("PDF files", "*.pdf")], multiple=False)
+        input_path = get_files(filetypes=[("PDF files", "*.pdf")], multiple=False)
 
         if not input_path:
             return
@@ -428,7 +426,7 @@ class PDFMergerGUI(tk.Tk):
         # Validate page numbers against the actual PDF file
         try:
             self.page_extractor.validate_pages(
-                input_path=input_path, pages_to_extract=pages
+                input_path=Path(input_path), pages_to_extract=pages
             )
         except ValueError as e:
             messagebox.showerror("Validation Error", str(e), parent=win)

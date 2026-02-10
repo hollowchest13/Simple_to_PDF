@@ -52,7 +52,7 @@ class MSOfficeConverter(ImageConverter):
             final_results.successful.extend(docs_res.successful)
             final_results.failed.extend(docs_res.failed)
         if imgs:
-            imgs_res: ConversionResult = self.convert_images_to_pdf(files=imgs)
+            imgs_res: ConversionResult = self._convert_images_to_pdf(files=imgs)
             final_results.successful.extend(imgs_res.successful)
             final_results.failed.extend(imgs_res.failed)
         if pres:
@@ -90,7 +90,7 @@ class MSOfficeConverter(ImageConverter):
 
             try:
                 # Try to upgrade to an early-bound instance for better performance/constants
-                return win32.gencache.EnsureDispatch(app)
+                return win32.gencache.EnsureDispatch(app)# type: ignore
             except Exception as e:
                 logger.warning(
                     f"⚠️ Gencache failed for {app_name}, using raw DispatchEx: {e}",
@@ -105,7 +105,7 @@ class MSOfficeConverter(ImageConverter):
             )
             try:
                 # Final Fallback: Dynamic Dispatch (completely ignores gen_py cache)
-                return win32.dynamic.DispatchEx(app_name)
+                return win32.dynamic.DispatchEx(app_name) # type: ignore
             except Exception as e_crit:
                 logger.error(
                     f"❌ Critical Error: All launch methods failed for {app_name}: {e_crit}",
@@ -120,6 +120,7 @@ class MSOfficeConverter(ImageConverter):
 
         # Important for workers in background threads
         pythoncom.CoInitialize()
+        powerpoint = None
         app_name = "PowerPoint.Application"
         try:
             # Using EnsureDispatch for stability in .exe (Nuitka)
@@ -203,6 +204,7 @@ class MSOfficeConverter(ImageConverter):
 
         # Run Excel only for this chunk
         pythoncom.CoInitialize()
+        excel=None
         app_name: str = "Excel.Application"
 
         try:
@@ -238,16 +240,16 @@ class MSOfficeConverter(ImageConverter):
         for sheet in wb.Sheets:
             width = sheet.UsedRange.Columns.Count
 
-            # Налаштовуємо орієнтацію
+            # Page orientation setup
             sheet.PageSetup.Orientation = 2 if width > 10 else 1
 
-            # Налаштовуємо масштабування
+            # Setup page scaling
             sheet.PageSetup.Zoom = False
             sheet.PageSetup.FitToPagesWide = 1
             sheet.PageSetup.FitToPagesTall = False
             sheet.PageSetup.FitToPagesTall = False
 
-    def _convert_single_table(self, excel_app, file_path: Path) -> bytes | None:
+    def _convert_single_table(self, excel_app, file_path: Path) -> bytes:
         """Converting a single file inside the opened application."""
 
         input_file = file_path.resolve()
@@ -292,6 +294,7 @@ class MSOfficeConverter(ImageConverter):
     ) -> ConversionResult:
         chunk_res: ConversionResult = ConversionResult()
         pythoncom.CoInitialize()
+        word=None
         app_name: str = "Word.Application"
         try:
             word = self._get_app_instance(app_name=app_name)
@@ -301,7 +304,6 @@ class MSOfficeConverter(ImageConverter):
             word.Visible = False
             word.DisplayAlerts = 0  # 0 = wdAlertsNone (disable all pop-up windows)
             for idx, wf in chunk:
-                pdf_data = None
                 try:
                     pdf_data = self._convert_single_document(word, wf)
                     chunk_res.successful.append((idx, pdf_data))
@@ -320,7 +322,7 @@ class MSOfficeConverter(ImageConverter):
             pythoncom.CoUninitialize()
         return chunk_res
 
-    def _convert_single_document(self, word_app, file_path: Path) -> bytes | None:
+    def _convert_single_document(self, word_app, file_path: Path) -> bytes:
         """Conversion of a single Word document within the open application."""
 
         input_file = file_path.resolve()

@@ -1,14 +1,19 @@
 import logging
 from pathlib import Path
-
+from abc import ABC, abstractmethod
+from simple_to_pdf.converters.models import ConversionResult
 logger = logging.getLogger(__name__)
 
 
-class BaseConverter:
+class BaseConverter(ABC):
     SUPPORTED_FORMATS = {"pdf": {".pdf"}}
 
     def __init__(self, *, chunk_size: int = 30):
         self.chunk_size = chunk_size
+    
+    @abstractmethod
+    def convert_to_pdf(self, *, files: list[tuple[int, Path]]) -> ConversionResult:
+        pass
 
     @staticmethod
     def make_chunks(lst, n):

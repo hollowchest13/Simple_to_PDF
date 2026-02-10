@@ -1,11 +1,12 @@
 import logging
 import os
 from tkinter import filedialog, messagebox
+from typing import overload, Literal, Sequence, Union
 
 logger = logging.getLogger(__name__)
 
 
-def get_text(*, file_name: str, file_path: str) -> str:
+def get_text(*, file_name: str, file_path: str) -> str|None:
     if not os.path.exists(file_path):
         messagebox.showwarning("Warning", f"{file_name} file not found")
         return
@@ -18,8 +19,17 @@ def get_text(*, file_name: str, file_path: str) -> str:
         messagebox.showerror("Error", err_msg)
         return
 
+@overload
+def get_files(*, filetypes: Union[list, tuple] = ..., multiple: Literal[True] = True) ->tuple[str, ...]: 
+    """Returns a sequence of file paths when multiple=True."""
+    ...
 
-def get_files(*, filetypes: list | tuple = (".pdf",), multiple=True):
+@overload
+def get_files(*, filetypes: Union[list, tuple] = ..., multiple: Literal[False]) -> str: 
+    """Returns a single file path string when multiple=False."""
+    ...
+
+def get_files(*, filetypes: list | tuple = (".pdf",), multiple=True)-> Union[tuple[str, ...], str]:
     """
     Open dialog window to select files.
     Supports both raw extensions: (".pdf", ".docx")

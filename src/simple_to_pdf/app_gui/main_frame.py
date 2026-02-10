@@ -2,9 +2,10 @@ import logging
 import tkinter as tk
 from tkinter import messagebox, ttk
 
+from simple_to_pdf.app_gui.app import PDFMergerGUI
 from simple_to_pdf.pdf.pdf_merger import PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
-from simple_to_pdf.utils.ui_tolls import (
+from simple_to_pdf.utils.ui_tools import (
     clear_text_widget,
     get_selected_values,
     list_update,
@@ -16,13 +17,19 @@ logger = logging.getLogger(__name__)
 
 
 class MainFrame(tk.Frame):
+   
     def __init__(self, parent: tk.Tk, merger: PdfMerger):
         super().__init__(parent)
+        self.merger=merger
         self.ui: dict[str, tk.Widget] = {}
+        self.status_text:tk.Text
+        self.filebox:tk.Listbox
+        self.progress_bar: ttk.Progressbar
+        self.progress_label:tk.Label
 
         # Set attributes and register in self.ui
         self._register_components(self._setup_layout())
-        self.merger = merger
+        
 
     def _setup_layout(self):
         raw_components = {}

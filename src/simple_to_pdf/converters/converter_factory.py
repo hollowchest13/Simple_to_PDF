@@ -2,6 +2,8 @@ import logging
 import platform
 import shutil
 from pathlib import Path
+from typing import Callable, List
+from simple_to_pdf.converters.base_converter import BaseConverter
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +37,7 @@ class ConverterFactory:
             "Please specify the path manually via the 'soffice_path' parameter."
         )
 
-    def _get_libre_path(self, *, custom_path: str = None) -> str:
+    def _get_libre_path(self, *, custom_path: str|None = None) -> str|None:
         """Find path to LibreOffice depending on the system"""
 
         if custom_path:
@@ -75,10 +77,10 @@ class ConverterFactory:
 
         return ImageConverter(chunk_size=chunk_size)
 
-    def get_converter(self):
+    def get_converter(self)->BaseConverter:
         os_name = platform.system()
         logger.info(f"Operating System detected: {os_name}")
-        strategies = []
+        strategies: List[Callable[[], BaseConverter]] = []
         if os_name == "Windows":
             strategies = [
                 lambda: self._try_ms_office(chunk_size=self.chunk_size),
@@ -89,8 +91,12 @@ class ConverterFactory:
         strategies.append(lambda: self._try_image_only(chunk_size=self.chunk_size))
         for strategy in strategies:
             try:
-                converter = strategy()
+                converter:BaseConverter = strategy()
                 logger.info(f"Using converter: {converter.__class__.__name__}")
                 return converter
             except Exception as e:
                 logger.warning(f"Converter initialization failed: {e}", exc_info=True)
+        raise RuntimeError(
+            "Could not initialize any converter. "
+            "Please check if LibreOffice or MS Office is installed."
+        )

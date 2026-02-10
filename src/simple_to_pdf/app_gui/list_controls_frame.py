@@ -1,25 +1,31 @@
 import logging
 import tkinter as tk
+from typing import Callable
 
 logger = logging.getLogger(__name__)
 
 
 class ListControlsFrame(tk.Frame):
+    
     def __init__(self, *, parent: tk.Tk):
         super().__init__(parent)
+        self.ui: dict[str, tk.Widget] = {}
 
-    def init_btns(self, *, callbacks: dict[str, callable]) -> None:
-        self.ui: dict[str, tk.Widget] = self._build_right_controls_area(
+    def init_btns(self, *, callbacks: dict[str, Callable]) -> dict[str, tk.Widget]:
+        file_nav_btns:dict[str, tk.Button]=self._build_file_navigation_panel(
             callbacks=callbacks
         )
+        self.ui.update(file_nav_btns)
         for key, value in self.ui.items():
             setattr(self, key, value)
+        return self.ui
 
-    def _build_right_controls_area(
-        self, *, callbacks: dict[str, callable]
+    def _build_file_navigation_panel(
+        self, *, callbacks: dict[str, Callable]
     ) -> dict[str, tk.Button]:
         controls_frame: tk.Frame = tk.Frame(self)
         controls_frame.grid(row=0, column=0, sticky="n", padx=4, pady=8)
+
         btns = {}
         btns_width = 4
         btns_height = 2

@@ -35,7 +35,11 @@ class ImageConverter(BaseConverter):
         self.chunk_size = chunk_size
         self.SUPPORTED_FORMATS = self.get_supported_formats()
 
-    def convert_images_to_pdf(
+    def convert_to_pdf(self,*, files: list[tuple[int, Path]]) -> ConversionResult:
+        return self._convert_images_to_pdf(files=files)
+        
+    
+    def _convert_images_to_pdf(
         self, *, files: list[tuple[int, Path]]
     ) -> ConversionResult:
         all_results: ConversionResult = ConversionResult()

@@ -5,15 +5,17 @@ from pathlib import Path
 from pypdf import PdfReader, PdfWriter
 
 from simple_to_pdf.converters import ConverterFactory
+from simple_to_pdf.converters.base_converter import BaseConverter
 from simple_to_pdf.converters.models import ConversionResult
 
 logger = logging.getLogger(__name__)
 
 
 class PdfMerger:
+   
     def __init__(self):
         factory = ConverterFactory()
-        self.converter = factory.get_converter()
+        self.converter:BaseConverter= factory.get_converter()
 
     def _get_pdfs_bytes(
         self, files: list[tuple[int, str]], callback=None

@@ -29,7 +29,7 @@ class LibreOfficeConverter(ImageConverter):
 
     def convert_to_pdf(
         self, *, files: list[tuple[int, Path]]
-    ) -> list[tuple[int, bytes]]:
+    ) -> ConversionResult:
         docs: list[tuple[int, Path]] = []
         imgs: list[tuple[int, Path]] = []
         final_result: ConversionResult = ConversionResult()
@@ -46,7 +46,7 @@ class LibreOfficeConverter(ImageConverter):
             elif self.is_image_file(file_path=path):
                 imgs.append((idx, path))
         docs_res = self._convert_docs_to_pdf(files=docs)
-        img_res = self.convert_images_to_pdf(files=imgs)
+        img_res = self._convert_images_to_pdf(files=imgs)
 
         final_result.successful.extend(docs_res.successful)
         final_result.failed.extend(docs_res.failed)
@@ -124,7 +124,7 @@ class LibreOfficeConverter(ImageConverter):
             tmp_path = Path(tmp_dir)
 
             # Prepare files (copy with index prefix)
-            all_tmp_paths: Path = self._prepare_temp_files(
+            all_tmp_paths: list[Path] = self._prepare_temp_files(
                 chunk=chunk, tmp_path=tmp_path
             )
             # Selecting EVERYTHING that requires conversion to .xlsx before running openpyxl
@@ -194,6 +194,7 @@ class LibreOfficeConverter(ImageConverter):
                 sheet.page_setup.fitToHeight = 0
 
                 # Enabling scaling mode (required for fitToWidth to take effect).
+                assert sheet.sheet_properties.pageSetUpPr is not None
                 sheet.sheet_properties.pageSetUpPr.fitToPage = True
 
                 # Paper Size: Set to A4 (as a fallback/safety measure)
@@ -244,6 +245,7 @@ class LibreOfficeConverter(ImageConverter):
             logger.error(
                 f"❌ Unexpected error during table conversion: {e}", exc_info=True
             )
+            return False
 
     def _collect_results(
         self, *, chunk: list[tuple[int, Path]], tmp_path: Path
@@ -259,7 +261,7 @@ class LibreOfficeConverter(ImageConverter):
                 res.failed.append((idx, original_path))
         return res
 
-    def get_excel_width(self, *, file_path: Path) -> dict[Path, int]:
+    def get_excel_width(self, *, file_path: Path) -> dict[str, int]:
         workbook = openpyxl.load_workbook(filename=file_path, data_only=True)
         report: dict[str, int] = {}
         for sheet_name in workbook.sheetnames:
