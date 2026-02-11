@@ -1,5 +1,4 @@
 import requests
-from typing import Dict, Any, Optional
 
 def fetch_remote_content(file_url: str, timeout: int = 5) -> str:
     """

@@ -2,7 +2,6 @@ import logging
 import tkinter as tk
 from tkinter import messagebox, ttk
 
-from simple_to_pdf.app_gui.app import PDFMergerGUI
 from simple_to_pdf.pdf.pdf_merger import PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
 from simple_to_pdf.utils.ui_tools import (

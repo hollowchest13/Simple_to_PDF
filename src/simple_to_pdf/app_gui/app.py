@@ -8,41 +8,30 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, scrolledtext
 from typing import Callable
 
-import requests
-from packaging import version
-
 from simple_to_pdf.app_gui.gui_callback import GUICallback
 from simple_to_pdf.app_gui.list_controls_frame import ListControlsFrame
 from simple_to_pdf.app_gui.main_frame import MainFrame
 from simple_to_pdf.cli.logger import get_log_dir
+from simple_to_pdf.core.version import VersionController
 from simple_to_pdf.pdf import PageExtractor, PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
 from simple_to_pdf.utils.logic import get_pages
 from simple_to_pdf.utils.ui_tools import change_state, ui_locker
+from simple_to_pdf.app_gui.about_dialog import AboutDialog
+from simple_to_pdf.app_gui.update_dialog import UpdateDialog
+from simple_to_pdf.app_gui.info_dialog import InfoDialog
+from simple_to_pdf.core import config
 
 logger = logging.getLogger(__name__)
-
-# --- App constants ---
-APP_VERSION = "1.0.1"
-GITHUB_USER = "hollowchest13"
-GITHUB_REPO = "Simple_to_PDF"
-
-# Dynamically constructing URLs for easier modification.
-GITHUB_REPO_URL = f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}"
-
-# Path to the version.json file in the cli directory
-VERSION_JSON_URL = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/main/src/simple_to_pdf/cli/version.json"
-README_URL = f"{GITHUB_REPO_URL}#readme"
-RELEASES_URL = f"{GITHUB_REPO_URL}/releases"
-
 
 class PDFMergerGUI(tk.Tk):
     APP_NAME: str = "Simple_to_PDF"
 
-    def __init__(self, *, merger: PdfMerger, page_extractor: PageExtractor):
+    def __init__(self, *, merger: PdfMerger, page_extractor: PageExtractor,version_controller:VersionController):
         super().__init__()
         self.merger = merger
         self.page_extractor = page_extractor
+        self.version_controller=version_controller
         self.init_panels()
         self.init_connections()
         handlers = self._setup_handlers()
@@ -174,159 +163,88 @@ class PDFMergerGUI(tk.Tk):
             "move": self.main_panel.move_on_listbox,
             "license": self.show_license,
             "documentation": self.show_documentation,
-            "update": self.check_updates,
+            "update": self.on_check_updates_click,
             "about": self.show_about,
             "clear_status": self.main_panel.clear_status_text,
             "logs": self.open_log_folder,
         }
         return handlers
 
-    def check_updates(self):
-        """Fetches the latest version info from GitHub and prompts for update."""
-        try:
-            response = requests.get(VERSION_JSON_URL, timeout=5)
-            response.raise_for_status()
+    def on_check_updates_click(self):
+        """
+        Handles the update check event from the UI.
+        """
+        # 1. Fetch data from controller
+        result = self.version_controller.check_for_updates()
 
-            data = response.json()
-            latest_version = data.get("version")
-            release_notes = data.get("notes", "No release notes provided.")
-
-            if not latest_version:
-                raise ValueError("Version is missing in the response.")
-
-            if version.parse(latest_version) <= version.parse(APP_VERSION):
-                messagebox.showinfo(
-                    "Update Check",
-                    f"You are up to date!\nVersion {APP_VERSION} is the latest.",
-                )
-            else:
-                message = (
-                    f"A new version is available: {latest_version}\n\n"
-                    f"What's new:\n{release_notes}\n\n"
-                    "Would you like to visit the download page?"
-                )
-                if messagebox.askyesno("Update Available", message):
-                    webbrowser.open(RELEASES_URL)
-
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Update check failed (Network error): {e}")
+        # 2. Handle errors
+        if result.error_message:
             messagebox.showerror(
-                "Update Error",
-                "Could not connect to the update server.\nPlease check your internet connection.",
+                "Update Error", 
+                f"Unable to check for updates:\n{result.error_message}"
             )
-        except Exception as e:
-            logger.error(f"Update check failed: {e}")
-            messagebox.showerror("Update Error", f"An unexpected error occurred:\n{e}")
+            return
+
+        # 3. If update found, show the beautiful dialog
+        if result.is_available and result.release:
+            UpdateDialog(self, result.release)
+    
+        # 4. If no update found
+        else:
+            current_v = self.version_controller._get_current_version()
+            messagebox.showinfo(
+                "Software Update", 
+                f"You're all set! Version {current_v} is the latest available."
+            )
 
     def show_about(self):
-        """Displays a modal window with application information."""
-
-        about_window = tk.Toplevel(self)
-        about_window.title("About")
-        about_window.geometry("380x280")
-        about_window.resizable(False, False)
-        about_window.transient(self)
-        about_window.grab_set()
-
-        # App Title & Version
-        tk.Label(about_window, text=self.APP_NAME, font=("Arial", 12, "bold")).pack(
-            pady=15
-        )
-        tk.Label(about_window, text=f"Application Version: {APP_VERSION}").pack()
-
-        # Engine Info (Dynamic check)
+        """Gathers data and displays the About Dialog."""
+        # 1. Get version from controller
+        current_version = self.version_controller._get_current_version()
+    
+        # 2. Get engine name
         engine_class = getattr(self.merger.converter, "__class__", None)
         engine_name = engine_class.__name__ if engine_class else "Unknown"
-        tk.Label(
-            about_window, text=f"Conversion Engine: {engine_name}", fg="gray"
-        ).pack(pady=5)
 
-        # Description
-        desc = (
-            "A professional tool for batch converting\nand merging documents into PDF."
-        )
-        tk.Label(about_window, text=desc, justify="center", pady=10).pack()
-
-        # Disclaimer (Відмова від гарантій)
-        disclaimer = (
-            "Provided 'as is' without any warranties.\n"
-            "The author is not responsible for any data loss."
-        )
-        tk.Label(
-            about_window,
-            text=disclaimer,
-            font=("Arial", 7, "italic"),
-            fg="gray",
-            justify="center",
-        ).pack(pady=5)
-
-        # Footer
-        tk.Label(
-            about_window, text="© 2025 All Rights Reserved", font=("Arial", 8)
-        ).pack(side="bottom", pady=10)
-
-        tk.Button(
-            about_window,
-            text="Project GitHub",
-            width=20,
-            command=lambda: webbrowser.open(GITHUB_REPO_URL),
-        ).pack(pady=5)
-
-    def _get_licence_path(self):
-        # Filename exactly as it is in your folder
-        license_name = "LICENSE"
-
-        # Path search logic
-        if hasattr(sys, "frozen"):
-            # sys.executable is the path to the executable file or the Python binary itself
-            base_path = Path(sys.executable).parent
-        # If running from .exe (PyInstaller unpacks everything to the _MEIPASS root)
-        elif hasattr(sys, "_MEIPASS"):
-            base_path = Path(getattr(sys, "_MEIPASS"))
-        else:
-            # If in development: main.py -> simple_to_pdf -> src -> project root
-            base_path = Path(__file__).resolve().parent.parent.parent.parent
-
-        return base_path / license_name
+        # 3. Open the dialog
+        AboutDialog(self, current_version, engine_name)
 
     def show_license(self) -> None:
-        license_path=self._get_licence_path()
+        """Displays the license file in a styled TextWindow."""
+        license_path = config.LICENCE_PATH
 
-        # Reading file
+        # 1. Check if file exists
         if not license_path.exists():
             logger.warning(f"⚠️ License file not found at path: {license_path}")
+            messagebox.showwarning(
+                "File Not Found", 
+                f"License file could not be found at:\n{license_path}"
+            )
             return
+
         try:
-            # Explicitly specify UTF-8, as Windows might attempt to read it using CP1251
+            # 2. Reading file (UTF-8 is essential for cross-platform compatibility)
             text = license_path.read_text(encoding="utf-8")
-            self._create_text_window(title="LICENSE", text=text)
+
+             # 3. Call the new class instead of the old method
+            InfoDialog(
+                self, 
+                text=text, 
+                title="License Agreement", 
+                header_title="MIT License - Simple to PDF", # Заголовок всередині вікна
+                text_font="Consolas",  # Моноширинний шрифт для офіційних документів
+                font_size=10,
+                size="700x600"
+            )
+        
         except Exception as e:
             logger.error(f"❌ Error reading license file: {e}")
-
-    def _create_text_window(
-        self,
-        *,
-        text: str,
-        title: str,
-        size: str = "700x400",
-        text_font: str = "Consolas",
-        font_size: int = 10,
-    ) -> None:
-        top = tk.Toplevel(self)
-        top.title(title)
-        top.geometry(size)
-        top.resizable(False, False)
-        txt: scrolledtext.ScrolledText = scrolledtext.ScrolledText(
-            top, wrap=tk.WORD, font=(text_font, font_size)
-        )
-        txt.insert(tk.END, text)
-        txt.config(state=tk.DISABLED)
-        txt.pack(expand=True, fill="both", padx=10, pady=10)
-        btn_close: tk.Button = tk.Button(top, text="Got it!", command=top.destroy)
-        btn_close.pack(pady=5)
-
+            messagebox.showerror(
+                "Read Error", 
+                f"An error occurred while reading the license:\n{str(e)}"
+            )
     def show_documentation(self) -> None:
-        webbrowser.open(README_URL)
+        webbrowser.open(config.README_URL)
 
     def on_merge(self):
         """Handler for Merge button click"""
