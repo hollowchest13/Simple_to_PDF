@@ -1,6 +1,6 @@
 import logging
 
-from simple_to_pdf.app_gui.app import PDFMergerGUI
+from simple_to_pdf.app_gui.main_window import PDFMergerGUI
 from simple_to_pdf.cli.logger import setup_logger
 from simple_to_pdf.core.version import VersionController
 from simple_to_pdf.pdf import PageExtractor, PdfMerger

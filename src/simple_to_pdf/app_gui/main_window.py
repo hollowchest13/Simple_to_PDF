@@ -5,7 +5,7 @@ import sys
 import tkinter as tk
 import webbrowser
 from pathlib import Path
-from tkinter import filedialog, messagebox, scrolledtext
+from tkinter import filedialog, messagebox
 from typing import Callable
 
 from simple_to_pdf.app_gui.gui_callback import GUICallback
@@ -17,30 +17,36 @@ from simple_to_pdf.pdf import PageExtractor, PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
 from simple_to_pdf.utils.logic import get_pages
 from simple_to_pdf.utils.ui_tools import change_state, ui_locker
-from simple_to_pdf.app_gui.about_dialog import AboutDialog
-from simple_to_pdf.app_gui.update_dialog import UpdateDialog
-from simple_to_pdf.app_gui.info_dialog import InfoDialog
+from simple_to_pdf.app_dialog.about_dialog import AboutDialog
+from simple_to_pdf.app_dialog.update_dialog import UpdateDialog
+from simple_to_pdf.app_dialog.info_dialog import InfoDialog
 from simple_to_pdf.core import config
+from simple_to_pdf.app_gui.base_window import BaseWindow 
 
 logger = logging.getLogger(__name__)
 
-class PDFMergerGUI(tk.Tk):
+class PDFMergerGUI(BaseWindow):
     APP_NAME: str = "Simple_to_PDF"
 
     def __init__(self, *, merger: PdfMerger, page_extractor: PageExtractor,version_controller:VersionController):
-        super().__init__()
+       
+        # Initialize BaseWindow
+        super().__init__(title=f"{config.APP_NAME}-PDF Merger",size="950x600")
         self.merger = merger
         self.page_extractor = page_extractor
         self.version_controller=version_controller
+        # build UI inside root_container inherited from BaseWindow
+
         self.init_panels()
         self.init_connections()
+
         handlers = self._setup_handlers()
         self.list_controls: dict[str, tk.Widget] = self.btns_panel.init_btns(callbacks=handlers)
-        self.build_gui(parent=self, callbacks=handlers)
+        self.build_gui(callbacks=handlers)
 
     def init_panels(self) -> None:
-        self.main_panel: MainFrame = MainFrame(parent=self, merger=self.merger)
-        self.btns_panel: ListControlsFrame = ListControlsFrame(parent=self)
+        self.main_panel: MainFrame = MainFrame(parent=self.root_container, merger=self.merger)
+        self.btns_panel: ListControlsFrame = ListControlsFrame(parent=self.root_container)
 
     def init_connections(self) -> None:
         self.callback = GUICallback(main_frame=self.main_panel)
@@ -74,16 +80,17 @@ class PDFMergerGUI(tk.Tk):
         self._toggle_menu_items(menu_obj=self.menu, active=menu_active)
 
     def build_gui(
-        self, *, parent: tk.Tk, callbacks: dict[str, Callable]
+        self, *, callbacks: dict[str, Callable]
     ) -> None:
         """Builds the main GUI layout"""
 
         # Window settings
-        parent.title(f"{self.APP_NAME} - PDF Merger")
-        parent.geometry("700x400")
-        self.menu = self._build_menu_bar(parent=parent, callbacks=callbacks)
-        self.main_panel.pack(side="left", fill="both", expand=True)
-        self.btns_panel.pack(side="right", fill="both")
+        
+        self.menu = self._build_menu_bar(parent=self, callbacks=callbacks)
+
+        # Side-by-side layout with padding
+        self.main_panel.pack(side="left", fill="both", expand=True, padx=(20, 10), pady=20)
+        self.btns_panel.pack(side="right", fill="y", padx=(10, 20), pady=20)
 
     def _build_menu_bar(
         self, *, parent: tk.Tk, callbacks: dict[str, Callable]
@@ -187,7 +194,7 @@ class PDFMergerGUI(tk.Tk):
 
         # 3. If update found, show the beautiful dialog
         if result.is_available and result.release:
-            UpdateDialog(self, result.release)
+            UpdateDialog(self,result.release.version,result.release.notes)
     
         # 4. If no update found
         else:

@@ -21,10 +21,8 @@ class LibreOfficeConverter(ImageConverter):
 
     def __init__(self, *, soffice_path: str, chunk_size: int = 30):
         # Call constructor of base class, so it can initialize its data
-        super().__init__()
-
+        super().__init__(chunk_size=chunk_size)
         self.soffice_path = soffice_path
-        self.chunk_size = chunk_size
         self.SUPPORTED_FORMATS = self.get_supported_formats()
 
     def convert_to_pdf(

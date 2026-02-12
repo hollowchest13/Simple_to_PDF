@@ -11,13 +11,14 @@ from simple_to_pdf.utils.ui_tools import (
     listbox_clear,
     reselect_items,
 )
+from simple_to_pdf.widgets.widgets import BaseFrame,BadgeLabel
 
 logger = logging.getLogger(__name__)
 
 
-class MainFrame(tk.Frame):
+class MainFrame(BaseFrame):
    
-    def __init__(self, parent: tk.Tk, merger: PdfMerger):
+    def __init__(self, parent: tk.Frame, merger: PdfMerger):
         super().__init__(parent)
         self.merger=merger
         self.ui: dict[str, tk.Widget] = {}
@@ -38,7 +39,7 @@ class MainFrame(tk.Frame):
         BOTTOM_SIDE_PAD: int = 10
         SB_CORRECTION: int = 14
 
-        status_area = tk.Frame(self)
+        status_area = BaseFrame(self)
         status_area.pack(
             side="bottom",
             fill="x",
@@ -46,7 +47,7 @@ class MainFrame(tk.Frame):
             pady=(TOP_SIDE_PAD, BOTTOM_SIDE_PAD),
         )
 
-        file_batch_area = tk.Frame(self)
+        file_batch_area = BaseFrame(self)
         file_batch_area.pack(
             fill="both",
             expand=True,
@@ -54,7 +55,7 @@ class MainFrame(tk.Frame):
             pady=(TOP_SIDE_PAD, BOTTOM_SIDE_PAD),
         )
 
-        progress_area = tk.Frame(self)
+        progress_area = BaseFrame(self)
         progress_area.pack(
             side="top",
             fill="x",
@@ -118,7 +119,7 @@ class MainFrame(tk.Frame):
     def _setup_progress_bar_area(
         self, progress_frame: tk.Frame
     ) -> tuple[ttk.Progressbar, tk.Label]:
-        label = tk.Label(progress_frame, text="Progress:")
+        label = BadgeLabel(progress_frame, text="Progress:")
         label.pack(pady=4)
 
         bar = ttk.Progressbar(progress_frame, orient="horizontal", mode="determinate")

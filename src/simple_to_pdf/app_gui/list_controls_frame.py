@@ -2,12 +2,14 @@ import logging
 import tkinter as tk
 from typing import Callable
 
+from simple_to_pdf.widgets.widgets import BaseFrame,PrimaryButton
+
 logger = logging.getLogger(__name__)
 
 
-class ListControlsFrame(tk.Frame):
+class ListControlsFrame(BaseFrame):
     
-    def __init__(self, *, parent: tk.Tk):
+    def __init__(self, *, parent: tk.Frame):
         super().__init__(parent)
         self.ui: dict[str, tk.Widget] = {}
 
@@ -23,7 +25,7 @@ class ListControlsFrame(tk.Frame):
     def _build_file_navigation_panel(
         self, *, callbacks: dict[str, Callable]
     ) -> dict[str, tk.Button]:
-        controls_frame: tk.Frame = tk.Frame(self)
+        controls_frame: tk.Frame = BaseFrame(self)
         controls_frame.grid(row=0, column=0, sticky="n", padx=4, pady=8)
 
         btns = {}
@@ -35,16 +37,16 @@ class ListControlsFrame(tk.Frame):
         # Create Up and Down buttons with callbacks
         btns_side = "top"
 
-        btns["btn_add"] = tk.Button(
+        btns["btn_add"] = PrimaryButton(
             controls_frame,
-            text="➕",
+            text="📄+",
             command=callbacks["add"],
             width=btns_width,
             height=btns_height,
         )
         btns["btn_add"].pack(side=btns_side, padx=btns_padx)
 
-        btns["btn_up"] = tk.Button(
+        btns["btn_up"] = PrimaryButton(
             controls_frame,
             text="▲",
             width=btns_width,
@@ -53,7 +55,7 @@ class ListControlsFrame(tk.Frame):
         )
         btns["btn_up"].pack(side=btns_side, padx=btns_padx, pady=btns_pady)
 
-        btns["btn_down"] = tk.Button(
+        btns["btn_down"] = PrimaryButton(
             controls_frame,
             text="▼",
             width=btns_width,
@@ -62,7 +64,7 @@ class ListControlsFrame(tk.Frame):
         )
         btns["btn_down"].pack(side=btns_side, padx=btns_padx, pady=btns_pady)
 
-        btns["btn_remove"] = tk.Button(
+        btns["btn_remove"] = PrimaryButton(
             controls_frame,
             text="🗑",
             command=callbacks["remove"],
