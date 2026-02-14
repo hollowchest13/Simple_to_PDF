@@ -3,7 +3,7 @@ from tkinter import scrolledtext
 from typing import Any
 
 from .base_dialog import BaseDialog
-from simple_to_pdf.widgets.widgets import PrimaryButton
+from simple_to_pdf.widgets import PrimaryButton
 
 class InfoDialog(BaseDialog):
     """
@@ -21,7 +21,7 @@ class InfoDialog(BaseDialog):
         font_size: int = 10
     ):
         # Initialize BaseDialog: it handles centering, modality, and layout frames
-        super().__init__(parent, title=title, size=size)
+        super().__init__(parent, title=title)
         
         # Populate the header inherited from BaseDialog
         self.set_header_text(header_title)

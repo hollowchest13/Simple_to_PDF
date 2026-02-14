@@ -1,17 +1,16 @@
 import tkinter as tk
+from typing import Optional
 
 class BaseDialog(tk.Toplevel):
     """
     Base class for all modal dialogs in the application.
     Handles centering, theme consistency, and standard layout.
     """
-    def __init__(self, parent, title: str, size: str = "440x500"):
+    def __init__(self, parent, title: str):
         super().__init__(parent)
         
         # Window configuration
         self.title(title)
-        self.geometry(size)
-        self.resizable(False, False)
         self.configure(bg="#ffffff")
         
         # Modal behavior: focus remains on this window until closed

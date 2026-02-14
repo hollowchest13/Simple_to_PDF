@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from simple_to_pdf.widgets.widgets import BaseFrame
+from simple_to_pdf.widgets import BaseFrame
 
 class BaseWindow(tk.Tk):
     """

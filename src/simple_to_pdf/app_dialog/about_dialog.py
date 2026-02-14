@@ -1,13 +1,15 @@
 from .base_dialog import BaseDialog
-from simple_to_pdf.widgets.widgets import PrimaryButton, BadgeLabel
+from simple_to_pdf.widgets import PrimaryButton, BadgeLabel
 import tkinter as tk
 import webbrowser
 
 class AboutDialog(BaseDialog):
+
     """Displays information about the app and engine."""
+
     def __init__(self, parent, version, engine_name):
         # We call the parent constructor with title and size
-        super().__init__(parent, title="About", size="440x400")
+        super().__init__(parent, title="About")
         
         # Use our helper from BaseDialog to set the header
         self.set_header_text("Simple to PDF", f"Version {version}")

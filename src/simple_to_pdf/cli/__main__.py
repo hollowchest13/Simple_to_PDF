@@ -1,19 +1,24 @@
 import logging
+import sys
 
 from simple_to_pdf.app_gui.main_window import PDFMergerGUI
 from simple_to_pdf.cli.logger import setup_logger
 from simple_to_pdf.core.version import VersionController
 from simple_to_pdf.pdf import PageExtractor, PdfMerger
 from simple_to_pdf.core import config
+from tendo import singleton
 
 logger = logging.getLogger(__name__)
 
 def main():
+    try:
+        me = singleton.SingleInstance(flavor_id="simple_to_pdf_unique_lock")
+    except singleton.SingleInstanceException:
+        sys.exit(0)
     setup_logger()
     merger = PdfMerger()
     page_extractor = PageExtractor()
     version_controller = VersionController(git_repo=config.GITHUB_REPO, git_user=config.GITHUB_USER)
-
     run_gui(merger=merger, page_extractor=page_extractor,version_controller=version_controller)
 
 

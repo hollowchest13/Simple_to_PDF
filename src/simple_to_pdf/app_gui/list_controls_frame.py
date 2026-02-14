@@ -2,7 +2,7 @@ import logging
 import tkinter as tk
 from typing import Callable
 
-from simple_to_pdf.widgets.widgets import BaseFrame,PrimaryButton
+from simple_to_pdf.widgets import BaseFrame,PrimaryButton
 
 logger = logging.getLogger(__name__)
 

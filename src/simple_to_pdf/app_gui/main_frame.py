@@ -11,7 +11,7 @@ from simple_to_pdf.utils.ui_tools import (
     listbox_clear,
     reselect_items,
 )
-from simple_to_pdf.widgets.widgets import BaseFrame,BadgeLabel
+from simple_to_pdf.widgets import BaseFrame,BadgeLabel
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +92,6 @@ class MainFrame(BaseFrame):
             mid,
             selectmode="multiple",
             yscrollcommand=scrollbar.set,
-            borderwidth=1,
             relief="solid",
         )
         listbox.pack(side="left", fill="both", expand=True)
