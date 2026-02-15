@@ -18,7 +18,7 @@ class BaseWindow(tk.Tk,ThemeProvider):
         
         self.title(window_title)
         self.geometry(window_size)
-        self.configure(background=self.get_color(ThemeKeys.BG_MAIN))
+        self.configure(background="red")
         
         self._init_base_layout()
 

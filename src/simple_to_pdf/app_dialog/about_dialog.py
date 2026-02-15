@@ -1,3 +1,4 @@
+from simple_to_pdf.core.config import ThemeKeys
 from .base_dialog import BaseDialog
 from simple_to_pdf.widgets import PrimaryButton, BadgeLabel
 import tkinter as tk
@@ -21,7 +22,7 @@ class AboutDialog(BaseDialog):
         tk.Label(
             self.content, 
             text="Professional utility for batch PDF processing.\nBuilt for efficiency and speed.",
-            bg="white", font=("Segoe UI", 10), fg="#4a5568"
+            bg=self.get_color(ThemeKeys.BG_MAIN), font=("Segoe UI", 10), fg=self.get_color(ThemeKeys.TEXT_PRIMARY)
         ).pack(pady=10)
 
         # Primary action button
