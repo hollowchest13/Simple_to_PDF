@@ -1,6 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-
+from typing import Literal
 from simple_to_pdf.app_gui.main_frame import MainFrame
 
 
@@ -34,10 +34,11 @@ class GUICallback:
     ) -> None:
         pb: ttk.Progressbar = self.main_frame.progress_bar
         pl: tk.Label = self.main_frame.progress_label
+        mode: Literal['determinate', 'indeterminate'] = 'determinate'
 
         if pb["mode"] != progress_bar_mode:
             pb.stop()
-            pb.config(mode=progress_bar_mode)
+            pb.config(mode=mode)
 
         if progress_bar_mode == "indeterminate":
             pb.start(10)

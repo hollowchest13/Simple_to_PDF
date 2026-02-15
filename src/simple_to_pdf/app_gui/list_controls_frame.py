@@ -29,7 +29,7 @@ class ListControlsFrame(BaseFrame):
         controls_frame.grid(row=0, column=0, sticky="n", padx=4, pady=8)
 
         btns = {}
-        btns_width = 4
+        btns_width = 6
         btns_height = 2
         btns_padx = 2
         btns_pady = 2
@@ -44,7 +44,7 @@ class ListControlsFrame(BaseFrame):
             width=btns_width,
             height=btns_height,
         )
-        btns["btn_add"].pack(side=btns_side, padx=btns_padx)
+        btns["btn_add"].pack(side=btns_side, padx=btns_padx, pady=btns_pady)
 
         btns["btn_up"] = PrimaryButton(
             controls_frame,

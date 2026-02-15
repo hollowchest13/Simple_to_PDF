@@ -17,9 +17,7 @@ from simple_to_pdf.pdf import PageExtractor, PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
 from simple_to_pdf.utils.logic import get_pages
 from simple_to_pdf.utils.ui_tools import change_state, ui_locker
-from simple_to_pdf.app_dialog.about_dialog import AboutDialog
-from simple_to_pdf.app_dialog.update_dialog import UpdateDialog
-from simple_to_pdf.app_dialog.info_dialog import InfoDialog
+from simple_to_pdf.app_dialog import AboutDialog,UpdateDialog,InfoDialog
 from simple_to_pdf.core import config
 from simple_to_pdf.app_gui.base_window import BaseWindow 
 

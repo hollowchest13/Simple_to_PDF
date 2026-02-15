@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 from datetime import datetime
-
+from enum import Enum
 
 # --- PATHS CONFIGURATION ---
 # Determine the base directory whether running as a script or a frozen executable.
@@ -31,3 +31,16 @@ LATEST_RELEASE_API = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/
 # --- APPLICATION METADATA ---
 APP_NAME = "Simple to PDF"
 CURRENT_YEAR = datetime.now().year
+
+class ThemeKeys(Enum):
+    BG_COLOR = "bg_color"
+    ACCENT = "accent"
+    TEXT_MAIN = "text_main"
+    BORDER = "border"
+
+DEFAULT_COLORS = {
+    ThemeKeys.BG_COLOR: "#ffffff",    
+    ThemeKeys.ACCENT: "#3498db",      
+    ThemeKeys.TEXT_MAIN: "#2c3e50",   
+    ThemeKeys.BORDER: "#e2e8f0"
+}

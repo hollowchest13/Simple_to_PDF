@@ -43,7 +43,8 @@ def change_state(*, widgets_dict: dict[str, tk.Widget], state: str) -> None:
 
     for widget in widgets_dict.values():
         try:
-            widget.config(state=state)
+            if "state" in widget.keys():
+                widget["state"] = state
         except tk.TclError:
             # Skip if widget doesn't have a state parameter (e.g., Frame)
             pass
@@ -71,3 +72,8 @@ def ui_locker(func):
         threading.Thread(target=run, daemon=True).start()
 
     return wrapper
+
+class ThemeProvider:
+    theme:dict
+    def get_color(self, key):
+        return self.theme.get(key, "#ffffff")

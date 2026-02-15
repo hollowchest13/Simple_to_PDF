@@ -4,6 +4,7 @@ from tkinter import messagebox, ttk
 
 from simple_to_pdf.pdf.pdf_merger import PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
+from simple_to_pdf.core.config import ThemeKeys,DEFAULT_COLORS
 from simple_to_pdf.utils.ui_tools import (
     clear_text_widget,
     get_selected_values,
@@ -26,6 +27,7 @@ class MainFrame(BaseFrame):
         self.filebox:tk.Listbox
         self.progress_bar: ttk.Progressbar
         self.progress_label:tk.Label
+        self.theme=DEFAULT_COLORS.copy()
 
         # Set attributes and register in self.ui
         self._register_components(self._setup_layout())
@@ -118,7 +120,8 @@ class MainFrame(BaseFrame):
     def _setup_progress_bar_area(
         self, progress_frame: tk.Frame
     ) -> tuple[ttk.Progressbar, tk.Label]:
-        label = BadgeLabel(progress_frame, text="Progress:")
+
+        label = tk.Label(progress_frame, text="Progress:",bg=self.theme[ThemeKeys.BG_COLOR])
         label.pack(pady=4)
 
         bar = ttk.Progressbar(progress_frame, orient="horizontal", mode="determinate")

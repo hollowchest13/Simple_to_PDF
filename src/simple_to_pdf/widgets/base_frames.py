@@ -1,12 +1,14 @@
 import tkinter as tk
-class BaseFrame(tk.Frame):
+from simple_to_pdf.core.config import ThemeKeys,DEFAULT_COLORS
 
+class BaseFrame(tk.Frame):
     def __init__(self, parent, **kwargs):
-        if hasattr(parent, 'theme'):
-            self.theme = parent.theme
-        else:
-            self.theme = {"bg_white": "#ffffff"}
-        if 'bg' not in kwargs and 'background' not in kwargs:
-            kwargs['bg'] = self.theme.get("bg_white", "#ffffff")
-            
+
+        # Inherit theme from parent or use default
+        self.theme = getattr(parent, 'theme', DEFAULT_COLORS)
+        
+        # Set background color ONLY if not explicitly provided
+        kwargs.setdefault('bg', self.theme.get(ThemeKeys.BG_COLOR, "#ffffff"))
+        
+        # Call the super constructor with prepared kwargs
         super().__init__(parent, **kwargs)

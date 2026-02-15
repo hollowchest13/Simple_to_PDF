@@ -1,29 +1,35 @@
 import tkinter as tk
 
 from simple_to_pdf.widgets import BaseFrame
+from simple_to_pdf.core.config import ThemeKeys,DEFAULT_COLORS
+from simple_to_pdf.utils.ui_tools import ThemeProvider
 
-class BaseWindow(tk.Tk):
+class BaseWindow(tk.Tk,ThemeProvider):
     """
     Base class for the main application window.
     Focuses on layout structure and consistent theming.
     """
-    def __init__(self,*, title:str,size:str="1000x650"):
-        super().__init__()
-        self.theme={
-            "bg_white": "#ffffff",
-            "bg_gray": "#f8f9fa",
-            "accent": "#3498db",
-            "text_main": "#2c3e50",
-            "border": "#e2e8f0"
-        }
-        self.title(title)
-        self.geometry(size)
-        self.configure(bg=self.theme['bg_white'])
+    def __init__(self, **kwargs):
+        window_title = kwargs.pop('title', "Window")
+        window_size = kwargs.pop('size', "1000x600")
+        
+        temp_theme = DEFAULT_COLORS.copy()
+        bg_color = kwargs.pop('bg', temp_theme.get(ThemeKeys.BG_COLOR, "#ffffff"))
+
+        super().__init__(**kwargs)
+        
+        self.theme = temp_theme
+        self.title(window_title)
+        self.geometry(window_size)
+        self.configure(background=bg_color)
+        
         self._init_base_layout()
-    
+
     def _init_base_layout(self):
+
         """Creates top-level structural containers for the main window."""
-        self.root_container=BaseFrame(self,bg=self.theme["bg_white"])
+        
+        self.root_container=BaseFrame(self)
         self.root_container.pack(fill="both",expand=True)
 
     def set_window_icon(self, icon_path):
