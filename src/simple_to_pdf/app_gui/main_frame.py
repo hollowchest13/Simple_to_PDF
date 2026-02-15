@@ -121,7 +121,7 @@ class MainFrame(BaseFrame):
         self, progress_frame: tk.Frame
     ) -> tuple[ttk.Progressbar, tk.Label]:
 
-        label = tk.Label(progress_frame, text="Progress:",bg=self.theme[ThemeKeys.BG_COLOR])
+        label = BadgeLabel(progress_frame, text="Progress:",bg=self.get_color(ThemeKeys.BG_MAIN))
         label.pack(pady=4)
 
         bar = ttk.Progressbar(progress_frame, orient="horizontal", mode="determinate")

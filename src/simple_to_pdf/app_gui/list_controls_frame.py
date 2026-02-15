@@ -29,8 +29,8 @@ class ListControlsFrame(BaseFrame):
         controls_frame.grid(row=0, column=0, sticky="n", padx=4, pady=8)
 
         btns = {}
-        btns_width = 6
-        btns_height = 2
+        btns_width = 60
+        btns_height = 40
         btns_padx = 2
         btns_pady = 2
 

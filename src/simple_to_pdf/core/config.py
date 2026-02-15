@@ -32,15 +32,41 @@ LATEST_RELEASE_API = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/
 APP_NAME = "Simple to PDF"
 CURRENT_YEAR = datetime.now().year
 
+from enum import Enum
+
 class ThemeKeys(Enum):
-    BG_COLOR = "bg_color"
-    ACCENT = "accent"
-    TEXT_MAIN = "text_main"
-    BORDER = "border"
+    # Backgrounds / Surfaces
+    BG_MAIN = "bg_main"          # Main application window background
+    BG_HEADER = "bg_header"      # Top panel/navigation area
+    BG_CARD = "bg_card"          # Containers for lists or main content
+    BG_FOOTER = "bg_footer"      # Bottom status bar area
+    
+    # Text colors
+    TEXT_PRIMARY = "text_primary"    # High emphasis (Titles, main labels)
+    TEXT_SECONDARY = "text_secondary"  # Medium emphasis (Subtitles, hints)
+    TEXT_ON_ACCENT = "text_on_accent"  # Text color inside buttons (usually white)
+    
+    # Elements & Accents
+    ACCENT = "accent"            # Primary action color (e.g., "Convert" button)
+    ACCENT_HOVER = "accent_hover" # Slightly darker/lighter for mouse-over
+    BORDER = "border"            # Thin lines for separators or outlines
+    ERROR = "error"              # For failed processes or red alerts
 
 DEFAULT_COLORS = {
-    ThemeKeys.BG_COLOR: "#ffffff",    
-    ThemeKeys.ACCENT: "#3498db",      
-    ThemeKeys.TEXT_MAIN: "#2c3e50",   
-    ThemeKeys.BORDER: "#e2e8f0"
+    # Surfaces
+    ThemeKeys.BG_MAIN: "#F8FAFC",      # Lightest gray (App background)
+    ThemeKeys.BG_HEADER: "#F1F5F9",    # Soft gray (Header & Footer)
+    ThemeKeys.BG_CARD: "#FFFFFF",      # Pure white (The file list area)
+    ThemeKeys.BG_FOOTER: "#F1F5F9",    # Matching the header for symmetry
+    
+    # Typography
+    ThemeKeys.TEXT_PRIMARY: "#0F172A",   # Deep dark blue-gray
+    ThemeKeys.TEXT_SECONDARY: "#64748B", # Muted slate gray
+    ThemeKeys.TEXT_ON_ACCENT: "#FFFFFF", # White text on buttons
+    
+    # Interaction & Feedback
+    ThemeKeys.ACCENT: "#3B82F6",       # Vibrant modern blue
+    ThemeKeys.ACCENT_HOVER: "#2563EB", # Slightly darker blue for hover
+    ThemeKeys.BORDER: "#E2E8F0",       # Clean light border
+    ThemeKeys.ERROR: "#EF4444"         # Clean red for errors
 }

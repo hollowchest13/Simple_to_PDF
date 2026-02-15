@@ -3,6 +3,8 @@ import logging
 import threading
 import tkinter as tk
 
+from simple_to_pdf.core.config import DEFAULT_COLORS
+
 logger = logging.getLogger(__name__)
 
 
@@ -74,6 +76,6 @@ def ui_locker(func):
     return wrapper
 
 class ThemeProvider:
-    theme:dict
+    
     def get_color(self, key):
-        return self.theme.get(key, "#ffffff")
+        return DEFAULT_COLORS.get(key, "#ffffff")

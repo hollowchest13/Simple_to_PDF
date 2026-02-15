@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import scrolledtext
 from typing import Any
 
+from simple_to_pdf.core.config import ThemeKeys
+
 from .base_dialog import BaseDialog
 from simple_to_pdf.widgets import PrimaryButton
 
@@ -16,7 +18,7 @@ class InfoDialog(BaseDialog):
         text: str, 
         title: str, 
         header_title: str = "Information",
-        size: str = "700x550", 
+        size:str="700x500",
         text_font: str = "Segoe UI", 
         font_size: int = 10
     ):
@@ -39,7 +41,7 @@ class InfoDialog(BaseDialog):
             self.content, 
             wrap=tk.WORD, 
             font=(font_name, size),
-            bg=self.theme["bg_white"],
+            bg=self.get_color(ThemeKeys.BG_MAIN),
             fg="#34495e", # Slate gray text
             relief="flat",
             padx=10,

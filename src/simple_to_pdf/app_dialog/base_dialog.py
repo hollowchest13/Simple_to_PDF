@@ -1,7 +1,8 @@
 import tkinter as tk
-from typing import Optional
+from simple_to_pdf.core.config import ThemeKeys
+from simple_to_pdf.utils.ui_tools import ThemeProvider
 
-class BaseDialog(tk.Toplevel):
+class BaseDialog(tk.Toplevel,ThemeProvider):
     """
     Base class for all modal dialogs in the application.
     Handles centering, theme consistency, and standard layout.
@@ -11,22 +12,11 @@ class BaseDialog(tk.Toplevel):
         
         # Window configuration
         self.title(title)
-        self.configure(bg="#ffffff")
+        self.configure(bg=self.get_color(ThemeKeys.BG_MAIN))
         
         # Modal behavior: focus remains on this window until closed
         self.transient(parent)
         self.grab_set()
-        
-        # Standardized color palette (Theme)
-        self.theme = {
-            "bg_white": "#ffffff",
-            "bg_gray": "#f1f4f9",      # Used for header background
-            "accent": "#3182ce",       # Main brand color (blue)
-            "accent_hover": "#2b6cb0", # Darker blue for button hover
-            "text_main": "#1a202c",    # Dark slate for headings
-            "text_sub": "#718096",     # Muted gray for secondary text
-            "border": "#e2e8f0"
-        }
 
         # Initialize UI structure
         self._init_layout()
@@ -37,28 +27,28 @@ class BaseDialog(tk.Toplevel):
     def _init_layout(self):
         """Creates the structural frames: Header, Content, and Footer."""
         # Header: Light gray background for the title area
-        self.header = tk.Frame(self, bg=self.theme["bg_gray"], height=100)
+        self.header = tk.Frame(self, bg=self.get_color(ThemeKeys.BG_HEADER), height=100)
         self.header.pack(fill="x", side="top")
         
         # Content: Main white area for text and inputs
-        self.content = tk.Frame(self, bg=self.theme["bg_white"], padx=35, pady=20)
+        self.content = tk.Frame(self, bg=self.get_color(ThemeKeys.BG_MAIN), padx=35, pady=20)
         self.content.pack(fill="both", expand=True)
         
         # Footer: Bottom area for secondary labels or small buttons
-        self.footer = tk.Frame(self, bg=self.theme["bg_white"], pady=15)
+        self.footer = tk.Frame(self, bg=self.get_color(ThemeKeys.BG_MAIN), pady=15)
         self.footer.pack(side="bottom", fill="x")
 
     def set_header_text(self, title: str, subtitle: str|None = None):
         """Helper to quickly populate the header area with styled labels."""
         tk.Label(
             self.header, text=title, font=("Segoe UI", 16, "bold"),
-            bg=self.theme["bg_gray"], fg=self.theme["text_main"]
+            bg=self.get_color(ThemeKeys.BG_HEADER), fg=self.get_color(ThemeKeys.TEXT_SECONDARY)
         ).pack(pady=(25, 2))
         
         if subtitle:
             tk.Label(
                 self.header, text=subtitle, font=("Segoe UI", 9),
-                bg=self.theme["bg_gray"], fg=self.theme["text_sub"]
+                bg=self.get_color(ThemeKeys.BG_HEADER), fg=self.get_color(ThemeKeys.TEXT_SECONDARY)
             ).pack(pady=(0, 20))
 
     def _center_window(self, parent):

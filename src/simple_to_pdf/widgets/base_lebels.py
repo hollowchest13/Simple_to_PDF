@@ -1,5 +1,8 @@
 import tkinter as tk
-class BadgeLabel(tk.Label):
+from simple_to_pdf.utils.ui_tools import ThemeProvider
+from simple_to_pdf.core.config import ThemeKeys
+
+class BadgeLabel(tk.Label,ThemeProvider):
     """
     A label styled as a 'badge' or 'chip'.
     Ideal for displaying versions, engine names, or status tags.
@@ -7,31 +10,36 @@ class BadgeLabel(tk.Label):
    
     def __init__(self, parent, **kwargs):
 
+        bg_color=self.get_color(ThemeKeys.BG_MAIN)
+        fg_color=self.get_color(ThemeKeys.ACCENT)
+
         params = {
             "text": "Default",
             "font": ("Consolas", 9, "bold"),
-            "bg": "#ebf5fb",
-            "fg": "#3182ce",
+            "bg": bg_color,
+            "fg": fg_color,
             "padx": 10,
             "pady": 4,
             "relief": "flat"
         }
         params.update(kwargs)
-        params["text"] = str(params["text"]).upper()
         
         super().__init__(parent, **params)
 
-class SectionTitle(tk.Label):
+class SectionTitle(tk.Label,ThemeProvider):
     """
     Standardized title for content sections.
     """
     def __init__(self, parent, **kwargs):
 
+        bg_color=self.get_color(ThemeKeys.BG_MAIN)
+        fg_color=self.get_color(ThemeKeys.TEXT_PRIMARY)
+
         params = {
             "text": "Section Title",
             "font": ("Segoe UI", 11, "bold"),
-            "bg": "white",
-            "fg": "#1a202c",
+            "bg": bg_color,
+            "fg": fg_color,
             "anchor": "w",      
             "pady": 5
         }
