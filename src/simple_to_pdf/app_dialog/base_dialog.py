@@ -1,8 +1,8 @@
 import tkinter as tk
 from simple_to_pdf.core.config import ThemeKeys
-from simple_to_pdf.utils.ui_tools import ThemeProvider
+from simple_to_pdf.utils.ui_tools import ThemeProviderMixin
 
-class BaseDialog(tk.Toplevel,ThemeProvider):
+class BaseDialog(tk.Toplevel,ThemeProviderMixin):
     """
     Base class for all modal dialogs in the application.
     Handles centering, theme consistency, and standard layout.

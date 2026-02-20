@@ -1,8 +1,8 @@
 import tkinter as tk
-from simple_to_pdf.utils.ui_tools import ThemeProvider
+from simple_to_pdf.utils.ui_tools import ThemeProviderMixin
 from simple_to_pdf.core.config import ThemeKeys
 
-class BadgeLabel(tk.Label,ThemeProvider):
+class BadgeLabel(tk.Label,ThemeProviderMixin):
     """
     A label styled as a 'badge' or 'chip'.
     Ideal for displaying versions, engine names, or status tags.
@@ -26,7 +26,7 @@ class BadgeLabel(tk.Label,ThemeProvider):
         
         super().__init__(parent, **params)
 
-class SectionTitle(tk.Label,ThemeProvider):
+class SectionTitle(tk.Label,ThemeProviderMixin):
     """
     Standardized title for content sections.
     """

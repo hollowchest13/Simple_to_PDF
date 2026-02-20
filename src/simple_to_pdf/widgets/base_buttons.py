@@ -1,8 +1,8 @@
 import customtkinter as ctk
-from simple_to_pdf.utils.ui_tools import ThemeProvider
+from simple_to_pdf.utils.ui_tools import ThemeProviderMixin
 from simple_to_pdf.core.config import ThemeKeys
 
-class PrimaryButton(ctk.CTkButton,ThemeProvider):
+class PrimaryButton(ctk.CTkButton,ThemeProviderMixin):
     """
     A pre-styled button for main actions.
     Includes a hover effect that changes the background color.

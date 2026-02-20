@@ -8,11 +8,13 @@ import win32com.client as win32  # pyright: ignore[reportMissingModuleSource]
 
 from simple_to_pdf.converters.img_converter import ImageConverter
 from simple_to_pdf.converters.models import ConversionResult
+from simple_to_pdf.converters.ms_excel_formater import MSExcelFormattingMixin
 
 logger = logging.getLogger(__name__)
 
 
-class MSOfficeConverter(ImageConverter):
+    
+class MSOfficeConverter(ImageConverter,MSExcelFormattingMixin):
     SUPPORTED_FORMATS = {
         "table": {".xls", ".xlsx", ".xlsm", ".xlsb"},
         "document": {".doc", ".docx", ".docm", ".rtf", ".txt"},
@@ -232,21 +234,7 @@ class MSOfficeConverter(ImageConverter):
             gc.collect()
             pythoncom.CoUninitialize()
         return chunk_res
-
-    def _prepare_table_for_export(self, wb):
-        """Setup printing options"""
-
-        for sheet in wb.Sheets:
-            width = sheet.UsedRange.Columns.Count
-
-            # Page orientation setup
-            sheet.PageSetup.Orientation = 2 if width > 10 else 1
-
-            # Setup page scaling
-            sheet.PageSetup.Zoom = False
-            sheet.PageSetup.FitToPagesWide = 1
-            sheet.PageSetup.FitToPagesTall = False
-            sheet.PageSetup.FitToPagesTall = False
+               
 
     def _convert_single_table(self, excel_app, file_path: Path) -> bytes:
         """Converting a single file inside the opened application."""
@@ -260,7 +248,7 @@ class MSOfficeConverter(ImageConverter):
 
         try:
             wb = excel_app.Workbooks.Open(str(input_file), ReadOnly=True)
-            self._prepare_table_for_export(wb=wb)
+            self._prepare_table_for_export(workbook=wb)
             wb.ExportAsFixedFormat(0, str(temp_pdf_path))
             pdf_bytes = temp_pdf_path.read_bytes()
         except Exception as e:
