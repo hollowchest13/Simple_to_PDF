@@ -3,62 +3,77 @@ from pathlib import Path
 import openpyxl
 from openpyxl.worksheet.properties import PageSetupProperties
 logger = logging.getLogger(__name__)
+
+from enum import Enum, IntEnum
+
+class ExcelPageConst(IntEnum):
+    """General Excel page constants."""
+    COL_THRESHOLD_LANDSCAPE = 10
+    A4_PAPER_SIZE = 9  # Standard A4 in openpyxl/Excel
+
+class ExcelMargins(Enum):
+    """Standardized margins in inches."""
+    SIDE = 0.15
+    TOP_BOTTOM = 0.2
+
 class OpenPyXlFormatterMixin:
-    """
-    A mixin for formatting .xlsx files using the openpyxl library.
-    Ideal for Linux environments as it modifies XML directly without requiring MS Excel.
-    """
+    """Mixin for formatting .xlsx files using openpyxl with ChartSheet support."""
 
     def _prepare_excel_scaling(self, *, file_path: Path):
         """
-        Configures Excel print and layout settings to ensure tables fit correctly 
-        on the page and do not 'break' during conversion.
+        Configures print settings for all sheets including charts using Enum constants.
         """
         wb = None
         try:
-            # Load the workbook. Using string representation of Path for compatibility.
             wb = openpyxl.load_workbook(str(file_path))
 
+            # Process standard worksheets
             for sheet in wb.worksheets:
-                # 1. Orientation: Landscape for wide tables, Portrait for narrow ones.
-                # Threshold set to 10 columns based on standard A4 width.
-                if sheet.max_column > 10:
-                    sheet.page_setup.orientation = sheet.ORIENTATION_LANDSCAPE
-                else:
-                    sheet.page_setup.orientation = sheet.ORIENTATION_PORTRAIT
+                self._setup_worksheet_scaling(sheet)
+            
+            # Process dedicated chart sheets if they exist
+            if hasattr(wb, 'chartsheets'):
+                for chart_sheet in wb.chartsheets:
+                    self._setup_chartsheet_scaling(chart_sheet)
 
-                # 2. Scaling: Fit all columns to a single page width.
-                # fitToHeight = 0 allows the height to scale automatically based on content.
-                sheet.page_setup.fitToWidth = 1
-                sheet.page_setup.fitToHeight = 0 
-
-                # 3. Scaling Activation: fitToPage must be True for scaling properties to take effect.
-                if sheet.sheet_properties.pageSetUpPr is None:
-                    sheet.sheet_properties.pageSetUpPr = PageSetupProperties()
-                
-                sheet.sheet_properties.pageSetUpPr.fitToPage = True
-
-                # 4. Paper Size: Standardize to A4 for consistent PDF rendering.
-                sheet.page_setup.paperSize = sheet.PAPERSIZE_A4
-                
-                # 5. Margins: Apply optimized narrow margins.
-                self._apply_minimal_margins(sheet)
-
-            # Save changes back to the file.
             wb.save(str(file_path))
 
         except Exception as e:
-            # Note: Ensure a logger is configured in your main application context.
             logger.warning(f"⚠️ Failed to scale table file {file_path.name}: {e}")
         finally:
             if wb:
                 wb.close()
 
-    def _apply_minimal_margins(self, sheet):
-        """
-        Sets narrow margins (in inches) to maximize the usable printable area on the sheet.
-        """
-        sheet.page_margins.left = 0.15
-        sheet.page_margins.right = 0.15
-        sheet.page_margins.top = 0.2
-        sheet.page_margins.bottom = 0.2
+    def _setup_worksheet_scaling(self, sheet):
+        """Scaling logic specific to data worksheets (Worksheet object)."""
+        # Determine orientation based on Enum threshold
+        if sheet.max_column > ExcelPageConst.COL_THRESHOLD_LANDSCAPE:
+            sheet.page_setup.orientation = sheet.ORIENTATION_LANDSCAPE
+        else:
+            sheet.page_setup.orientation = sheet.ORIENTATION_PORTRAIT
+
+        # Activate Scaling mode
+        if sheet.sheet_properties.pageSetUpPr is None:
+            sheet.sheet_properties.pageSetUpPr = PageSetupProperties()
+        sheet.sheet_properties.pageSetUpPr.fitToPage = True
+
+        sheet.page_setup.fitToWidth = 1
+        sheet.page_setup.fitToHeight = 0 
+        
+        self._apply_common_setup(sheet)
+
+    def _setup_chartsheet_scaling(self, chart_sheet):
+        """Scaling logic for dedicated chart sheets (Chartsheet object)."""
+        # Charts are almost always better in Landscape for PDF
+        chart_sheet.page_setup.orientation = chart_sheet.ORIENTATION_LANDSCAPE
+        self._apply_common_setup(chart_sheet)
+
+    def _apply_common_setup(self, sheet):
+        """Applies margins and paper size from Enum constants."""
+        sheet.page_setup.paperSize = ExcelPageConst.A4_PAPER_SIZE.value
+        
+        # Apply margins from Enum
+        sheet.page_margins.left = ExcelMargins.SIDE.value
+        sheet.page_margins.right = ExcelMargins.SIDE.value
+        sheet.page_margins.top = ExcelMargins.TOP_BOTTOM.value
+        sheet.page_margins.bottom = ExcelMargins.TOP_BOTTOM.value

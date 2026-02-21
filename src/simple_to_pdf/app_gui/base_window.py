@@ -2,9 +2,9 @@ import tkinter as tk
 
 from simple_to_pdf.widgets import BaseFrame
 from simple_to_pdf.core.config import ThemeKeys
-from simple_to_pdf.utils.ui_tools import ThemeProvider
+from simple_to_pdf.utils.ui_tools import ThemeProviderMixin
 
-class BaseWindow(tk.Tk,ThemeProvider):
+class BaseWindow(tk.Tk,ThemeProviderMixin):
     """
     Base class for the main application window.
     Focuses on layout structure and consistent theming.
