@@ -236,8 +236,8 @@ class PDFMergerGUI(BaseWindow):
                 self, 
                 text=text, 
                 title="License Agreement", 
-                header_title="MIT License - Simple to PDF", # Заголовок всередині вікна
-                text_font="Consolas",  # Моноширинний шрифт для офіційних документів
+                header_title="MIT License - Simple to PDF",
+                text_font="Consolas",
                 font_size=10,
                 size="700x600"
             )

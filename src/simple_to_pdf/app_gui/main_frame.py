@@ -16,7 +16,6 @@ from simple_to_pdf.widgets import BaseFrame,BadgeLabel
 
 logger = logging.getLogger(__name__)
 
-
 class MainFrame(BaseFrame):
    
     def __init__(self, parent: tk.Frame, merger: PdfMerger):
@@ -132,8 +131,6 @@ class MainFrame(BaseFrame):
         content = self.status_text.get("1.0", "end-1c")
         if content.strip():
             clear_text_widget(self.status_text)
-        else:
-            messagebox.showinfo("Clear status", "Status is already empty!")
 
     def load_from_listbox(self) -> list[tuple[int, str]]:
         result: list[tuple[int, str]] = []

@@ -19,7 +19,7 @@ class LibreSetupMixin():
         Configures Excel print settings to prevent table 'breaking'.
         """
         wb = None
-        MAX_COL_WIDTH=10
+        MAX_COL_WIDTH=13
         try:
             wb = openpyxl.load_workbook(str(file_path))
 

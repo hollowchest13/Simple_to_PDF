@@ -18,16 +18,16 @@ class ExcelOrientation(IntEnum):
 class MSSetupMixin():
     def _prepare_table_for_export(self, wb):
         """Setup printing options"""
-
+        MAX_COL_WIDTH=13
         for sheet in wb.Sheets:
             try:
                 
                 if hasattr(sheet, "UsedRange"):
                     sheet.PageSetup.Zoom = False
                     width = sheet.UsedRange.Columns.Count
-                    
+
                     # Page orientation setup
-                    sheet.PageSetup.Orientation = ExcelOrientation.LANDSCAPE if width > 10 else ExcelOrientation.PORTRAIT
+                    sheet.PageSetup.Orientation = ExcelOrientation.LANDSCAPE if width > MAX_COL_WIDTH else ExcelOrientation.PORTRAIT
                     sheet.PageSetup.FitToPagesWide = ExcelScaling.SINGLE_PAGE
                     sheet.PageSetup.FitToPagesTall = False
                 else:
