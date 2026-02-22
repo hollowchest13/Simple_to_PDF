@@ -75,7 +75,7 @@ def ui_locker(func):
 
     return wrapper
 
-class ThemeProvider:
+class ThemeProviderMixin:
     
     def get_color(self, key):
         return DEFAULT_COLORS.get(key, "#ffffff")

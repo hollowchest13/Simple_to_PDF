@@ -1,8 +1,8 @@
 import tkinter as tk
-from simple_to_pdf.utils.ui_tools import ThemeProvider
+from simple_to_pdf.utils.ui_tools import ThemeProviderMixin
 from simple_to_pdf.core.config import ThemeKeys
 
-class BaseFrame(tk.Frame,ThemeProvider):
+class BaseFrame(tk.Frame,ThemeProviderMixin):
     def __init__(self, parent, **kwargs):
         
         # Set background color ONLY if not explicitly provided

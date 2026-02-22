@@ -6,13 +6,14 @@ from pathlib import Path
 
 import openpyxl
 
+from simple_to_pdf.converters.lib_mixin import LibreSetupMixin
 from simple_to_pdf.converters.img_converter import ImageConverter
 from simple_to_pdf.converters.models import ConversionResult
 
 logger = logging.getLogger(__name__)
 
 
-class LibreOfficeConverter(ImageConverter):
+class LibreOfficeConverter(ImageConverter,LibreSetupMixin):
     SUPPORTED_FORMATS = {
         "table": {".xlsx", ".xlsm", ".xltx", ".xltm", ".xls", ".xlsb", ".ods", ".csv"},
         "document": {".doc", ".docx", ".odt", ".rtf", ".txt"},
@@ -171,47 +172,6 @@ class LibreOfficeConverter(ImageConverter):
                 updated.append(p)
         return updated
 
-    def _prepare_excel_scaling(self, *, file_path: Path):
-        """
-        Configures Excel print settings to prevent table 'breaking'.
-        """
-        wb = None
-        try:
-            wb = openpyxl.load_workbook(str(file_path))
-
-            for sheet in wb.worksheets:
-                # Detecting sheet orientation.
-                max_col = sheet.max_column
-                if max_col > 10:
-                    sheet.page_setup.orientation = sheet.ORIENTATION_LANDSCAPE
-                else:
-                    sheet.page_setup.orientation = sheet.ORIENTATION_PORTRAIT
-
-                # Scaling: Fit all columns to one page width.
-                sheet.page_setup.fitToWidth = 1
-                sheet.page_setup.fitToHeight = 0
-
-                # Enabling scaling mode (required for fitToWidth to take effect).
-                assert sheet.sheet_properties.pageSetUpPr is not None
-                sheet.sheet_properties.pageSetUpPr.fitToPage = True
-
-                # Paper Size: Set to A4 (as a fallback/safety measure)
-                sheet.page_setup.paperSize = sheet.PAPERSIZE_A4
-
-                # Margins: Set to minimum to maximize usable area
-                sheet.page_margins.left = 0.15
-                sheet.page_margins.right = 0.15
-                sheet.page_margins.top = 0.2
-                sheet.page_margins.bottom = 0.2
-        except Exception as e:
-            logger.error(f"⚠️ Failed to scale table file {file_path.name}: {e}")
-        finally:
-            if wb is not None:
-                try:
-                    wb.save(str(file_path))
-                    wb.close()
-                except Exception as e:
-                    logger.error(f"⚠️ Failed to save table file {file_path.name}: {e}")
 
     def _run_libreoffice_command(
         self, *, input_paths: list[str], out_dir: Path
