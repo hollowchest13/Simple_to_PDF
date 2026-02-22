@@ -21,10 +21,11 @@ class MSSetupMixin():
 
         for sheet in wb.Sheets:
             try:
-                sheet.PageSetup.Zoom = False
+                
                 if hasattr(sheet, "UsedRange"):
+                    sheet.PageSetup.Zoom = False
                     width = sheet.UsedRange.Columns.Count
-
+                    
                     # Page orientation setup
                     sheet.PageSetup.Orientation = ExcelOrientation.LANDSCAPE if width > 10 else ExcelOrientation.PORTRAIT
                     sheet.PageSetup.FitToPagesWide = ExcelScaling.SINGLE_PAGE
