@@ -30,9 +30,11 @@ class PDFMergerGUI(BaseWindow):
        
         # Initialize BaseWindow
         super().__init__(title=f"{config.APP_NAME}-PDF Merger",size="950x600")
-        self.merger = merger
-        self.page_extractor = page_extractor
-        self.version_controller=version_controller
+        self.protocol("WM_DELETE_WINDOW", self._on_closing)
+        self.thread_running:bool=False
+        self.merger:PdfMerger = merger
+        self.page_extractor:PageExtractor = page_extractor
+        self.version_controller:VersionController=version_controller
         # build UI inside root_container inherited from BaseWindow
 
         self.init_panels()
@@ -401,3 +403,28 @@ class PDFMergerGUI(BaseWindow):
                 self.callback.show_status_message(status_message=error_msg)
                 logger.error(error_msg, exc_info=True)
                 self.after(0, lambda: self.main_panel.progress_bar_reset())
+                
+    def _on_closing(self):
+        if self.thread_running:
+            messagebox.showwarning(
+            "Process in Progress", 
+            "A background task is currently running.\n\n"
+            "The application will close automatically once the task is finished. "
+            "Please wait."
+            )
+            self._wait_for_thread_finish()
+        else:
+            self.destroy()
+    
+    def _wait_for_thread_finish(self):
+        """
+        Periodically checks if the background thread has finished its work 
+        before allowing the application to close.
+        """
+        if self.thread_running:
+            # Опитування кожні 100 мс
+            logger.info("Waiting for background thread to finish... (re-checking in 1s)")
+            self.after(1000, self._wait_for_thread_finish)
+        else:
+            logger.info("Background thread finished. Closing the application.")
+            self.destroy()

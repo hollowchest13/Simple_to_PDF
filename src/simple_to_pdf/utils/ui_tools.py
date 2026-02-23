@@ -54,15 +54,18 @@ def change_state(*, widgets_dict: dict[str, tk.Widget], state: str) -> None:
 
 def ui_locker(func):
     """
-    Decorator to execute a method in a background thread.
+    Decorator to execute a decorated method in a separate background thread
+    to keep the GUI responsive.
 
-    IMPORTANT: The class using this decorator MUST implement a
-    `toggle_ui(active: bool)` method to manage widget states.
+    IMPORTANT: The class using this decorator MUST implement:
+    1. `toggle_ui(active: bool)`: Method to enable/disable UI widgets (buttons, etc.).
+    2. `self.thread_running`: Boolean flag to track the background thread status.
     """
 
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         self.toggle_ui(active=False)  # lock in main thread
+        self.thread_running=True
 
         def run():
             try:
@@ -70,6 +73,7 @@ def ui_locker(func):
             finally:
                 # unlock in main thread
                 self.after(0, lambda: self.toggle_ui(active=True))
+                self.thread_running=False
 
         threading.Thread(target=run, daemon=True).start()
 
