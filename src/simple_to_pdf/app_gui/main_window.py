@@ -188,6 +188,7 @@ class PDFMergerGUI(BaseWindow):
         # 2. Handle errors
         if result.error_message:
             CTkMessagebox(
+                master=self,
                 title="Update Error", 
                 message=f"Unable to check for updates:\n{result.error_message}",
                 icon="cancel"  
@@ -202,6 +203,7 @@ class PDFMergerGUI(BaseWindow):
         else:
             current_v = self.version_controller._get_current_version()
             CTkMessagebox(
+                master=self,
                 title="Software Update", 
                 message=f"You're all set! Version {current_v} is the latest available.",
                 icon="check",
@@ -228,6 +230,7 @@ class PDFMergerGUI(BaseWindow):
         if not license_path.exists():
             logger.warning(f"⚠️ License file not found at path: {license_path}")
             CTkMessagebox(
+                master=self,
                 title="File Not Found", 
                 message=f"License file could not be found at:\n{license_path}",
                 icon="warning",
@@ -253,6 +256,7 @@ class PDFMergerGUI(BaseWindow):
         except Exception as e:
             logger.error(f"❌ Error reading license file: {e}")
             CTkMessagebox(
+                master=self,
                 title="Read Error", 
                 message=f"An error occurred while reading the license:\n{str(e)}",
                 icon="cancel",
@@ -269,6 +273,7 @@ class PDFMergerGUI(BaseWindow):
 
         if not files:
             CTkMessagebox(
+                master=self,
                 title="Warning", 
                 message="No files to merge", 
                 icon="warning",
@@ -358,7 +363,7 @@ class PDFMergerGUI(BaseWindow):
                 title="Invalid Input",
                 message="Please use the correct format (e.g., 1-5, 8, 10-12).",
                 icon="warning",
-                master=win, 
+                master=self, 
                 option_1="OK"
             )
             return
@@ -373,7 +378,7 @@ class PDFMergerGUI(BaseWindow):
                title="Validation Error",
                message=str(e),
                icon="cancel",
-               master=win,    # Прив'язка до вікна введення
+               master=self,  
                option_1="OK"
             )
             return
@@ -382,7 +387,7 @@ class PDFMergerGUI(BaseWindow):
                title="File Error",
                message=f"Could not read PDF: {e}",
                icon="cancel",
-               master=win,
+               master=self,
                option_1="OK"
             )
             return
@@ -424,7 +429,7 @@ class PDFMergerGUI(BaseWindow):
             error_msg = f"❌ Error during page extraction: {e}"
             if isinstance(e, ValueError):
                 self.after(
-                    0, lambda: CTkMessagebox(title="Extraction Error",message=error_msg,icon="cancel",option_1="OK"))
+                    0, lambda: CTkMessagebox(title="Extraction Error",message=error_msg,icon="cancel",option_1="OK",master=self))
             else:
                 self.callback.show_status_message(status_message=error_msg)
                 logger.error(error_msg, exc_info=True)
@@ -439,6 +444,7 @@ class PDFMergerGUI(BaseWindow):
                 "The application will close automatically once the task is finished. "
                 "Please wait."
                 ),
+            master=self,
             icon="warning",
             option_1="Wait"
 )
