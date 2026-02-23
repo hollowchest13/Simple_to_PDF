@@ -1,6 +1,6 @@
 import logging
 import sys
-
+import customtkinter as ctk
 from simple_to_pdf.app_gui.main_window import PDFMergerGUI
 from simple_to_pdf.cli.logger import setup_logger
 from simple_to_pdf.core.version import VersionController
@@ -19,6 +19,7 @@ def main():
     merger = PdfMerger()
     page_extractor = PageExtractor()
     version_controller = VersionController(git_repo=config.GITHUB_REPO, git_user=config.GITHUB_USER)
+    ctk.set_appearance_mode("light")
     run_gui(merger=merger, page_extractor=page_extractor,version_controller=version_controller)
 
 

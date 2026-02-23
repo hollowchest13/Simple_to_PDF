@@ -1,6 +1,7 @@
 import logging
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import ttk
+from CTkMessagebox import CTkMessagebox
 
 from simple_to_pdf.pdf.pdf_merger import PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
@@ -189,13 +190,26 @@ class MainFrame(BaseFrame):
         all_files = list(self.filebox.get(0, tk.END))
         sel_files = get_selected_values(listbox=self.filebox)
         if not all_files:
-            messagebox.showinfo("No files", "The file list is already empty.")
+            CTkMessagebox(
+                master=self.winfo_toplevel(),
+                title="No files", 
+                message="The file list is already empty.", 
+                icon="info",
+                option_1="OK"
+            )
             return
         elif not sel_files:
-            answer = messagebox.askyesno(
-                "No files.", "No files selected. Do you want to remove all files?"
+            msg = CTkMessagebox(
+                master=self.winfo_toplevel(),
+                title="No files.", 
+                message="No files selected. Do you want to remove all files?",
+                icon="question", 
+                option_1="No", 
+                option_2="Yes"
             )
-            if answer:
+            answer = msg.get()  # Отримуємо вибір користувача
+
+            if answer == "Yes":
                 listbox_clear(listbox=self.filebox)
                 self.reset_progress_widgets()
                 return

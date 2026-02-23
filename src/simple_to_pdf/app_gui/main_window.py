@@ -5,7 +5,8 @@ import sys
 import tkinter as tk
 import webbrowser
 from pathlib import Path
-from tkinter import filedialog, messagebox
+from tkinter import filedialog
+from CTkMessagebox import CTkMessagebox
 from typing import Callable
 
 from simple_to_pdf.app_gui.gui_callback import GUICallback
@@ -186,10 +187,11 @@ class PDFMergerGUI(BaseWindow):
 
         # 2. Handle errors
         if result.error_message:
-            messagebox.showerror(
-                "Update Error", 
-                f"Unable to check for updates:\n{result.error_message}"
-            )
+            CTkMessagebox(
+                title="Update Error", 
+                message=f"Unable to check for updates:\n{result.error_message}",
+                icon="cancel"  
+                )
             return
 
         # 3. If update found, show the beautiful dialog
@@ -199,10 +201,12 @@ class PDFMergerGUI(BaseWindow):
         # 4. If no update found
         else:
             current_v = self.version_controller._get_current_version()
-            messagebox.showinfo(
-                "Software Update", 
-                f"You're all set! Version {current_v} is the latest available."
-            )
+            CTkMessagebox(
+                title="Software Update", 
+                message=f"You're all set! Version {current_v} is the latest available.",
+                icon="check",
+                option_1="OK"
+                )
 
     def show_about(self):
         """Gathers data and displays the About Dialog."""
@@ -223,10 +227,12 @@ class PDFMergerGUI(BaseWindow):
         # 1. Check if file exists
         if not license_path.exists():
             logger.warning(f"⚠️ License file not found at path: {license_path}")
-            messagebox.showwarning(
-                "File Not Found", 
-                f"License file could not be found at:\n{license_path}"
-            )
+            CTkMessagebox(
+                title="File Not Found", 
+                message=f"License file could not be found at:\n{license_path}",
+                icon="warning",
+                option_1="OK"
+                )
             return
 
         try:
@@ -246,10 +252,12 @@ class PDFMergerGUI(BaseWindow):
         
         except Exception as e:
             logger.error(f"❌ Error reading license file: {e}")
-            messagebox.showerror(
-                "Read Error", 
-                f"An error occurred while reading the license:\n{str(e)}"
-            )
+            CTkMessagebox(
+                title="Read Error", 
+                message=f"An error occurred while reading the license:\n{str(e)}",
+                icon="cancel",
+                option_1="OK"
+                )
     def show_documentation(self) -> None:
         webbrowser.open(config.README_URL)
 
@@ -260,7 +268,12 @@ class PDFMergerGUI(BaseWindow):
         files = self.main_panel.load_from_listbox()
 
         if not files:
-            messagebox.showwarning("Warning", "No files to merge")
+            CTkMessagebox(
+                title="Warning", 
+                message="No files to merge", 
+                icon="warning",
+                option_1="OK"
+                )
             return
 
         out = filedialog.asksaveasfilename(
@@ -341,10 +354,12 @@ class PDFMergerGUI(BaseWindow):
         pages = get_pages(raw=raw_input.strip())
 
         if pages is None:
-            messagebox.showwarning(
-                "Invalid Input",
-                "Please use the correct format (e.g., 1-5, 8, 10-12).",
-                parent=win,
+            CTkMessagebox(
+                title="Invalid Input",
+                message="Please use the correct format (e.g., 1-5, 8, 10-12).",
+                icon="warning",
+                master=win, 
+                option_1="OK"
             )
             return
 
@@ -354,10 +369,22 @@ class PDFMergerGUI(BaseWindow):
                 input_path=Path(input_path), pages_to_extract=pages
             )
         except ValueError as e:
-            messagebox.showerror("Validation Error", str(e), parent=win)
+            CTkMessagebox(
+               title="Validation Error",
+               message=str(e),
+               icon="cancel",
+               master=win,    # Прив'язка до вікна введення
+               option_1="OK"
+            )
             return
         except Exception as e:
-            messagebox.showerror("File Error", f"Could not read PDF: {e}", parent=win)
+            CTkMessagebox(
+               title="File Error",
+               message=f"Could not read PDF: {e}",
+               icon="cancel",
+               master=win,
+               option_1="OK"
+            )
             return
 
         # Ask user for the output destination
@@ -397,8 +424,7 @@ class PDFMergerGUI(BaseWindow):
             error_msg = f"❌ Error during page extraction: {e}"
             if isinstance(e, ValueError):
                 self.after(
-                    0, lambda: messagebox.showerror("Extraction Error", error_msg)
-                )
+                    0, lambda: CTkMessagebox(title="Extraction Error",message=error_msg,icon="cancel",option_1="OK"))
             else:
                 self.callback.show_status_message(status_message=error_msg)
                 logger.error(error_msg, exc_info=True)
@@ -406,12 +432,16 @@ class PDFMergerGUI(BaseWindow):
                 
     def _on_closing(self):
         if self.thread_running:
-            messagebox.showwarning(
-            "Process in Progress", 
-            "A background task is currently running.\n\n"
-            "The application will close automatically once the task is finished. "
-            "Please wait."
-            )
+            CTkMessagebox(
+               title="Process in Progress", 
+               message=(
+                "A background task is currently running.\n\n"
+                "The application will close automatically once the task is finished. "
+                "Please wait."
+                ),
+            icon="warning",
+            option_1="Wait"
+)
             self._wait_for_thread_finish()
         else:
             self.destroy()
