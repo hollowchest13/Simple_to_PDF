@@ -24,6 +24,9 @@ class InfoDialog(BaseDialog):
     ):
         # Initialize BaseDialog: it handles centering, modality, and layout frames
         super().__init__(parent, title=title)
+
+        if size:
+            self.geometry(size)
         
         # Populate the header inherited from BaseDialog
         self.set_header_text(header_title)
@@ -34,13 +37,13 @@ class InfoDialog(BaseDialog):
         # Add the action button to the inherited footer
         self._setup_footer_actions()
 
-    def _add_text_area(self, text: str, font_name: str, size: int):
+    def _add_text_area(self, text: str, font_name: str, font_size: int):
         """Creates a styled read-only scrolled text widget."""
         # Note: self.content is a frame provided by BaseDialog
         self.txt = scrolledtext.ScrolledText(
             self.content, 
             wrap=tk.WORD, 
-            font=(font_name, size),
+            font=(font_name, font_size),
             bg=self.get_color(ThemeKeys.BG_MAIN),
             fg="#34495e", # Slate gray text
             relief="flat",
