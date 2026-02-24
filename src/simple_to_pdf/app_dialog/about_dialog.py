@@ -1,6 +1,6 @@
 from simple_to_pdf.core.config import ThemeKeys
 from .base_dialog import BaseDialog
-from simple_to_pdf.widgets import PrimaryButton, BadgeLabel
+from simple_to_pdf.widgets import PrimaryButton, BaseLabel
 import tkinter as tk
 import webbrowser
 
@@ -16,13 +16,13 @@ class AboutDialog(BaseDialog):
         self.set_header_text("Simple to PDF", f"Version {version}")
         
         # Add a badge for the engine name
-        BadgeLabel(self.content, text=f"Engine: {engine_name}").pack(pady=(0, 20))
+        BaseLabel(self.content, text=f"Engine: {engine_name}",label_type='badge').pack(pady=(0, 20))
         
         # Main description
-        tk.Label(
+        BaseLabel(
             self.content, 
             text="Professional utility for batch PDF processing.\nBuilt for efficiency and speed.",
-            bg=self.get_color(ThemeKeys.BG_MAIN), font=("Segoe UI", 10), fg=self.get_color(ThemeKeys.TEXT_PRIMARY)
+            label_type="content"
         ).pack(pady=10)
 
         # Primary action button

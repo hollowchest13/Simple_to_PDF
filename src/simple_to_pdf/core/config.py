@@ -32,8 +32,6 @@ LATEST_RELEASE_API = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/
 APP_NAME = "Simple to PDF"
 CURRENT_YEAR = datetime.now().year
 
-from enum import Enum
-
 class ThemeKeys(Enum):
     # Backgrounds / Surfaces
     BG_MAIN = "bg_main"          # Main application window background

@@ -3,7 +3,7 @@ from typing import Optional
 import webbrowser
 from simple_to_pdf.core import config
 from simple_to_pdf.app_dialog.base_dialog import BaseDialog
-from simple_to_pdf.widgets import BaseFrame, PrimaryButton,BadgeLabel
+from simple_to_pdf.widgets import BaseFrame, PrimaryButton,BaseLabel
 
 class UpdateDialog(BaseDialog):
     """Notifies the user about a new version."""
@@ -13,13 +13,13 @@ class UpdateDialog(BaseDialog):
         self.set_header_text("New Update!", f"Version {new_version} is ready")
         
         # Content area
-        BadgeLabel(
+        BaseLabel(
             self.content, text="What's New:"
         ).pack(anchor="w", pady=(0, 5))
 
         # Text area for changelog (could be a simple label or ScrolledText)
-        change_log_box = BadgeLabel(
-            self.content, text=changelog
+        change_log_box = BaseLabel(
+            self.content, text=changelog,label_type='badge'
         )
         change_log_box.pack(fill="x", pady=(0, 20))
 

@@ -1,7 +1,7 @@
 import tkinter as tk
 
 from simple_to_pdf.widgets import BaseFrame
-from simple_to_pdf.utils.ui_tools import ThemeProviderMixin
+from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
 
 class BaseWindow(tk.Tk,ThemeProviderMixin):
     """
@@ -17,7 +17,6 @@ class BaseWindow(tk.Tk,ThemeProviderMixin):
         
         self.title(window_title)
         self.geometry(window_size)
-        self.configure(background="red")
         
         self._init_base_layout()
 

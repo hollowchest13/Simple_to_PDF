@@ -13,7 +13,7 @@ from simple_to_pdf.utils.ui_tools import (
     listbox_clear,
     reselect_items,
 )
-from simple_to_pdf.widgets import BaseFrame,BadgeLabel
+from simple_to_pdf.widgets import BaseFrame,BaseLabel
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +121,7 @@ class MainFrame(BaseFrame):
         self, progress_frame: tk.Frame
     ) -> tuple[ttk.Progressbar, tk.Label]:
 
-        label = BadgeLabel(progress_frame, text="Progress:",bg=self.get_color(ThemeKeys.BG_MAIN))
+        label = BaseLabel(progress_frame, text="Progress:",label_type="badge")
         label.pack(pady=4)
 
         bar = ttk.Progressbar(progress_frame, orient="horizontal", mode="determinate")

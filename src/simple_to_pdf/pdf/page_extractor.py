@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-
+from typing import Callable
 from pypdf import PdfReader, PdfWriter
 
 logger = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ class PageExtractor:
         input_path: str,
         pages_to_extract: list[int],
         output_path: str | Path,
-        callback: callable = None,
+        callback: Callable,
     ) -> Path:
         input_file = Path(input_path)
         output_file = Path(output_path)
