@@ -46,8 +46,8 @@ class PDFMergerGUI(BaseWindow):
         self.build_gui(callbacks=handlers)
 
     def init_panels(self) -> None:
-        self.main_panel: MainFrame = MainFrame(parent=self.root_container, merger=self.merger)
-        self.btns_panel: ListControlsFrame = ListControlsFrame(parent=self.root_container)
+        self.main_panel: MainFrame = MainFrame(self.root_container, merger=self.merger)
+        self.btns_panel: ListControlsFrame = ListControlsFrame(self.root_container)
 
     def init_connections(self) -> None:
         self.callback = GUICallback(main_frame=self.main_panel)

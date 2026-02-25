@@ -4,7 +4,7 @@ from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
 from typing import Literal
 
 class BaseFrame(tk.Frame,ThemeProviderMixin):
-    def __init__(self, parent,frame_type:Literal["main", "header", "content", "footer"] ="main", **kwargs):
+    def __init__(self,parent,*,frame_type:Literal["main", "header", "content", "footer"] ="main", **kwargs):
         """
         A themed frame component that applies styles from ThemeProviderMixin.
 
