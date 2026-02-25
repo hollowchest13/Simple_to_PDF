@@ -1,4 +1,5 @@
 import tkinter as tk
+import customtkinter as ctk
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
 from typing import Literal
 
@@ -22,3 +23,15 @@ class BaseFrame(tk.Frame,ThemeProviderMixin):
         
         # Call the super constructor with prepared kwargs
         super().__init__(parent, **kwargs)
+    
+class BaseScrollableFrame(ctk.CTkScrollableFrame,ThemeProviderMixin):
+    def __init__(self,parent,*,scr_frame_type:Literal[
+        "file_list",
+        "button_list",   
+        "settings",     
+        "preview",      
+        "logs"
+    ] ="button_list", **kwargs):
+        params=self.set_scrollable_frame_params(scr_frame_type=scr_frame_type)
+        params.update(kwargs)
+        super().__init__(parent,**params)

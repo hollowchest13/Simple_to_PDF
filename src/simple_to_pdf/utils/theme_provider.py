@@ -1,7 +1,6 @@
 
 from simple_to_pdf.core.config import ThemeKeys,DEFAULT_COLORS
 from typing import Literal
-import tkinter as tk
 
 class ThemeProviderMixin:
     
@@ -37,36 +36,81 @@ class ThemeProviderMixin:
                 bg_color=self.get_color(ThemeKeys.BG_FOOTER)
         return bg_color
     
-    def set_label_params(self,*,parent:tk.Frame,label_type:Literal['badge','title','content'])->dict:
-        bg_color = parent.cget("bg")
+    def set_label_params(self, label_type: str) -> dict:
+        bg_color = "transparent"
+        
         match label_type:
             case "badge":
-                fg_color=self.get_color(ThemeKeys.ACCENT)
-                params = {
-                    "font": ("Consolas", 9, "bold"),
-                    "bg": bg_color,
-                    "fg": fg_color,
-                    "padx": 10,
-                    "pady": 4,
-                    "relief": "flat"
-                } 
+                return {
+                    "font": ("Consolas", 10, "bold"),
+                    "text_color": self.get_color(ThemeKeys.TEXT_PRIMARY),                              
+                    "fg_color": bg_color, 
+                    "corner_radius": 6,                
+                    "padx": 8,
+                    "pady": 2
+                }
+            
             case "title":
-                fg_color=self.get_color(ThemeKeys.TEXT_PRIMARY)
-                params:dict = {
-                    "font": ("Segoe UI", 11, "bold"),
-                    "bg": bg_color,
-                    "fg": fg_color,
-                    "anchor": "w",      
-                    "pady": 5
+                return {
+                    "font": ("Segoe UI", 14, "bold"),
+                    "text_color": self.get_color(ThemeKeys.TEXT_PRIMARY),
+                    "fg_color": bg_color,
+                    "anchor": "w"
                 }
+            
             case "content":
-                fg_color=self.get_color(ThemeKeys.TEXT_PRIMARY)
-                params:dict = {
-                   "font": ("Segoe UI", 10),
-                   "bg": bg_color,
-                   "fg": fg_color,
-                   "justify": "center",
-                   "wraplength": 400  
+                return {
+                    "font": ("Segoe UI", 12),
+                    "text_color": self.get_color(ThemeKeys.TEXT_PRIMARY),
+                    "fg_color": bg_color,
+                    "justify": "left"
                 }
+        return {}
 
+    def set_scrollable_frame_params(self, *, scr_frame_type: Literal[
+        "file_list",
+        "button_list",   
+        "settings",     
+        "preview",      
+        "logs"
+    ]) -> dict:
+        """
+        Generates configuration parameters for different types of CTkScrollableFrames.
+        Ensures consistent UI across the application using the theme's color palette.
+        """
+        # Base parameters shared by all scrollable frames
+        params = {
+            "corner_radius": 8,
+            "scrollbar_button_color": self.get_color(ThemeKeys.ACCENT_DIM), # Subtle color for the scroll thumb
+            "scrollbar_button_hover_color": self.get_color(ThemeKeys.ACCENT), # Vibrant color when interacting
+        }
+        match scr_frame_type:
+            case "file_list":
+                params.update({
+                    "fg_color": self.get_color(ThemeKeys.BG_CONTENT), # Matches the main content area
+                    "label_font": ("Segoe UI", 13, "bold"),        # Clear header for the file queue
+                    "label_anchor": "w",                           # Left-aligned header text
+                })
+            case "settings":
+                params.update({
+                    "fg_color": self.get_color(ThemeKeys.BG_HEADER), # Blends with the sidebar/navigation background
+                    "orientation": "vertical",                     # Fixed vertical layout for configuration options
+                })
+            case "preview":
+                params.update({
+                    "fg_color":ThemeKeys.BG_PREVIEW,                 # Fixed dark neutral background for document preview
+                    "border_width": 1,
+                    "border_color": self.get_color(ThemeKeys.BORDER) # Visual separation from the main surface
+                })
+            case "logs":
+                params.update({
+                    "fg_color": ThemeKeys.BG_CONSOLE,                         # Classic terminal-style background
+                    "label_text": "System Logs",                   # Static title for the log area
+                    "label_font": ("Consolas", 11),                 # Monospace font for better readability of logs
+                })
+            case "button_list":
+                params.update({
+                    "fg_color": "transparent",                      # Seamless integration with the parent frame
+                    "corner_radius": 0,
+                })
         return params

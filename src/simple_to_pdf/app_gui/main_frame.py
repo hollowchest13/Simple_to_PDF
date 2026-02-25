@@ -1,5 +1,6 @@
 import logging
 import tkinter as tk
+import customtkinter as ctk
 from tkinter import ttk
 from CTkMessagebox import CTkMessagebox
 
@@ -119,7 +120,7 @@ class MainFrame(BaseFrame):
 
     def _setup_progress_bar_area(
         self, progress_frame: tk.Frame
-    ) -> tuple[ttk.Progressbar, tk.Label]:
+    ) -> tuple[ttk.Progressbar, ctk.CTkLabel]:
 
         label = BaseLabel(progress_frame, text="Progress:",label_type="badge")
         label.pack(pady=4)

@@ -10,4 +10,3 @@ class PrimaryButton(ctk.CTkButton,ThemeProviderMixin):
         params = self.set_button_params()
         params.update(kwargs)
         super().__init__(parent, **params)
-
