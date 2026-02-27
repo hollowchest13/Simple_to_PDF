@@ -17,7 +17,7 @@ class BaseDialog(tk.Toplevel,ThemeProviderMixin):
         
         # Modal behavior: focus remains on this window until closed
         self.transient(parent)
-        self.grab_set()
+        self.after(10, self.grab_set)
 
         # Initialize UI structure
         self._init_layout()
@@ -26,7 +26,9 @@ class BaseDialog(tk.Toplevel,ThemeProviderMixin):
         self._center_window(parent)
 
     def _init_layout(self):
+        
         """Creates the structural frames: Header, Content, and Footer."""
+
         # Header: Light gray background for the title area
         self.header = BaseFrame(self,frame_type="header", height=100)
         self.header.pack(fill="x", side="top")

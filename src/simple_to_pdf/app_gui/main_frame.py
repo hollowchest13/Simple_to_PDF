@@ -15,6 +15,7 @@ from simple_to_pdf.utils.ui_tools import (
     reselect_items,
 )
 from simple_to_pdf.widgets import BaseFrame,BaseLabel
+from simple_to_pdf.widgets.base_textboxes import BaseTextBox
 
 logger = logging.getLogger(__name__)
 
@@ -101,21 +102,9 @@ class MainFrame(BaseFrame):
         scrollbar.config(command=listbox.yview)
         return listbox
 
-    def _setup_status_area(self, status_frame: tk.Frame) -> tk.Text:
-        scrollbar = tk.Scrollbar(status_frame)
-        scrollbar.pack(side="right", fill="y")
-
-        text = tk.Text(
-            status_frame,
-            height=5,
-            state="disabled",
-            font=("Consolas", 9),
-            yscrollcommand=scrollbar.set,
-            borderwidth=1,
-            relief="solid",
-        )
+    def _setup_status_area(self, status_frame: ctk.CTkFrame) -> ctk.CTkTextbox:
+        text:BaseTextBox=BaseTextBox(status_frame,textbox_type="status_text")
         text.pack(side="bottom", fill="x", expand=True)
-        scrollbar.config(command=text.yview)
         return text
 
     def _setup_progress_bar_area(
@@ -259,7 +248,7 @@ class MainFrame(BaseFrame):
         pl: tk.Label = self.progress_label
         pb.stop()
         pb.config(mode="determinate", value=0, maximum=100)
-        pl.config(text="Progress: Ready")
+        pl.configure(text="Progress: Ready")
         self.update_idletasks()
 
     def set_progress_determinate(self, max_value=100):

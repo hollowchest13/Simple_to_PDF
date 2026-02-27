@@ -53,15 +53,15 @@ class GUICallback:
                 f"{stage}: {display_name} ({current}/{total}) — {percent:.1f}%"
             )
 
-        pl.config(text=status_text)
+        pl.configure(text=status_text)
 
         if filename and progress_bar_mode == "determinate":
             self.show_status_message(f"✅ {stage} successfully: {filename}")
         self.main_frame.update_idletasks()
 
     def show_status_message(self, status_message: str):
-        st: tk.Text = self.main_frame.status_text
-        st.config(state="normal")
+        st = self.main_frame.status_text
+        st.configure(state="normal")
         st.insert(tk.END, f"- {status_message}\n")
-        st.see(tk.END)
-        st.config(state="disabled")
+        st.see("end")
+        st.configure(state="disabled")

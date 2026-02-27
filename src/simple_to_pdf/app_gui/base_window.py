@@ -1,9 +1,9 @@
 import tkinter as tk
-
+import customtkinter as ctk
 from simple_to_pdf.widgets import BaseFrame
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
 
-class BaseWindow(tk.Tk,ThemeProviderMixin):
+class BaseWindow(ctk.CTk,ThemeProviderMixin):
     """
     Base class for the main application window.
     Focuses on layout structure and consistent theming.
@@ -26,10 +26,3 @@ class BaseWindow(tk.Tk,ThemeProviderMixin):
         
         self.root_container=BaseFrame(self)
         self.root_container.pack(fill="both",expand=True)
-
-    def set_window_icon(self, icon_path):
-        """Standard way to set icon for the main window."""
-        try:
-            self.iconbitmap(icon_path)
-        except Exception:
-            pass

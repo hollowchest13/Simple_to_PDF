@@ -16,6 +16,7 @@ else:
 # Path to the pyproject.toml file for version tracking
 CONFIG_PATH = BASE_PATH / "pyproject.toml"
 LICENCE_PATH = BASE_PATH/"LICENSE"
+ICONS_PATH = BASE_PATH / "src" / "simple_to_pdf" / "icons"
 
 # --- GITHUB CONFIGURATION ---
 GITHUB_USER = "hollowchest13"
@@ -78,7 +79,7 @@ DEFAULT_COLORS = {
     ThemeKeys.ACCENT_HOVER: "#2563EB",   # Hover state for primary action elements
     ThemeKeys.ACCENT_DIM: "#DBEAFE",     # Subtle accent tint for scrollbars or highlights
     ThemeKeys.SURFACE_HOVER: "#F1F5F9",  # Visual feedback when hovering over list items
-    ThemeKeys.BORDER: "#E2E8F0",         # Default color for separators and outlines
+    ThemeKeys.BORDER: "#1E293B",         # Default color for separators and outlines
     
     # Status Indicators
     ThemeKeys.SUCCESS: "#22C55E",        # Semantic green for completed or successful tasks

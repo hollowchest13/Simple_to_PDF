@@ -30,7 +30,7 @@ class PDFMergerGUI(BaseWindow):
     def __init__(self, *, merger: PdfMerger, page_extractor: PageExtractor,version_controller:VersionController):
        
         # Initialize BaseWindow
-        super().__init__(title=f"{config.APP_NAME}-PDF Merger",size="950x600")
+        super().__init__(title=f"{config.APP_NAME}-PDF Merger",size="1000x700")
         self.protocol("WM_DELETE_WINDOW", self._on_closing)
         self.thread_running:bool=False
         self.merger:PdfMerger = merger
@@ -159,7 +159,7 @@ class PDFMergerGUI(BaseWindow):
                 )
             except Exception as e:
                 logger.error(f"Could not open folder on Linux: {e}", exc_info=True)
-
+    
     def _setup_handlers(self) -> dict:
         """Create a dictionary of commands to pass to the Builder."""
 
@@ -175,9 +175,11 @@ class PDFMergerGUI(BaseWindow):
             "about": self.show_about,
             "clear_status": self.main_panel.clear_status_text,
             "logs": self.open_log_folder,
+            "settings":lambda:self.extend_frame(frame_name="settings"),
+            "help":lambda:self.extend_frame(frame_name="help")
         }
         return handlers
-
+        
     def on_check_updates_click(self):
         """
         Handles the update check event from the UI.
@@ -250,7 +252,7 @@ class PDFMergerGUI(BaseWindow):
                 header_title="MIT License - Simple to PDF",
                 text_font="Consolas",
                 font_size=10,
-                size="700x600"
+                size="750x600"
             )
         
         except Exception as e:
@@ -434,7 +436,9 @@ class PDFMergerGUI(BaseWindow):
                 self.callback.show_status_message(status_message=error_msg)
                 logger.error(error_msg, exc_info=True)
                 self.after(0, lambda: self.main_panel.progress_bar_reset())
-                
+    
+    def extend_frame(self,*,frame_name:str):
+        pass
     def _on_closing(self):
         if self.thread_running:
             CTkMessagebox(
@@ -458,9 +462,10 @@ class PDFMergerGUI(BaseWindow):
         before allowing the application to close.
         """
         if self.thread_running:
-            # Опитування кожні 100 мс
+            # re-checking in 1s
             logger.info("Waiting for background thread to finish... (re-checking in 1s)")
             self.after(1000, self._wait_for_thread_finish)
         else:
             logger.info("Background thread finished. Closing the application.")
             self.destroy()
+    

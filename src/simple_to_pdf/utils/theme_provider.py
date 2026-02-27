@@ -13,7 +13,6 @@ class ThemeProviderMixin:
         hover_accent = self.get_color(ThemeKeys.ACCENT_HOVER)
         text_color = self.get_color(ThemeKeys.TEXT_ON_ACCENT)
         theme:dict={
-            "text": "Button",
             "fg_color": default_accent,     
             "hover_color": hover_accent,   
             "text_color": text_color,        
@@ -24,17 +23,29 @@ class ThemeProviderMixin:
         }
         return theme
     
-    def set_frame_background(self,*,frame_type:Literal['main','header','content','footer'])->str:
+    def set_frame_params(self,*,frame_type:Literal['main','header','content','footer','btns_container'])->dict:
+
         match frame_type:
             case "main":
-                bg_color=self.get_color(ThemeKeys.BG_MAIN)
+                 return {
+                    "fg_color":self.get_color(ThemeKeys.BG_MAIN)
+                 }
             case "header":
-                bg_color=self.get_color(ThemeKeys.BG_HEADER)
+               return {
+                    "fg_color":self.get_color(ThemeKeys.BG_HEADER)
+                }
             case "content":
-                bg_color=self.get_color(ThemeKeys.BG_MAIN)
+               return {
+                    "fg_color":self.get_color(ThemeKeys.BG_MAIN)
+                }
             case "footer":
-                bg_color=self.get_color(ThemeKeys.BG_FOOTER)
-        return bg_color
+                return {
+                    "fg_color":self.get_color(ThemeKeys.BG_MAIN),
+                }
+            case "btns_container":
+                return {
+                    "fg_color":self.get_color(ThemeKeys.BG_MAIN),
+                }
     
     def set_label_params(self, label_type: str) -> dict:
         bg_color = "transparent"
@@ -71,8 +82,7 @@ class ThemeProviderMixin:
         "file_list",
         "button_list",   
         "settings",     
-        "preview",      
-        "logs"
+        "preview"
     ]) -> dict:
         """
         Generates configuration parameters for different types of CTkScrollableFrames.
@@ -98,15 +108,9 @@ class ThemeProviderMixin:
                 })
             case "preview":
                 params.update({
-                    "fg_color":ThemeKeys.BG_PREVIEW,                 # Fixed dark neutral background for document preview
+                    "fg_color":self.get_color(ThemeKeys.BG_PREVIEW),                 # Fixed dark neutral background for document preview
                     "border_width": 1,
                     "border_color": self.get_color(ThemeKeys.BORDER) # Visual separation from the main surface
-                })
-            case "logs":
-                params.update({
-                    "fg_color": ThemeKeys.BG_CONSOLE,                         # Classic terminal-style background
-                    "label_text": "System Logs",                   # Static title for the log area
-                    "label_font": ("Consolas", 11),                 # Monospace font for better readability of logs
                 })
             case "button_list":
                 params.update({
@@ -114,3 +118,16 @@ class ThemeProviderMixin:
                     "corner_radius": 0,
                 })
         return params
+    
+    def set_textbox_params(self,*, textbox_type:Literal['status_text'])->dict:
+        match textbox_type:
+            case "status_text":
+                params={
+                    "fg_color":self.get_color(ThemeKeys.BG_MAIN),
+                    "state":"disabled",
+                    "corner_radius":10,
+                    "height":100,
+                    "border_width":1
+                }
+        return params
+
