@@ -3,10 +3,9 @@ import tkinter as tk
 import customtkinter as ctk
 from tkinter import ttk
 from CTkMessagebox import CTkMessagebox
-
+from pathlib import Path
 from simple_to_pdf.pdf.pdf_merger import PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
-from simple_to_pdf.core.config import ThemeKeys, DEFAULT_COLORS
 from simple_to_pdf.utils.ui_tools import (
     clear_text_widget,
     get_selected_values,
@@ -161,15 +160,25 @@ class MainFrame(BaseFrame):
 
         if not new_files_paths:
             return
+        
 
         # Call the method. It will create "All supported" files
-        saved_files_paths: list[str] = list(self.filebox.get(0, tk.END))
+        # saved_files_paths: list[str] = list(self.filebox.get(0, tk.END))
 
-        files_paths: list[str] = saved_files_paths + new_files_paths
+        # files_paths: list[str] = saved_files_paths + new_files_paths
 
-        if files_paths:
-            self.progress_bar_reset()
-            list_update(files=files_paths, listbox=self.filebox)
+        # if files_paths:
+        #     self.progress_bar_reset()
+        #     list_update(files=files_paths, listbox=self.filebox)
+    def _create_file_row(self,*,file_path:Path):
+        row=BaseFrame(self.filebox,frame_type='list_item')
+        row.pack(fill="x", padx=5, pady=2)
+        path_text=str(file_path)
+        path_label=BaseLabel(row,label_type="content",anchor="w",justify="left")
+        path_label.pack(side="left",text=path_text, fill="x", expand=True, padx=(10, 5))
+    
+    
+
 
     def remove_files(self) -> None:
         all_files = list(self.filebox.get(0, tk.END))
