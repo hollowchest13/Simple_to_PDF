@@ -14,8 +14,9 @@ from simple_to_pdf.utils.ui_tools import (
     listbox_clear,
     reselect_items,
 )
-from simple_to_pdf.widgets import BaseFrame,BaseLabel
-from simple_to_pdf.widgets.base_textboxes import BaseTextBox
+from simple_to_pdf.widgets import BaseFrame,BaseLabel,BaseTextBox
+from simple_to_pdf.widgets.base_widgets import BaseProgress
+
 
 logger = logging.getLogger(__name__)
 
@@ -25,11 +26,10 @@ class MainFrame(BaseFrame):
         super().__init__(parent)
         self.merger=merger
         self.ui: dict[str, tk.Widget] = {}
-        self.status_text:tk.Text
+        self.status_text:BaseTextBox
         self.filebox:tk.Listbox
-        self.progress_bar: ttk.Progressbar
-        self.progress_label:tk.Label
-        self.theme=DEFAULT_COLORS.copy()
+        self.progress_bar: BaseProgress
+        self.progress_label:BaseLabel
 
         # Set attributes and register in self.ui
         self._register_components(self._setup_layout())
@@ -108,13 +108,16 @@ class MainFrame(BaseFrame):
         return text
 
     def _setup_progress_bar_area(
-        self, progress_frame: tk.Frame
-    ) -> tuple[ttk.Progressbar, ctk.CTkLabel]:
+        self, progress_frame: ctk.CTkFrame
+    ) -> tuple[BaseProgress, ctk.CTkLabel]:
 
         label = BaseLabel(progress_frame, text="Progress:",label_type="badge")
         label.pack(pady=4)
 
-        bar = ttk.Progressbar(progress_frame, orient="horizontal", mode="determinate")
+        bar = BaseProgress(progress_frame, progress_type="merge_progress", mode="determinate")
+        empty_track_color = bar.cget("fg_color")
+        bar.configure(progress_color=empty_track_color)
+        bar.set(0)
         bar.pack(pady=8, fill="x")
         return bar, label
 
@@ -244,19 +247,18 @@ class MainFrame(BaseFrame):
         )
 
     def progress_bar_reset(self):
-        pb: ttk.Progressbar = self.progress_bar
-        pl: tk.Label = self.progress_label
-        pb.stop()
-        pb.config(mode="determinate", value=0, maximum=100)
-        pl.configure(text="Progress: Ready")
+        self.set_progress_determinate()
+        self.progress_bar.set(0)
+        self.progress_bar.configure(progress_color=self.progress_bar.cget("fg_color"))
+        self.progress_label.configure(text="Progress: Ready")
         self.update_idletasks()
 
-    def set_progress_determinate(self, max_value=100):
+    def set_progress_determinate(self):
         """
         Safely switches the progress bar to determinate mode.
         This method should be called via .after() if triggered from a worker thread.
         """
         if self.progress_bar.winfo_exists():
             self.progress_bar.stop()  # Stop indeterminate animation
-            self.progress_bar.config(mode="determinate", value=0, maximum=max_value)
+            self.progress_bar.configure(mode="determinate")
             self.update_idletasks()  # Refresh the UI immediately

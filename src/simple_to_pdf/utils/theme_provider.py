@@ -130,4 +130,16 @@ class ThemeProviderMixin:
                     "border_width":1
                 }
         return params
+    
+    def set_progress_params(self,*,progress_type:Literal['merge_progress'])->dict:
+        match progress_type:
+            case "merge_progress":
+                params={
+                    "height":12,
+                    "progress_color":self.get_color(ThemeKeys.PROGRESS_COLOR),
+                    "corner_radius":6,
+                    "orientation":"horizontal"
+                }
+        return params
+
 

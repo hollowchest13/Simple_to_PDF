@@ -2,9 +2,12 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from typing import Literal
 from simple_to_pdf.app_gui.main_frame import MainFrame
+from simple_to_pdf.core.config import ThemeKeys
+from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
+from simple_to_pdf.widgets.base_widgets import BaseLabel, BaseProgress
 
 
-class GUICallback:
+class GUICallback(ThemeProviderMixin):
     def __init__(self, main_frame: MainFrame):
         # Saving link to main window (PDFGUIMerger)
         self.main_frame = main_frame
@@ -32,33 +35,33 @@ class GUICallback:
         total: int = 0,
         filename: str = "",
     ) -> None:
-        pb: ttk.Progressbar = self.main_frame.progress_bar
-        pl: tk.Label = self.main_frame.progress_label
-        mode: Literal['determinate', 'indeterminate'] = 'determinate'
-
-        if pb["mode"] != progress_bar_mode:
-            pb.stop()
-            pb.config(mode=mode)
+        pb: BaseProgress = self.main_frame.progress_bar
+        pl: BaseLabel = self.main_frame.progress_label
+        
+        idle_color = pb.cget("fg_color")
+        active_color = self.get_color(ThemeKeys.PROGRESS_COLOR)
 
         if progress_bar_mode == "indeterminate":
-            pb.start(10)
+            pb.configure(mode="indeterminate", progress_color=active_color)
+            pb.start()
             status_text = f"{stage} documents..."
         else:
             pb.stop()
-            percent = (current / total * 100) if total > 0 else 0
-            pb["value"] = percent
+            pb.configure(mode="determinate")
+            
+            progress_float = (current / total) if total > 0 else 0
+            
+            current_color = active_color if progress_float > 0 else idle_color
+            pb.configure(progress_color=current_color)
+            
+            pb.set(progress_float)
 
+            percent = progress_float * 100
             display_name = (filename[:27] + "...") if len(filename) > 30 else filename
-            status_text = (
-                f"{stage}: {display_name} ({current}/{total}) — {percent:.1f}%"
-            )
+            status_text = f"{stage}: {display_name} ({current}/{total}) — {percent:.1f}%"
 
         pl.configure(text=status_text)
-
-        if filename and progress_bar_mode == "determinate":
-            self.show_status_message(f"✅ {stage} successfully: {filename}")
         self.main_frame.update_idletasks()
-
     def show_status_message(self, status_message: str):
         st = self.main_frame.status_text
         st.configure(state="normal")

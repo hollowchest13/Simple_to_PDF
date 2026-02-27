@@ -1,7 +1,16 @@
-import tkinter as tk
 import customtkinter as ctk
-from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
 from typing import Literal
+from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
+
+class PrimaryButton(ctk.CTkButton,ThemeProviderMixin):
+    """
+    A pre-styled button for main actions.
+    Includes a hover effect that changes the background color.
+    """
+    def __init__(self, parent, **kwargs):
+        params = self.set_button_params()
+        params.update(kwargs)
+        super().__init__(parent, **params)
 
 class BaseFrame(ctk.CTkFrame,ThemeProviderMixin):
     def __init__(self,parent,*,frame_type:Literal["main", "header", "content", "footer","btns_container"] ="main", **kwargs):
@@ -32,5 +41,27 @@ class BaseScrollableFrame(ctk.CTkScrollableFrame,ThemeProviderMixin):
         "preview"
     ] ="button_list", **kwargs):
         params=self.set_scrollable_frame_params(scr_frame_type=scr_frame_type)
+        params.update(kwargs)
+        super().__init__(parent,**params)
+    
+class BaseLabel(ctk.CTkLabel,ThemeProviderMixin):
+    """
+    A label styled as a 'badge' or 'chip'.
+    Ideal for displaying versions, engine names, or status tags.
+    """
+    def __init__(self,parent,*,label_type:Literal['badge','title','content']='badge', **kwargs):
+        params = self.set_label_params(label_type=label_type)
+        params.update(kwargs)
+        super().__init__(parent,**params)
+
+class BaseProgress(ctk.CTkProgressBar,ThemeProviderMixin):
+    def __init__(self,parent,*,progress_type:Literal['merge_progress'],**kwargs):
+        params=self.set_progress_params(progress_type=progress_type)
+        params.update(kwargs)
+        super().__init__(parent,**params)
+
+class BaseTextBox(ctk.CTkTextbox,ThemeProviderMixin):
+    def __init__(self,parent,*,textbox_type:Literal['status_text'],**kwargs):
+        params=self.set_textbox_params(textbox_type=textbox_type)
         params.update(kwargs)
         super().__init__(parent,**params)

@@ -462,7 +462,7 @@ class PDFMergerGUI(BaseWindow):
         before allowing the application to close.
         """
         if self.thread_running:
-            # re-checking in 1s
+            # Опитування кожні 100 мс
             logger.info("Waiting for background thread to finish... (re-checking in 1s)")
             self.after(1000, self._wait_for_thread_finish)
         else:

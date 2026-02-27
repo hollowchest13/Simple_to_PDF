@@ -42,6 +42,7 @@ class ThemeKeys(Enum):
     BG_CONSOLE="bg_console"
     BG_PREVIEW="bg_preview"
     
+    
     # Text colors
     TEXT_PRIMARY = "text_primary"      # High emphasis (Titles, main labels)
     TEXT_SECONDARY = "text_secondary"  # Medium emphasis (Subtitles, hints)
@@ -58,6 +59,8 @@ class ThemeKeys(Enum):
     SUCCESS = "success"             # Indicator for completed processes or positive states
     WARNING = "warning"             # Status color for non-critical alerts or busy resources
     SURFACE_HOVER = "surface_hover" # Background color for list items or cards during mouse-over
+
+    PROGRESS_COLOR="progress_color"
 
 DEFAULT_COLORS = {
     # Surfaces & Backgrounds
@@ -84,5 +87,7 @@ DEFAULT_COLORS = {
     # Status Indicators
     ThemeKeys.SUCCESS: "#22C55E",        # Semantic green for completed or successful tasks
     ThemeKeys.WARNING: "#F59E0B",        # Semantic amber for pending or warning states
-    ThemeKeys.ERROR: "#EF4444"           # Semantic red for failed processes or alerts
+    ThemeKeys.ERROR: "#EF4444",           # Semantic red for failed processes or alerts
+
+    ThemeKeys.PROGRESS_COLOR:"#3B82F6"
 }

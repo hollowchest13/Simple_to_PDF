@@ -1,8 +1,8 @@
 import tkinter as tk
 from simple_to_pdf.core.config import ThemeKeys
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
-from simple_to_pdf.widgets.base_frames import BaseFrame
-from simple_to_pdf.widgets.base_lebels import BaseLabel
+from simple_to_pdf.widgets import BaseFrame,BaseLabel
+
 
 class BaseDialog(tk.Toplevel,ThemeProviderMixin):
     """
@@ -26,7 +26,7 @@ class BaseDialog(tk.Toplevel,ThemeProviderMixin):
         self._center_window(parent)
 
     def _init_layout(self):
-        
+
         """Creates the structural frames: Header, Content, and Footer."""
 
         # Header: Light gray background for the title area
