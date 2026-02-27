@@ -13,7 +13,7 @@ class PrimaryButton(ctk.CTkButton,ThemeProviderMixin):
         super().__init__(parent, **params)
 
 class BaseFrame(ctk.CTkFrame,ThemeProviderMixin):
-    def __init__(self,parent,*,frame_type:Literal["main", "header", "content", "footer","btns_container"] ="main", **kwargs):
+    def __init__(self,parent,*,frame_type:Literal["main", "header", "content", "footer","btns_container",'scr_frame_container'] ="main", **kwargs):
         """
         A themed frame component that applies styles from ThemeProviderMixin.
 

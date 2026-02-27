@@ -15,7 +15,7 @@ from simple_to_pdf.utils.ui_tools import (
     reselect_items,
 )
 from simple_to_pdf.widgets import BaseFrame,BaseLabel,BaseTextBox
-from simple_to_pdf.widgets.base_widgets import BaseProgress
+from simple_to_pdf.widgets.base_widgets import BaseProgress, BaseScrollableFrame
 
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,6 @@ class MainFrame(BaseFrame):
         RIGHT_SIDE_PAD: int = 10
         TOP_SIDE_PAD: int = 5
         BOTTOM_SIDE_PAD: int = 10
-        SB_CORRECTION: int = 14
 
         status_area = BaseFrame(self)
         status_area.pack(
@@ -51,7 +50,7 @@ class MainFrame(BaseFrame):
             pady=(TOP_SIDE_PAD, BOTTOM_SIDE_PAD),
         )
 
-        file_batch_area = BaseFrame(self)
+        file_batch_area = BaseFrame(self,frame_type="scr_frame_container")
         file_batch_area.pack(
             fill="both",
             expand=True,
@@ -63,7 +62,7 @@ class MainFrame(BaseFrame):
         progress_area.pack(
             side="top",
             fill="x",
-            padx=(LEFT_SIDE_PAD, RIGHT_SIDE_PAD + SB_CORRECTION),
+            padx=(LEFT_SIDE_PAD, RIGHT_SIDE_PAD),
             pady=(TOP_SIDE_PAD, BOTTOM_SIDE_PAD),
         )
 
@@ -86,21 +85,15 @@ class MainFrame(BaseFrame):
             setattr(self, key, widget)
             self.ui[key] = widget
 
-    def _setup_file_batch_area(self, mid: tk.Frame) -> tk.Listbox:
-        """Builds the central Listbox area for displaying files."""
-
-        scrollbar = tk.Scrollbar(mid)
-        scrollbar.pack(side="right", fill="y")
-
-        listbox = tk.Listbox(
+    def _setup_file_batch_area(self, mid: BaseFrame) -> BaseScrollableFrame:
+        """Builds the central scrollable area for displaying files using CustomTkinter."""
+        filebox:BaseScrollableFrame=BaseScrollableFrame(
             mid,
-            selectmode="multiple",
-            yscrollcommand=scrollbar.set,
-            relief="solid",
+            label_text="Selected Files",
+            scr_frame_type="file_list"
         )
-        listbox.pack(side="left", fill="both", expand=True)
-        scrollbar.config(command=listbox.yview)
-        return listbox
+        filebox.pack(side="left", fill="both", expand=True,padx=10,pady=10)
+        return filebox
 
     def _setup_status_area(self, status_frame: ctk.CTkFrame) -> ctk.CTkTextbox:
         text:BaseTextBox=BaseTextBox(status_frame,textbox_type="status_text")
@@ -200,7 +193,7 @@ class MainFrame(BaseFrame):
                 option_1="No", 
                 option_2="Yes"
             )
-            answer = msg.get()  # Отримуємо вибір користувача
+            answer = msg.get() 
 
             if answer == "Yes":
                 listbox_clear(listbox=self.filebox)

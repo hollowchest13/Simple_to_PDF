@@ -23,7 +23,7 @@ class ThemeProviderMixin:
         }
         return theme
     
-    def set_frame_params(self,*,frame_type:Literal['main','header','content','footer','btns_container'])->dict:
+    def set_frame_params(self,*,frame_type:Literal['main','header','content','footer','btns_container','scr_frame_container'])->dict:
 
         match frame_type:
             case "main":
@@ -46,6 +46,13 @@ class ThemeProviderMixin:
                 return {
                     "fg_color":self.get_color(ThemeKeys.BG_MAIN),
                 }
+            case "scr_frame_container":
+                return {
+                    "fg_color":self.get_color(ThemeKeys.BG_MAIN),
+                    "border_width":1,
+                    "corner_radius":8
+                }
+
     
     def set_label_params(self, label_type: str) -> dict:
         bg_color = "transparent"
@@ -97,9 +104,10 @@ class ThemeProviderMixin:
         match scr_frame_type:
             case "file_list":
                 params.update({
-                    "fg_color": self.get_color(ThemeKeys.BG_CONTENT), # Matches the main content area
+                    "fg_color": "transparent", # Matches the main content area
                     "label_font": ("Segoe UI", 13, "bold"),        # Clear header for the file queue
                     "label_anchor": "w",                           # Left-aligned header text
+                    
                 })
             case "settings":
                 params.update({
