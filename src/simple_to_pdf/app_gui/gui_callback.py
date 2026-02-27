@@ -37,7 +37,7 @@ class GUICallback(ThemeProviderMixin):
     ) -> None:
         pb: BaseProgress = self.main_frame.progress_bar
         pl: BaseLabel = self.main_frame.progress_label
-        
+
         idle_color = pb.cget("fg_color")
         active_color = self.get_color(ThemeKeys.PROGRESS_COLOR)
 
@@ -48,20 +48,23 @@ class GUICallback(ThemeProviderMixin):
         else:
             pb.stop()
             pb.configure(mode="determinate")
-            
+
             progress_float = (current / total) if total > 0 else 0
-            
+
             current_color = active_color if progress_float > 0 else idle_color
             pb.configure(progress_color=current_color)
-            
+
             pb.set(progress_float)
 
             percent = progress_float * 100
             display_name = (filename[:27] + "...") if len(filename) > 30 else filename
-            status_text = f"{stage}: {display_name} ({current}/{total}) — {percent:.1f}%"
+            status_text = (
+                f"{stage}: {display_name} ({current}/{total}) — {percent:.1f}%"
+            )
 
         pl.configure(text=status_text)
         self.main_frame.update_idletasks()
+
     def show_status_message(self, status_message: str):
         st = self.main_frame.status_text
         st.configure(state="normal")

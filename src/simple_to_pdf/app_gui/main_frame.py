@@ -6,7 +6,7 @@ from CTkMessagebox import CTkMessagebox
 
 from simple_to_pdf.pdf.pdf_merger import PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
-from simple_to_pdf.core.config import ThemeKeys,DEFAULT_COLORS
+from simple_to_pdf.core.config import ThemeKeys, DEFAULT_COLORS
 from simple_to_pdf.utils.ui_tools import (
     clear_text_widget,
     get_selected_values,
@@ -14,26 +14,25 @@ from simple_to_pdf.utils.ui_tools import (
     listbox_clear,
     reselect_items,
 )
-from simple_to_pdf.widgets import BaseFrame,BaseLabel,BaseTextBox
+from simple_to_pdf.widgets import BaseFrame, BaseLabel, BaseTextBox
 from simple_to_pdf.widgets.base_widgets import BaseProgress, BaseScrollableFrame
 
 
 logger = logging.getLogger(__name__)
 
+
 class MainFrame(BaseFrame):
-   
     def __init__(self, parent: tk.Frame, merger: PdfMerger):
         super().__init__(parent)
-        self.merger=merger
+        self.merger = merger
         self.ui: dict[str, tk.Widget] = {}
-        self.status_text:BaseTextBox
-        self.filebox:tk.Listbox
+        self.status_text: BaseTextBox
+        self.filebox: BaseScrollableFrame
         self.progress_bar: BaseProgress
-        self.progress_label:BaseLabel
+        self.progress_label: BaseLabel
 
         # Set attributes and register in self.ui
         self._register_components(self._setup_layout())
-        
 
     def _setup_layout(self):
         raw_components = {}
@@ -50,7 +49,7 @@ class MainFrame(BaseFrame):
             pady=(TOP_SIDE_PAD, BOTTOM_SIDE_PAD),
         )
 
-        file_batch_area = BaseFrame(self,frame_type="scr_frame_container")
+        file_batch_area = BaseFrame(self, frame_type="scr_frame_container")
         file_batch_area.pack(
             fill="both",
             expand=True,
@@ -87,16 +86,14 @@ class MainFrame(BaseFrame):
 
     def _setup_file_batch_area(self, mid: BaseFrame) -> BaseScrollableFrame:
         """Builds the central scrollable area for displaying files using CustomTkinter."""
-        filebox:BaseScrollableFrame=BaseScrollableFrame(
-            mid,
-            label_text="Selected Files",
-            scr_frame_type="file_list"
+        filebox: BaseScrollableFrame = BaseScrollableFrame(
+            mid, label_text="Selected Files", scr_frame_type="file_list"
         )
-        filebox.pack(side="left", fill="both", expand=True,padx=10,pady=10)
+        filebox.pack(side="left", fill="both", expand=True, padx=10, pady=10)
         return filebox
 
     def _setup_status_area(self, status_frame: ctk.CTkFrame) -> ctk.CTkTextbox:
-        text:BaseTextBox=BaseTextBox(status_frame,textbox_type="status_text")
+        text: BaseTextBox = BaseTextBox(status_frame, textbox_type="status_text")
         text.pack(side="bottom", fill="x", expand=True)
         return text
 
@@ -104,10 +101,12 @@ class MainFrame(BaseFrame):
         self, progress_frame: ctk.CTkFrame
     ) -> tuple[BaseProgress, ctk.CTkLabel]:
 
-        label = BaseLabel(progress_frame, text="Progress:",label_type="badge")
+        label = BaseLabel(progress_frame, text="Progress:", label_type="badge")
         label.pack(pady=4)
 
-        bar = BaseProgress(progress_frame, progress_type="merge_progress", mode="determinate")
+        bar = BaseProgress(
+            progress_frame, progress_type="merge_progress", mode="determinate"
+        )
         empty_track_color = bar.cget("fg_color")
         bar.configure(progress_color=empty_track_color)
         bar.set(0)
@@ -178,22 +177,22 @@ class MainFrame(BaseFrame):
         if not all_files:
             CTkMessagebox(
                 master=self.winfo_toplevel(),
-                title="No files", 
-                message="The file list is already empty.", 
+                title="No files",
+                message="The file list is already empty.",
                 icon="info",
-                option_1="OK"
+                option_1="OK",
             )
             return
         elif not sel_files:
             msg = CTkMessagebox(
                 master=self.winfo_toplevel(),
-                title="No files.", 
+                title="No files.",
                 message="No files selected. Do you want to remove all files?",
-                icon="question", 
-                option_1="No", 
-                option_2="Yes"
+                icon="question",
+                option_1="No",
+                option_2="Yes",
             )
-            answer = msg.get() 
+            answer = msg.get()
 
             if answer == "Yes":
                 listbox_clear(listbox=self.filebox)

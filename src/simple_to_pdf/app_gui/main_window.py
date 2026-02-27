@@ -18,31 +18,40 @@ from simple_to_pdf.pdf import PageExtractor, PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
 from simple_to_pdf.utils.logic import get_pages
 from simple_to_pdf.utils.ui_tools import change_state, ui_locker
-from simple_to_pdf.app_dialog import AboutDialog,UpdateDialog,InfoDialog
+from simple_to_pdf.app_dialog import AboutDialog, UpdateDialog, InfoDialog
 from simple_to_pdf.core import config
-from simple_to_pdf.app_gui.base_window import BaseWindow 
+from simple_to_pdf.app_gui.base_window import BaseWindow
 
 logger = logging.getLogger(__name__)
+
 
 class PDFMergerGUI(BaseWindow):
     APP_NAME: str = "Simple_to_PDF"
 
-    def __init__(self, *, merger: PdfMerger, page_extractor: PageExtractor,version_controller:VersionController):
-       
+    def __init__(
+        self,
+        *,
+        merger: PdfMerger,
+        page_extractor: PageExtractor,
+        version_controller: VersionController,
+    ):
+
         # Initialize BaseWindow
-        super().__init__(title=f"{config.APP_NAME}-PDF Merger",size="1000x700")
+        super().__init__(title=f"{config.APP_NAME}-PDF Merger", size="1000x700")
         self.protocol("WM_DELETE_WINDOW", self._on_closing)
-        self.thread_running:bool=False
-        self.merger:PdfMerger = merger
-        self.page_extractor:PageExtractor = page_extractor
-        self.version_controller:VersionController=version_controller
+        self.thread_running: bool = False
+        self.merger: PdfMerger = merger
+        self.page_extractor: PageExtractor = page_extractor
+        self.version_controller: VersionController = version_controller
         # build UI inside root_container inherited from BaseWindow
 
         self.init_panels()
         self.init_connections()
 
         handlers = self._setup_handlers()
-        self.list_controls: dict[str, tk.Widget] = self.btns_panel.init_btns(callbacks=handlers)
+        self.list_controls: dict[str, tk.Widget] = self.btns_panel.init_btns(
+            callbacks=handlers
+        )
         self.build_gui(callbacks=handlers)
 
     def init_panels(self) -> None:
@@ -80,17 +89,17 @@ class PDFMergerGUI(BaseWindow):
         # You can also disabled specific panels if needed
         self._toggle_menu_items(menu_obj=self.menu, active=menu_active)
 
-    def build_gui(
-        self, *, callbacks: dict[str, Callable]
-    ) -> None:
+    def build_gui(self, *, callbacks: dict[str, Callable]) -> None:
         """Builds the main GUI layout"""
 
         # Window settings
-        
+
         self.menu = self._build_menu_bar(parent=self, callbacks=callbacks)
 
         # Side-by-side layout with padding
-        self.main_panel.pack(side="left", fill="both", expand=True, padx=(20, 10), pady=20)
+        self.main_panel.pack(
+            side="left", fill="both", expand=True, padx=(20, 10), pady=20
+        )
         self.btns_panel.pack(side="right", fill="y", padx=(10, 20), pady=20)
 
     def _build_menu_bar(
@@ -159,7 +168,7 @@ class PDFMergerGUI(BaseWindow):
                 )
             except Exception as e:
                 logger.error(f"Could not open folder on Linux: {e}", exc_info=True)
-    
+
     def _setup_handlers(self) -> dict:
         """Create a dictionary of commands to pass to the Builder."""
 
@@ -175,11 +184,11 @@ class PDFMergerGUI(BaseWindow):
             "about": self.show_about,
             "clear_status": self.main_panel.clear_status_text,
             "logs": self.open_log_folder,
-            "settings":lambda:self.extend_frame(frame_name="settings"),
-            "help":lambda:self.extend_frame(frame_name="help")
+            "settings": lambda: self.extend_frame(frame_name="settings"),
+            "help": lambda: self.extend_frame(frame_name="help"),
         }
         return handlers
-        
+
     def on_check_updates_click(self):
         """
         Handles the update check event from the UI.
@@ -191,32 +200,32 @@ class PDFMergerGUI(BaseWindow):
         if result.error_message:
             CTkMessagebox(
                 master=self,
-                title="Update Error", 
+                title="Update Error",
                 message=f"Unable to check for updates:\n{result.error_message}",
-                icon="cancel"  
-                )
+                icon="cancel",
+            )
             return
 
         # 3. If update found, show the beautiful dialog
         if result.is_available and result.release:
-            UpdateDialog(self,result.release.version,result.release.notes)
-    
+            UpdateDialog(self, result.release.version, result.release.notes)
+
         # 4. If no update found
         else:
             current_v = self.version_controller._get_current_version()
             CTkMessagebox(
                 master=self,
-                title="Software Update", 
+                title="Software Update",
                 message=f"You're all set! Version {current_v} is the latest available.",
                 icon="check",
-                option_1="OK"
-                )
+                option_1="OK",
+            )
 
     def show_about(self):
         """Gathers data and displays the About Dialog."""
         # 1. Get version from controller
         current_version = self.version_controller._get_current_version()
-    
+
         # 2. Get engine name
         engine_class = getattr(self.merger.converter, "__class__", None)
         engine_name = engine_class.__name__ if engine_class else "Unknown"
@@ -233,37 +242,38 @@ class PDFMergerGUI(BaseWindow):
             logger.warning(f"⚠️ License file not found at path: {license_path}")
             CTkMessagebox(
                 master=self,
-                title="File Not Found", 
+                title="File Not Found",
                 message=f"License file could not be found at:\n{license_path}",
                 icon="warning",
-                option_1="OK"
-                )
+                option_1="OK",
+            )
             return
 
         try:
             # 2. Reading file (UTF-8 is essential for cross-platform compatibility)
             text = license_path.read_text(encoding="utf-8")
 
-             # 3. Call the new class instead of the old method
+            # 3. Call the new class instead of the old method
             InfoDialog(
-                self, 
-                text=text, 
-                title="License Agreement", 
+                self,
+                text=text,
+                title="License Agreement",
                 header_title="MIT License - Simple to PDF",
                 text_font="Consolas",
                 font_size=10,
-                size="750x600"
+                size="750x600",
             )
-        
+
         except Exception as e:
             logger.error(f"❌ Error reading license file: {e}")
             CTkMessagebox(
                 master=self,
-                title="Read Error", 
+                title="Read Error",
                 message=f"An error occurred while reading the license:\n{str(e)}",
                 icon="cancel",
-                option_1="OK"
-                )
+                option_1="OK",
+            )
+
     def show_documentation(self) -> None:
         webbrowser.open(config.README_URL)
 
@@ -276,11 +286,11 @@ class PDFMergerGUI(BaseWindow):
         if not files:
             CTkMessagebox(
                 master=self,
-                title="Warning", 
-                message="No files to merge", 
+                title="Warning",
+                message="No files to merge",
                 icon="warning",
-                option_1="OK"
-                )
+                option_1="OK",
+            )
             return
 
         out = filedialog.asksaveasfilename(
@@ -365,8 +375,8 @@ class PDFMergerGUI(BaseWindow):
                 title="Invalid Input",
                 message="Please use the correct format (e.g., 1-5, 8, 10-12).",
                 icon="warning",
-                master=self, 
-                option_1="OK"
+                master=self,
+                option_1="OK",
             )
             return
 
@@ -377,20 +387,20 @@ class PDFMergerGUI(BaseWindow):
             )
         except ValueError as e:
             CTkMessagebox(
-               title="Validation Error",
-               message=str(e),
-               icon="cancel",
-               master=self,  
-               option_1="OK"
+                title="Validation Error",
+                message=str(e),
+                icon="cancel",
+                master=self,
+                option_1="OK",
             )
             return
         except Exception as e:
             CTkMessagebox(
-               title="File Error",
-               message=f"Could not read PDF: {e}",
-               icon="cancel",
-               master=self,
-               option_1="OK"
+                title="File Error",
+                message=f"Could not read PDF: {e}",
+                icon="cancel",
+                master=self,
+                option_1="OK",
             )
             return
 
@@ -431,41 +441,51 @@ class PDFMergerGUI(BaseWindow):
             error_msg = f"❌ Error during page extraction: {e}"
             if isinstance(e, ValueError):
                 self.after(
-                    0, lambda: CTkMessagebox(title="Extraction Error",message=error_msg,icon="cancel",option_1="OK",master=self))
+                    0,
+                    lambda: CTkMessagebox(
+                        title="Extraction Error",
+                        message=error_msg,
+                        icon="cancel",
+                        option_1="OK",
+                        master=self,
+                    ),
+                )
             else:
                 self.callback.show_status_message(status_message=error_msg)
                 logger.error(error_msg, exc_info=True)
                 self.after(0, lambda: self.main_panel.progress_bar_reset())
-    
-    def extend_frame(self,*,frame_name:str):
+
+    def extend_frame(self, *, frame_name: str):
         pass
+
     def _on_closing(self):
         if self.thread_running:
             CTkMessagebox(
-               title="Process in Progress", 
-               message=(
-                "A background task is currently running.\n\n"
-                "The application will close automatically once the task is finished. "
-                "Please wait."
+                title="Process in Progress",
+                message=(
+                    "A background task is currently running.\n\n"
+                    "The application will close automatically once the task is finished. "
+                    "Please wait."
                 ),
-            master=self,
-            icon="warning",
-            option_1="Wait"
-)
+                master=self,
+                icon="warning",
+                option_1="Wait",
+            )
             self._wait_for_thread_finish()
         else:
             self.destroy()
-    
+
     def _wait_for_thread_finish(self):
         """
-        Periodically checks if the background thread has finished its work 
+        Periodically checks if the background thread has finished its work
         before allowing the application to close.
         """
         if self.thread_running:
             # Опитування кожні 100 мс
-            logger.info("Waiting for background thread to finish... (re-checking in 1s)")
+            logger.info(
+                "Waiting for background thread to finish... (re-checking in 1s)"
+            )
             self.after(1000, self._wait_for_thread_finish)
         else:
             logger.info("Background thread finished. Closing the application.")
             self.destroy()
-    

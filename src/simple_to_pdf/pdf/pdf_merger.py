@@ -12,10 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 class PdfMerger:
-   
     def __init__(self):
         factory = ConverterFactory()
-        self.converter:BaseConverter= factory.get_converter()
+        self.converter: BaseConverter = factory.get_converter()
 
     def _get_pdfs_bytes(
         self, files: list[tuple[int, str]], callback=None

@@ -66,7 +66,7 @@ def ui_locker(func):
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         self.toggle_ui(active=False)  # lock in main thread
-        self.thread_running=True
+        self.thread_running = True
 
         def run():
             try:
@@ -74,9 +74,8 @@ def ui_locker(func):
             finally:
                 # unlock in main thread
                 self.after(0, lambda: self.toggle_ui(active=True))
-                self.thread_running=False
+                self.thread_running = False
 
         threading.Thread(target=run, daemon=True).start()
 
     return wrapper
-
