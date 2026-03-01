@@ -9,22 +9,20 @@ class CTkListbox(ctk.CTkScrollableFrame, ThemeProviderMixin):
         params = self.set_scrollable_frame_params(scr_frame_type="file_list")
         params.update(kwargs)
         super().__init__(parent, **params)
-        self.files_order: list[str]
 
     def refresh(self, file_list: list[str]):
         for path in file_list:
             file_path = Path(path)
             self._create_file_row(parent=self, file_path=file_path)
 
-    def get_file_path(self, *, number: int):
+    def get_selected(self) -> list[str]:
+        return ["23"]
+
+    def get_files(self) -> list[str]:
+        return ["23"]
+
+    def clear(self):
         pass
-
-    def get_files(self) -> list[tuple[int, str]]:
-
-        result: list[tuple[int, str]] = [
-            (i, str(path)) for i, path in enumerate(self.files_order, start=1)
-        ]
-        return result
 
     def remove_item(self):
         pass

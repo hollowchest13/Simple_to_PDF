@@ -153,17 +153,17 @@ class MainFrame(BaseFrame):
             return
 
         # Call the method. It will create "All supported" files
-        saved_files_paths: list[str] = list(self.filebox.get(0, tk.END))
+        saved_files_paths: list[str] = self.filebox.get_files()
 
         files_paths: list[str] = saved_files_paths + new_files_paths
 
         if files_paths:
             self.progress_bar_reset()
-            list_update(files=files_paths, listbox=self.filebox)
+            self.filebox.refresh(file_list=files_paths)
 
     def remove_files(self) -> None:
-        all_files = list(self.filebox.get(0, tk.END))
-        sel_files = get_selected_values(listbox=self.filebox)
+        all_files = self.filebox.get_files()
+        sel_files = self.filebox.get_selected()
         if not all_files:
             CTkMessagebox(
                 master=self.winfo_toplevel(),
@@ -185,12 +185,12 @@ class MainFrame(BaseFrame):
             answer = msg.get()
 
             if answer == "Yes":
-                listbox_clear(listbox=self.filebox)
+                self.filebox.clear()
                 self.reset_progress_widgets()
                 return
 
         remaining_files = [f for f in all_files if f not in set(sel_files)]
-        list_update(files=remaining_files, listbox=self.filebox)
+        self.filebox.refresh(file_list=remaining_files)
         self.progress_bar_reset()
 
     def reset_progress_widgets(self):
@@ -205,7 +205,7 @@ class MainFrame(BaseFrame):
         if not sel_idxs:
             return
 
-        items = list(self.filebox.get(0, tk.END))
+        items = self.filebox.get_files()
         selected_values = [items[i] for i in sel_idxs]
 
         max_idx = len(items) - 1
@@ -223,7 +223,7 @@ class MainFrame(BaseFrame):
                     sel_idxs[sel_idxs.index(i)] -= 1
 
         self.progress_bar_reset()
-        list_update(files=items, listbox=self.filebox)
+        self.filebox.refresh(file_list=items)
         reselect_items(
             all_items=items, selected_values=selected_values, listbox=self.filebox
         )
