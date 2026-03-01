@@ -223,21 +223,21 @@ class PDFMergerGUI(BaseWindow):
 
     def show_about(self):
         """Gathers data and displays the About Dialog."""
-        # 1. Get version from controller
+        # Get version from controller
         current_version = self.version_controller._get_current_version()
 
-        # 2. Get engine name
+        # Get engine name
         engine_class = getattr(self.merger.converter, "__class__", None)
         engine_name = engine_class.__name__ if engine_class else "Unknown"
 
-        # 3. Open the dialog
+        # Open the dialog
         AboutDialog(self, current_version, engine_name)
 
     def show_license(self) -> None:
         """Displays the license file in a styled TextWindow."""
         license_path = config.LICENCE_PATH
 
-        # 1. Check if file exists
+        # Check if file exists
         if not license_path.exists():
             logger.warning(f"⚠️ License file not found at path: {license_path}")
             CTkMessagebox(
@@ -250,10 +250,10 @@ class PDFMergerGUI(BaseWindow):
             return
 
         try:
-            # 2. Reading file (UTF-8 is essential for cross-platform compatibility)
+            # Reading file (UTF-8 is essential for cross-platform compatibility)
             text = license_path.read_text(encoding="utf-8")
 
-            # 3. Call the new class instead of the old method
+            # Call the new class instead of the old method
             InfoDialog(
                 self,
                 text=text,
@@ -281,7 +281,7 @@ class PDFMergerGUI(BaseWindow):
         """Handler for Merge button click"""
 
         # Preparing data (quick operation, doing in main thread)
-        files = self.main_panel.load_from_listbox()
+        files = self.main_panel.filebox.get_files()
 
         if not files:
             CTkMessagebox(
