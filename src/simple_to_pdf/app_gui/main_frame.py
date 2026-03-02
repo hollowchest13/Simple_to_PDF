@@ -5,7 +5,6 @@ from CTkMessagebox import CTkMessagebox
 from pathlib import Path
 from simple_to_pdf.pdf.pdf_merger import PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
-from simple_to_pdf.widgets import CTkListbox
 from simple_to_pdf.utils.ui_tools import (
     clear_text_widget,
     get_selected_values,
@@ -14,7 +13,7 @@ from simple_to_pdf.utils.ui_tools import (
     reselect_items,
 )
 from simple_to_pdf.widgets import BaseFrame, BaseLabel, BaseTextBox
-from simple_to_pdf.widgets.base_widgets import BaseProgress, BaseScrollableFrame
+from simple_to_pdf.widgets import BaseProgress, BaseScrollableFrame, CTkListbox
 
 
 logger = logging.getLogger(__name__)
@@ -26,7 +25,7 @@ class MainFrame(BaseFrame):
         self.merger = merger
         self.ui: dict[str, tk.Widget] = {}
         self.status_text: BaseTextBox
-        self.filebox: CTkListbox = CTkListbox(self)
+        self.filebox: CTkListbox
         self.progress_bar: BaseProgress
         self.progress_label: BaseLabel
 
@@ -83,11 +82,9 @@ class MainFrame(BaseFrame):
             setattr(self, key, widget)
             self.ui[key] = widget
 
-    def _setup_file_batch_area(self, mid: BaseFrame) -> BaseScrollableFrame:
+    def _setup_file_batch_area(self, mid: BaseFrame) -> CTkListbox:
         """Builds the central scrollable area for displaying files using CustomTkinter."""
-        filebox: BaseScrollableFrame = BaseScrollableFrame(
-            mid, label_text="Selected Files", scr_frame_type="file_list"
-        )
+        filebox: CTkListbox = CTkListbox(mid, label_text="Selected Files")
         filebox.pack(side="left", fill="both", expand=True, padx=10, pady=10)
         return filebox
 
@@ -153,9 +150,9 @@ class MainFrame(BaseFrame):
             return
 
         # Call the method. It will create "All supported" files
-        saved_files_paths: list[str] = self.filebox.get_files()
+        # saved_files_paths: list[str] = self.filebox.get_files()
 
-        files_paths: list[str] = saved_files_paths + new_files_paths
+        files_paths: list[str] = new_files_paths
 
         if files_paths:
             self.progress_bar_reset()
@@ -224,9 +221,7 @@ class MainFrame(BaseFrame):
 
         self.progress_bar_reset()
         self.filebox.refresh(file_list=items)
-        reselect_items(
-            all_items=items, selected_values=selected_values, listbox=self.filebox
-        )
+        self.filebox.reselect_items(all_items=items, selected_values=selected_values)
 
     def progress_bar_reset(self):
         self.set_progress_determinate()

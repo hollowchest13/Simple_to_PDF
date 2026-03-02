@@ -4,5 +4,6 @@ from .base_widgets import (
     BaseScrollableFrame,
     BaseLabel,
     BaseTextBox,
+    BaseProgress,
 )
 from .listbox import CTkListbox
