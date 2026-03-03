@@ -159,7 +159,7 @@ class MainFrame(BaseFrame):
             self.filebox.refresh(file_list=files_paths)
 
     def remove_files(self) -> None:
-        all_files = self.filebox.get_files()
+        all_files = self.filebox.all_rows
         sel_files = self.filebox.get_selected()
         if not all_files:
             CTkMessagebox(
@@ -194,34 +194,10 @@ class MainFrame(BaseFrame):
         self.progress_bar_reset()
         self.clear_status_text()
 
-    # Move selected items in the listbox
     def move_on_listbox(self, *, direction: str):
         """Move selected items up or down in the listbox."""
 
-        sel_idxs = sorted(self.filebox.curselection())
-        if not sel_idxs:
-            return
-
-        items = self.filebox.get_files()
-        selected_values = [items[i] for i in sel_idxs]
-
-        max_idx = len(items) - 1
-
-        if direction == "down":
-            for i in reversed(sel_idxs):
-                if i < max_idx and i + 1 not in sel_idxs:
-                    items[i], items[i + 1] = items[i + 1], items[i]
-                    sel_idxs[sel_idxs.index(i)] += 1
-
-        elif direction == "up":
-            for i in sel_idxs:
-                if i > 0 and i - 1 not in sel_idxs:
-                    items[i], items[i - 1] = items[i - 1], items[i]
-                    sel_idxs[sel_idxs.index(i)] -= 1
-
-        self.progress_bar_reset()
-        self.filebox.refresh(file_list=items)
-        self.filebox.reselect_items(all_items=items, selected_values=selected_values)
+        self.filebox.move(direction=direction, callback=self.progress_bar_reset)
 
     def progress_bar_reset(self):
         self.set_progress_determinate()
