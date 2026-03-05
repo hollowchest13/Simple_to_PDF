@@ -76,7 +76,7 @@ class BaseLabel(ctk.CTkLabel, ThemeProviderMixin):
         self,
         parent,
         *,
-        label_type: Literal["badge", "title", "content"] = "badge",
+        label_type: Literal["badge", "title", "content", "title", "subtitle"] = "badge",
         **kwargs,
     ):
         params = self.set_label_params(label_type=label_type)
@@ -92,7 +92,9 @@ class BaseProgress(ctk.CTkProgressBar, ThemeProviderMixin):
 
 
 class BaseTextBox(ctk.CTkTextbox, ThemeProviderMixin):
-    def __init__(self, parent, *, textbox_type: Literal["status_text"], **kwargs):
+    def __init__(
+        self, parent, *, textbox_type: Literal["status_text", "info"] = "info", **kwargs
+    ):
         params = self.set_textbox_params(textbox_type=textbox_type)
         params.update(kwargs)
         super().__init__(parent, **params)

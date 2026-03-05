@@ -66,18 +66,24 @@ class ThemeProviderMixin:
         match label_type:
             case "badge":
                 return {
-                    "font": ("Consolas", 10, "bold"),
+                    "font": ("Segoe UI", 12, "bold"),
                     "text_color": self.get_color(ThemeKeys.TEXT_PRIMARY),
                     "fg_color": bg_color,
                     "corner_radius": 6,
-                    "padx": 8,
-                    "pady": 2,
+                }
+            case "subtitle":
+                return {
+                    "font": ("Segoe UI", 12, "italic"),
+                    "text_color": self.get_color(ThemeKeys.TEXT_SECONDARY),
+                    "fg_color": bg_color,
+                    "corner_radius": 6,
+                    "anchor": "center",
                 }
 
             case "title":
                 return {
-                    "font": ("Segoe UI", 14, "bold"),
-                    "text_color": self.get_color(ThemeKeys.TEXT_PRIMARY),
+                    "font": ("Segoe UI", 16, "bold"),
+                    "text_color": self.get_color(ThemeKeys.TEXT_TITLE),
                     "fg_color": bg_color,
                     "anchor": "w",
                 }
@@ -85,7 +91,7 @@ class ThemeProviderMixin:
             case "content":
                 return {
                     "font": ("Segoe UI", 12),
-                    "text_color": self.get_color(ThemeKeys.TEXT_PRIMARY),
+                    "text_color": self.get_color(ThemeKeys.TEXT_CONTENT),
                     "fg_color": bg_color,
                     "justify": "left",
                 }
@@ -153,7 +159,9 @@ class ThemeProviderMixin:
                 )
         return params
 
-    def set_textbox_params(self, *, textbox_type: Literal["status_text"]) -> dict:
+    def set_textbox_params(
+        self, *, textbox_type: Literal["status_text", "info"]
+    ) -> dict:
         match textbox_type:
             case "status_text":
                 params = {
@@ -162,6 +170,16 @@ class ThemeProviderMixin:
                     "corner_radius": 10,
                     "height": 100,
                     "border_width": 1,
+                }
+            case "info":
+                params = {
+                    "wrap": "word",
+                    "font": ("Segoe UI", 14),
+                    "fg_color": self.get_color(ThemeKeys.BG_MAIN),
+                    "text_color": self.get_color(ThemeKeys.TEXT_CONTENT),
+                    "scrollbar_button_color": self.get_color(ThemeKeys.ACCENT),
+                    "corner_radius": 10,
+                    "border_width": 0,
                 }
         return params
 

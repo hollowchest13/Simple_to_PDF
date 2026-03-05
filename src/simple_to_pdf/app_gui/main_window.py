@@ -260,7 +260,7 @@ class PDFMergerGUI(BaseWindow):
                 title="License Agreement",
                 header_title="MIT License - Simple to PDF",
                 text_font="Consolas",
-                font_size=10,
+                font_size=14,
                 size="750x600",
             )
 
@@ -281,8 +281,7 @@ class PDFMergerGUI(BaseWindow):
         """Handler for Merge button click"""
 
         # Preparing data (quick operation, doing in main thread)
-        files = self.main_panel.filebox.get_files()
-
+        files = [[i, path] for i, path in enumerate(self.main_panel.filebox.all_rows)]
         if not files:
             CTkMessagebox(
                 master=self,
@@ -326,8 +325,7 @@ class PDFMergerGUI(BaseWindow):
             err_msg = f"❌ Error: Could not merge files: \n{e}"
             logger.error(err_msg, exc_info=True)
             self.after(0, lambda: self.callback.show_status_message(err_msg))
-            if self.main_panel.progress_bar["mode"] == "indeterminate":
-                self.after(0, lambda: self.main_panel.set_progress_determinate())
+            self.main_panel.progress_bar_reset()
 
     def prompt_pages_to_remove(self):
         input_path = get_files(filetypes=[("PDF files", "*.pdf")], multiple=False)

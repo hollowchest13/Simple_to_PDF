@@ -156,11 +156,11 @@ class MainFrame(BaseFrame):
 
         if files_paths:
             self.progress_bar_reset()
-            self.filebox.refresh(file_list=files_paths)
+            self.filebox.add_new_files(file_list=files_paths)
 
     def remove_files(self) -> None:
         all_files = self.filebox.all_rows
-        sel_files = self.filebox.get_selected()
+        sel_files = self.filebox.get_selected_paths()
         if not all_files:
             CTkMessagebox(
                 master=self.winfo_toplevel(),
@@ -182,13 +182,9 @@ class MainFrame(BaseFrame):
             answer = msg.get()
 
             if answer == "Yes":
-                self.filebox.clear()
-                self.reset_progress_widgets()
+                self.filebox.clear(callback=self.reset_progress_widgets)
                 return
-
-        remaining_files = [f for f in all_files if f not in set(sel_files)]
-        self.filebox.refresh(file_list=remaining_files)
-        self.progress_bar_reset()
+        self.filebox.remove_selected(callback=self.progress_bar_reset)
 
     def reset_progress_widgets(self):
         self.progress_bar_reset()

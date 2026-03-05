@@ -1,3 +1,4 @@
+from typing import Callable
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
 from simple_to_pdf.core.config import ThemeKeys
 from simple_to_pdf.widgets import BaseFrame, BaseLabel
@@ -25,25 +26,21 @@ class CTkListbox(ctk.CTkScrollableFrame, ThemeProviderMixin):
         self.selected_row_color = self.get_color(ThemeKeys.TEXT_PRIMARY)
         self.selected_text_color = self.get_color(ThemeKeys.TEXT_ON_ACCENT)
 
-    def refresh(self, file_list: list):
-        """
-        Updates the list. If files are new, creates widgets.
-        If only the order has changed, repacks existing widgets.
-        """
+    def add_new_files(self, file_list: list[str]):
+
         new_paths = [Path(p) for p in file_list]
 
-        # Remove widgets for files that are no longer in the list
-        for old_path in list(self.all_widgets.keys()):
-            if old_path not in new_paths:
-                self.all_widgets[old_path]["frame"].destroy()
-                self.all_widgets.pop(old_path)
-                if old_path in self.selected_data:
-                    self.selected_data.pop(old_path)
-
         # Update the main path list
-        self.all_rows = new_paths
+        self.all_rows.extend(new_paths)
+        self._update_listbox()
 
+    def _update_listbox(self):
         # Create widgets for new files and repack all according to the new order
+        for registered_path in list(self.all_widgets.keys()):
+            if registered_path not in self.all_rows :
+                widget_data = self.all_widgets.pop(registered_path) 
+                widget_data["frame"].destroy()
+                 
         for path in self.all_rows:
             if path not in self.all_widgets:
                 # Create a new row if it doesn't exist yet
@@ -76,6 +73,7 @@ class CTkListbox(ctk.CTkScrollableFrame, ThemeProviderMixin):
 
     def _select_row(self, file_path: Path):
         """Manages the selection state of a row."""
+
         widgets = self.all_widgets[file_path]
         row_frame = widgets["frame"]
         path_label = widgets["label"]
@@ -91,7 +89,7 @@ class CTkListbox(ctk.CTkScrollableFrame, ThemeProviderMixin):
             path_label.configure(text_color=self.selected_text_color)
             self.selected_data[file_path] = widgets
 
-    def curselection(self) -> tuple[int, ...]:
+    def _curselection(self) -> tuple[int, ...]:
         """Returns indices of currently selected items."""
         return tuple(
             idx for idx, path in enumerate(self.all_rows) if path in self.selected_data
@@ -99,7 +97,7 @@ class CTkListbox(ctk.CTkScrollableFrame, ThemeProviderMixin):
 
     def move(self, *, direction: str, callback):
         """Moves selected items as a block in the specified direction."""
-        sel_idxs = sorted(self.curselection())
+        sel_idxs = sorted(self._curselection())
         if not sel_idxs:
             return
 
@@ -121,18 +119,19 @@ class CTkListbox(ctk.CTkScrollableFrame, ThemeProviderMixin):
                     items[i], items[i - 1] = items[i - 1], items[i]
 
         # Update visual representation using the smart refresh method
-        self.refresh(file_list=items)
+        self._update_listbox()
 
         if callback:
             callback()
 
-    def clear(self):
+    def clear(self,*,callback:Callable):
         """Performs a full cleanup of all items and widgets."""
         for widgets in self.all_widgets.values():
             widgets["frame"].destroy()
         self.all_widgets.clear()
         self.selected_data.clear()
         self.all_rows.clear()
+        callback()
 
     def clear_selection(self):
         """Resets the visual state of all selected items and clears the selection dictionary."""
@@ -140,6 +139,13 @@ class CTkListbox(ctk.CTkScrollableFrame, ThemeProviderMixin):
             widgets["frame"].configure(fg_color="transparent")
             widgets["label"].configure(text_color=self.default_text_color)
         self.selected_data.clear()
+
+    def remove_selected(self,*,callback:Callable):
+        for path in self.selected_data.keys():
+             self.all_rows.remove(path)
+        self.selected_data.clear()
+        self._update_listbox()
+            
 
     def get_selected_paths(self) -> list[Path]:
         """Returns a list of currently selected file paths."""
