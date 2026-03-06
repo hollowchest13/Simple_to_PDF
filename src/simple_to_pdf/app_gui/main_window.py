@@ -18,7 +18,12 @@ from simple_to_pdf.pdf import PageExtractor, PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
 from simple_to_pdf.utils.logic import get_pages
 from simple_to_pdf.utils.ui_tools import change_state, ui_locker
-from simple_to_pdf.app_dialog import AboutDialog, UpdateDialog, InfoDialog
+from simple_to_pdf.app_dialog import (
+    AboutDialog,
+    UpdateDialog,
+    InfoDialog,
+    PageSelectionDialog,
+)
 from simple_to_pdf.core import config
 from simple_to_pdf.app_gui.base_window import BaseWindow
 
@@ -328,43 +333,25 @@ class PDFMergerGUI(BaseWindow):
             self.main_panel.progress_bar_reset()
 
     def prompt_pages_to_remove(self):
+        """Метод у твоєму головному вікні"""
         input_path = get_files(filetypes=[("PDF files", "*.pdf")], multiple=False)
-
         if not input_path:
             return
 
-        win = tk.Toplevel(self)
-        win.title("Pages to extract")
-        win.geometry("350x170")
-        win.transient(self)
-        win.grab_set()
+        # ВАЖЛИВО: Оновити головне вікно після діалогу вибору файлу
+        self.update()
 
-        # Create a label and entry for page selection
-        # Main instruction
-        tk.Label(
-            win, text="Select pages to extract:", font=("TkDefaultFont", 10, "bold")
-        ).pack(pady=(20, 0))
+        # Створюємо наш чистий діалог
+        dialog = PageSelectionDialog(self)
 
-        # Format description (hint)
-        hint_text = (
-            "Format: 1, 3, 5-10\n(use commas for single pages and dashes for ranges)"
-        )
-        tk.Label(win, text=hint_text, fg="gray", font=("TkDefaultFont", 9)).pack(
-            pady=(0, 10)
-        )
-        entry = tk.Entry(win)
-        entry.pack(fill="x", padx=10)
-        tk.Button(
-            win,
-            text="OK",
-            width=10,  # Width in characters
-            height=1,  # Height in text lines
-            command=lambda: self.on_confirm(
-                raw_input=entry.get(), input_path=input_path, win=win
-            ),
-        ).pack(pady=12)
+        # Отримуємо результат (тут програма зупиниться і буде чекати)
+        raw_input = dialog.get_input()
 
-    def on_confirm(self, *, raw_input: str, input_path: str, win: tk.Toplevel) -> None:
+        # Якщо натиснули Confirm і щось ввели
+        if raw_input:
+            self.on_confirm(raw_input=raw_input, input_path=input_path)
+
+    def on_confirm(self, *, raw_input: str, input_path) -> None:
         # Parse string input into a list of page indices
         pages = get_pages(raw=raw_input.strip())
 
@@ -412,9 +399,6 @@ class PDFMergerGUI(BaseWindow):
 
         if not output_path:
             return
-
-        # Close input window and start the background worker thread
-        win.destroy()
 
         self._run_page_extractor_worker(
             input_path=input_path, pages=pages, output_path=output_path

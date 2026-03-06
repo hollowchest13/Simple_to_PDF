@@ -1,9 +1,6 @@
-import customtkinter as ctk
+
 from typing import Any
-
-from simple_to_pdf.core.config import ThemeKeys
 from simple_to_pdf.widgets.base_widgets import BaseTextBox
-
 from .base_dialog import BaseDialog
 from simple_to_pdf.widgets import PrimaryButton
 
@@ -51,6 +48,8 @@ class InfoDialog(BaseDialog):
     def _setup_footer_actions(self):
         """Adds a standardized primary button to the footer area."""
         # Using PrimaryButton custom widget for consistent styling
-        btn_close = PrimaryButton(self.footer, text="Got it!", command=self.destroy)
+        btn_close = PrimaryButton(
+            self.footer, text="Got it!", command=self.destroy, height=40, width=120
+        )
         # Position the button in the footer (inherited from BaseDialog)
         btn_close.pack(side="right", padx=25)
