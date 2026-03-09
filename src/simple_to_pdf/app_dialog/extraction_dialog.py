@@ -1,70 +1,65 @@
 import customtkinter as ctk
+from simple_to_pdf.widgets.base_widgets import BaseLabel, PrimaryButton
+from .base_dialog import BaseDialog
 
-class PageSelectionDialog(ctk.CTkToplevel):
-    def __init__(self, master, title="Extract Pages"):
-        super().__init__(master)
 
-        # Налаштування вікна
-        self.title(title)
-        self.geometry("400x250")
+class PageSelectionDialog(BaseDialog):
+    def __init__(self, parent):
+        # Initialize base layout (header, content, footer)
+        super().__init__(parent, title="Extract Pages")
+
+        self.geometry("400x380")
         self.resizable(False, False)
-        
-        # Модальність (блокуємо головне вікно)
-        self.transient(master)
-        self.grab_set()
-
         self.result = None
 
-        # --- UI СЕКЦІЯ (Чистий CTK) ---
-        
-        # Головний фрейм-контейнер
-        self.main_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        # Setup header area
+        self.set_header_text("Page Selection", "Extract specific pages from PDF")
 
-        # Заголовок
-        self.label_title = ctk.CTkLabel(
-            self.main_frame, 
-            text="Select pages to extract:",
-            font=("Arial", 14, "bold")
+        # Main instruction label
+        BaseLabel(
+            self.content,
+            text="Enter pages to extract:",
+            label_type="title",
+            anchor="center",
+        ).pack(pady=(0, 5), fill="x")
+
+        # Formatting hint label
+        hint_text = "Use commas for single pages (1, 3)\nand dashes for ranges (5-10)."
+        BaseLabel(
+            self.content, text=hint_text, label_type="subtitle", anchor="center"
+        ).pack(pady=(0, 15), fill="x")
+
+        # Input field
+        self.entry = ctk.CTkEntry(
+            self.content, placeholder_text="e.g. 1, 2, 5-8", height=35
         )
-        self.label_title.pack(pady=(0, 5))
-
-        # Підказка
-        hint_text = "Format: 1, 3, 5-10\n(use commas for single pages and dashes for ranges)"
-        self.label_hint = ctk.CTkLabel(
-            self.main_frame, 
-            text=hint_text,
-            text_color="gray",
-            font=("Arial", 12)
-        )
-        self.label_hint.pack(pady=(0, 15))
-
-        # Поле вводу
-        self.entry = ctk.CTkEntry(self.main_frame, placeholder_text="e.g. 1, 2, 5-8")
         self.entry.pack(fill="x", pady=(0, 20))
 
-        # Кнопка підтвердження
-        self.btn_ok = ctk.CTkButton(
-            self.main_frame, 
-            text="Confirm", 
-            command=self._on_ok
+        # Confirm button
+        self.btn_ok = PrimaryButton(
+            self.content, text="Confirm Extraction", command=self._on_ok, height=40
         )
-        self.btn_ok.pack()
+        self.btn_ok.pack(fill="x")
 
-        # Фокус і Enter
+        # Footer information
+        BaseLabel(
+            self.footer,
+            text="Make sure the page numbers exist in the document.",
+            label_type="badge",
+        ).pack()
+
+        # Keyboard accessibility
         self.entry.focus_set()
         self.bind("<Return>", lambda event: self._on_ok())
 
-    def _on_ok(self):
+    def _on_ok(self, event=None):
+        """Save input and close the dialog."""
         self.result = self.entry.get().strip()
         self.destroy()
 
     def get_input(self):
-        """Метод для виклику діалогу та отримання результату"""
-        # Примусово оновлюємо вікно, щоб воно не було порожнім
+        """Display the dialog and wait for user input."""
         self.update_idletasks()
         self.update()
-        
-        # Чекаємо на закриття
         self.wait_window(self)
         return self.result

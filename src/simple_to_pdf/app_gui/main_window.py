@@ -333,21 +333,19 @@ class PDFMergerGUI(BaseWindow):
             self.main_panel.progress_bar_reset()
 
     def prompt_pages_to_remove(self):
-        """Метод у твоєму головному вікні"""
+        """Select a PDF file and show the page extraction dialog."""
         input_path = get_files(filetypes=[("PDF files", "*.pdf")], multiple=False)
         if not input_path:
             return
 
-        # ВАЖЛИВО: Оновити головне вікно після діалогу вибору файлу
+        # Refresh the main window to prevent UI freezing before showing the dialog
         self.update()
 
-        # Створюємо наш чистий діалог
+        # Initialize and display the selection dialog
         dialog = PageSelectionDialog(self)
-
-        # Отримуємо результат (тут програма зупиниться і буде чекати)
         raw_input = dialog.get_input()
 
-        # Якщо натиснули Confirm і щось ввели
+        # Proceed if the user provided input and didn't cancel
         if raw_input:
             self.on_confirm(raw_input=raw_input, input_path=input_path)
 
