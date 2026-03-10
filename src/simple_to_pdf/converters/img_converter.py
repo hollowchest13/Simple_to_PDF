@@ -2,7 +2,7 @@ import io
 import logging
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageOps
 
 from simple_to_pdf.converters.base_converter import BaseConverter
 from simple_to_pdf.converters.models import ConversionResult
@@ -34,10 +34,9 @@ class ImageConverter(BaseConverter):
         super().__init__(chunk_size=chunk_size)
         self.SUPPORTED_FORMATS = self.get_supported_formats()
 
-    def convert_to_pdf(self,*, files: list[tuple[int, Path]]) -> ConversionResult:
+    def convert_to_pdf(self, *, files: list[tuple[int, Path]]) -> ConversionResult:
         return self._convert_images_to_pdf(files=files)
-        
-    
+
     def _convert_images_to_pdf(
         self, *, files: list[tuple[int, Path]]
     ) -> ConversionResult:
@@ -49,66 +48,63 @@ class ImageConverter(BaseConverter):
             all_results.failed.extend(chunk_res.failed)
         return all_results
 
+    def _convert_single_image(self, path: Path) -> bytes | None:
+        """Конвертує один файл (навіть багатосторінковий) у PDF-дані."""
+        MAX_SIZE = 2500
+        if not path.exists():
+            return None
+
+        with Image.open(path) as img:
+            img = ImageOps.exif_transpose(img)
+            if max(img.size) > MAX_SIZE:
+                img.thumbnail((MAX_SIZE, MAX_SIZE), Image.Resampling.LANCZOS)
+            img.load()
+            frames = []
+            n_frames = getattr(img, "n_frames", 1)
+
+            for i in range(n_frames):
+                img.seek(i)
+                # Конвертація в RGB обов'язкова для формату PDF
+                frame_rgb = img.convert("RGB")
+                frames.append(frame_rgb)
+
+            if not frames:
+                return None
+
+            buffer = io.BytesIO()
+            try:
+                # Зберігаємо всі кадри в один PDF-потік
+                frames[0].save(
+                    buffer,
+                    format="PDF",
+                    save_all=True,
+                    append_images=frames[1:] if len(frames) > 1 else [],
+                )
+                return buffer.getvalue()
+            finally:
+                buffer.close()
+                for f in frames:
+                    f.close()
+
     def _convert_images_chunk(
         self, *, chunk: list[tuple[int, Path]]
     ) -> ConversionResult:
-        """
-        Converts a chunk of images to PDF format.
-        Handles multi-page images (TIFF/GIF) and ensures RGB compatibility.
-        """
-        res: ConversionResult = ConversionResult()
+        """Обробляє чанк, використовуючи метод для одиночної конвертації."""
+        res = ConversionResult()
 
         for idx, path in chunk:
-            # Ensure path is a Path object
             path = Path(path)
-
-            if not path.exists():
-                logger.warning(f"⚠️ [{idx}] File not found: {path}")
-                res.failed.append((idx, path))
-                continue
-
             try:
-                # Open the image file
-                with Image.open(path) as img:
-                    # Force loading to prevent 'closed file' errors during save
-                    img.load()
+                pdf_data = self._convert_single_image(path)
 
-                    frames = []
-                    # Check for multiple frames (e.g., multi-page TIFFs or animated GIFs)
-                    n_frames = getattr(img, "n_frames", 1)
-
-                    for i in range(n_frames):
-                        img.seek(i)
-                        # Convert to RGB mode: mandatory for PDF format (removes alpha channel)
-                        # Using .copy() ensures data remains in memory after file is closed
-                        frame_rgb = img.convert("RGB")
-                        frames.append(frame_rgb)
-
-                    if frames:
-                        buffer = io.BytesIO()
-                        # Save the first frame as PDF and append others as additional pages
-                        frames[0].save(
-                            buffer,
-                            format="PDF",
-                            save_all=True,
-                            append_images=frames[1:] if len(frames) > 1 else [],
-                        )
-
-                        pdf_data = buffer.getvalue()
-                        if pdf_data:
-                            res.successful.append((idx, pdf_data))
-
-                        buffer.close()
-
-                    # Explicitly close each frame object to free memory
-                    for f in frames:
-                        f.close()
+                if pdf_data:
+                    res.successful.append((idx, pdf_data))
+                else:
+                    logger.warning(f"⚠️ [{idx}] File not found or empty: {path}")
+                    res.failed.append((idx, path))
 
             except Exception as e:
+                logger.error(f"❌ [{idx}] Error converting {path.name}: {e}")
                 res.failed.append((idx, path))
-                logger.error(
-                    f"❌ [{idx}] Image conversion error for {path.name}: {e}",
-                    exc_info=True,
-                )
 
         return res
