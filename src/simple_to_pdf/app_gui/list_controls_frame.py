@@ -41,7 +41,7 @@ class ListControlsFrame(BaseFrame):
             setattr(self, key, value)
         return self.ui
 
-    def _load_icon(self, icon_name: str, size=(20, 20)):
+    def _load_icon(self, *, icon_name: str, size=(20, 20)):
 
         full_path = ICONS_PATH / icon_name
 
@@ -57,7 +57,11 @@ class ListControlsFrame(BaseFrame):
         btns = {}
 
         for i, cfg in enumerate(btns_config):
-            icon = self._load_icon(cfg["icon_name"]) if "icon_name" in cfg else None
+            icon = (
+                self._load_icon(icon_name=cfg["icon_name"])
+                if "icon_name" in cfg
+                else None
+            )
             btn = PrimaryButton(
                 parent,
                 text=cfg["text"],
