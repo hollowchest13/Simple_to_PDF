@@ -8,6 +8,7 @@ from simple_to_pdf.pdf import PageExtractor, PdfMerger
 from simple_to_pdf.core import config
 from tendo import singleton
 
+
 logger = logging.getLogger(__name__)
 
 def main():
@@ -20,15 +21,17 @@ def main():
     page_extractor = PageExtractor()
     version_controller = VersionController(git_repo=config.GITHUB_REPO, git_user=config.GITHUB_USER)
     ctk.set_appearance_mode("light")
-    run_gui(merger=merger, page_extractor=page_extractor,version_controller=version_controller)
+    _run_gui(merger=merger, page_extractor=page_extractor,version_controller=version_controller)
 
 
-def run_gui(*, merger: PdfMerger, page_extractor: PageExtractor,version_controller:VersionController) -> None:
+def _run_gui(*, merger: PdfMerger, page_extractor: PageExtractor,version_controller:VersionController) -> None:
     try:
         app = PDFMergerGUI(merger=merger, page_extractor=page_extractor,version_controller=version_controller)
         app.mainloop()
     except Exception as e:
         logger.fatal(f"❌ GUI Runtime error: {e}", exc_info=True)
+    
+
 
 
 if __name__ == "__main__":

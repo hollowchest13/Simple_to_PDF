@@ -7,10 +7,6 @@ from simple_to_pdf.pdf.pdf_merger import PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
 from simple_to_pdf.utils.ui_tools import (
     clear_text_widget,
-    get_selected_values,
-    list_update,
-    listbox_clear,
-    reselect_items,
 )
 from simple_to_pdf.widgets import BaseFrame, BaseLabel, BaseTextBox
 from simple_to_pdf.widgets import BaseProgress, BaseScrollableFrame, CTkListbox

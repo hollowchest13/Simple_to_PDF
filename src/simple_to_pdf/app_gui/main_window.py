@@ -26,6 +26,8 @@ from simple_to_pdf.app_dialog import (
 )
 from simple_to_pdf.core import config
 from simple_to_pdf.app_gui.base_window import BaseWindow
+from simple_to_pdf.widgets import sliding_frame
+from simple_to_pdf.widgets.sliding_frame import SlidingFrame
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +64,12 @@ class PDFMergerGUI(BaseWindow):
     def init_panels(self) -> None:
         self.main_panel: MainFrame = MainFrame(self.root_container, merger=self.merger)
         self.btns_panel: ListControlsFrame = ListControlsFrame(self.root_container)
+        self.settings_panel: SlidingFrame = SlidingFrame(
+            parent=self.root_container, title="Setting"
+        )
+        self.help_panel: SlidingFrame = SlidingFrame(
+            parent=self.root_container, title="Help"
+        )
 
     def init_connections(self) -> None:
         self.callback = GUICallback(main_frame=self.main_panel)
@@ -102,10 +110,13 @@ class PDFMergerGUI(BaseWindow):
         self.menu = self._build_menu_bar(parent=self, callbacks=callbacks)
 
         # Side-by-side layout with padding
+
+        self.help_panel.pack(side="right", fill="y", padx=(0, 10), pady=20)
+        self.settings_panel.pack(side="right", fill="y", padx=(0, 10), pady=20)
+        self.btns_panel.pack(side="right", fill="y", padx=(10, 10), pady=20)
         self.main_panel.pack(
             side="left", fill="both", expand=True, padx=(20, 10), pady=20
         )
-        self.btns_panel.pack(side="right", fill="y", padx=(10, 20), pady=20)
 
     def _build_menu_bar(
         self, *, parent: tk.Tk, callbacks: dict[str, Callable]
@@ -189,8 +200,8 @@ class PDFMergerGUI(BaseWindow):
             "about": self.show_about,
             "clear_status": self.main_panel.clear_status_text,
             "logs": self.open_log_folder,
-            "settings": lambda: self.extend_frame(frame_name="settings"),
-            "help": lambda: self.extend_frame(frame_name="help"),
+            "settings": lambda: self.settings_panel.toggle(),
+            "help": lambda: self.help_panel.toggle(),
         }
         return handlers
 
@@ -434,9 +445,6 @@ class PDFMergerGUI(BaseWindow):
                 self.callback.show_status_message(status_message=error_msg)
                 logger.error(error_msg, exc_info=True)
                 self.after(0, lambda: self.main_panel.progress_bar_reset())
-
-    def extend_frame(self, *, frame_name: str):
-        pass
 
     def _on_closing(self):
         if self.thread_running:

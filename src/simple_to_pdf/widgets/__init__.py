@@ -6,4 +6,5 @@ from .base_widgets import (
     BaseTextBox,
     BaseProgress,
 )
+from .sliding_frame import SlidingFrame
 from .listbox import CTkListbox
