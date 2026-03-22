@@ -2,8 +2,8 @@ import functools
 import logging
 import threading
 import tkinter as tk
+import customtkinter as ctk
 
-from simple_to_pdf.core.config import DEFAULT_COLORS
 from simple_to_pdf.widgets.base_widgets import BaseTextBox
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ def reselect_items(*, all_items: list, selected_values: list, listbox: tk.Listbo
             listbox.selection_set(idx)
 
 
-def change_state(*, widgets_dict: dict[str, tk.Widget], state: str) -> None:
+def change_state(*, widgets_dict: dict[str, ctk.CTkBaseClass], state: str) -> None:
     """Universal state switcher for a group of widgets."""
 
     for widget in widgets_dict.values():

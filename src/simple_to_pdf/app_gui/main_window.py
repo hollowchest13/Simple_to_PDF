@@ -3,6 +3,7 @@ import os
 import subprocess
 import sys
 import tkinter as tk
+import customtkinter as ctk
 import webbrowser
 from pathlib import Path
 from tkinter import filedialog
@@ -10,6 +11,7 @@ from CTkMessagebox import CTkMessagebox
 from typing import Callable
 
 from simple_to_pdf.app_gui.gui_callback import GUICallback
+from simple_to_pdf.app_gui.help_frame import HelpFrame
 from simple_to_pdf.app_gui.list_controls_frame import ListControlsFrame
 from simple_to_pdf.app_gui.main_frame import MainFrame
 from simple_to_pdf.cli.logger import get_log_dir
@@ -26,7 +28,6 @@ from simple_to_pdf.app_dialog import (
 )
 from simple_to_pdf.core import config
 from simple_to_pdf.app_gui.base_window import BaseWindow
-from simple_to_pdf.widgets import sliding_frame
 from simple_to_pdf.widgets.sliding_frame import SlidingFrame
 
 logger = logging.getLogger(__name__)
@@ -56,7 +57,10 @@ class PDFMergerGUI(BaseWindow):
         self.init_connections()
 
         handlers = self._setup_handlers()
-        self.list_controls: dict[str, tk.Widget] = self.btns_panel.init_btns(
+        self.list_controls: dict[str, ctk.CTkBaseClass] = self.btns_panel.init_btns(
+            callbacks=handlers
+        )
+        self.help_controls: dict[str, ctk.CTkBaseClass] = self.help_panel.init_btns(
             callbacks=handlers
         )
         self.build_gui(callbacks=handlers)
@@ -64,12 +68,8 @@ class PDFMergerGUI(BaseWindow):
     def init_panels(self) -> None:
         self.main_panel: MainFrame = MainFrame(self.root_container, merger=self.merger)
         self.btns_panel: ListControlsFrame = ListControlsFrame(self.root_container)
-        self.settings_panel: SlidingFrame = SlidingFrame(
-            parent=self.root_container, title="Setting"
-        )
-        self.help_panel: SlidingFrame = SlidingFrame(
-            parent=self.root_container, title="Help"
-        )
+        self.settings_panel: SlidingFrame = SlidingFrame(parent=self.root_container)
+        self.help_panel: HelpFrame = HelpFrame(parent=self.root_container)
 
     def init_connections(self) -> None:
         self.callback = GUICallback(main_frame=self.main_panel)

@@ -37,10 +37,10 @@ class CTkListbox(ctk.CTkScrollableFrame, ThemeProviderMixin):
     def _update_listbox(self):
         # Create widgets for new files and repack all according to the new order
         for registered_path in list(self.all_widgets.keys()):
-            if registered_path not in self.all_rows :
-                widget_data = self.all_widgets.pop(registered_path) 
+            if registered_path not in self.all_rows:
+                widget_data = self.all_widgets.pop(registered_path)
                 widget_data["frame"].destroy()
-                 
+
         for path in self.all_rows:
             if path not in self.all_widgets:
                 # Create a new row if it doesn't exist yet
@@ -124,7 +124,7 @@ class CTkListbox(ctk.CTkScrollableFrame, ThemeProviderMixin):
         if callback:
             callback()
 
-    def clear(self,*,callback:Callable):
+    def clear(self, *, callback: Callable):
         """Performs a full cleanup of all items and widgets."""
         for widgets in self.all_widgets.values():
             widgets["frame"].destroy()
@@ -140,12 +140,11 @@ class CTkListbox(ctk.CTkScrollableFrame, ThemeProviderMixin):
             widgets["label"].configure(text_color=self.default_text_color)
         self.selected_data.clear()
 
-    def remove_selected(self,*,callback:Callable):
+    def remove_selected(self, *, callback: Callable):
         for path in self.selected_data.keys():
-             self.all_rows.remove(path)
+            self.all_rows.remove(path)
         self.selected_data.clear()
         self._update_listbox()
-            
 
     def get_selected_paths(self) -> list[Path]:
         """Returns a list of currently selected file paths."""

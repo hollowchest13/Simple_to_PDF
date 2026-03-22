@@ -1,6 +1,11 @@
 import customtkinter as ctk
 from typing import Literal
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
+from simple_to_pdf.core.config import ICONS_PATH
+from PIL import Image
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class PrimaryButton(ctk.CTkButton, ThemeProviderMixin):
@@ -49,6 +54,50 @@ class BaseFrame(ctk.CTkFrame, ThemeProviderMixin):
         params.update(kwargs)
         # Call the super constructor with prepared kwargs
         super().__init__(parent, **params)
+
+    def _buttons_pack(self, *, btns_config, parent: ctk.CTkFrame):
+        btns = {}
+        btns_width = 115
+        btns_height = 40
+
+        for i, cfg in enumerate(btns_config):
+            icon = (
+                self._load_icon(icon_name=cfg["icon_name"])
+                if "icon_name" in cfg
+                else None
+            )
+            btn = PrimaryButton(
+                parent,
+                text=cfg["text"],
+                command=cfg["cmd"],
+                image=icon,
+                width=btns_width,
+                height=btns_height,
+            )
+
+            is_first = i == 0
+            is_last = i == len(btns_config) - 1
+
+            top_pad = 15 if is_first else 4
+            bottom_pad = 15 if is_last else 4
+
+            btn.pack(side="top", fill="x", padx=15, pady=(top_pad, bottom_pad))
+
+            btns[cfg["id"]] = btn
+
+        return btns
+
+    def _load_icon(self, *, icon_name: str, size=(20, 20)):
+
+        full_path = ICONS_PATH / icon_name
+
+        try:
+            pil_img = Image.open(full_path)
+
+            return ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=size)
+        except Exception as e:
+            logger.error(f"❌ Error CTkImage: {e}")
+            return None
 
 
 class BaseScrollableFrame(ctk.CTkScrollableFrame, ThemeProviderMixin):
