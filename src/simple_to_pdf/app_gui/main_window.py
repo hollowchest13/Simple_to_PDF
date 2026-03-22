@@ -99,15 +99,8 @@ class PDFMergerGUI(BaseWindow):
         # Disable all buttons and menu items
         change_state(widgets_dict=self.btns_panel.ui, state=btns_state)
 
-        # You can also disabled specific panels if needed
-        self._toggle_menu_items(menu_obj=self.menu, active=menu_active)
-
     def build_gui(self, *, callbacks: dict[str, Callable]) -> None:
         """Builds the main GUI layout"""
-
-        # Window settings
-
-        self.menu = self._build_menu_bar(parent=self, callbacks=callbacks)
 
         # Side-by-side layout with padding
 
@@ -117,36 +110,6 @@ class PDFMergerGUI(BaseWindow):
         self.main_panel.pack(
             side="left", fill="both", expand=True, padx=(20, 10), pady=20
         )
-
-    def _build_menu_bar(
-        self, *, parent: tk.Tk, callbacks: dict[str, Callable]
-    ) -> tk.Menu:
-        """Builds the menu bar for the application."""
-
-        menu_bar = tk.Menu(parent)
-        parent.config(menu=menu_bar)
-
-        # File menu
-        file_menu = tk.Menu(menu_bar, tearoff=0)
-        file_menu.add_command(label="Add Files", command=callbacks["add"])
-        file_menu.add_command(label="Merge to PDF", command=callbacks["merge"])
-        file_menu.add_command(label="Extract pages", command=callbacks["extract"])
-        file_menu.add_command(label="Remove file", command=callbacks["remove"])
-        file_menu.add_command(label="Clear status", command=callbacks["clear_status"])
-        file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=parent.quit)
-        menu_bar.add_cascade(label="File", menu=file_menu)
-
-        # Help menu
-        help_menu = tk.Menu(menu_bar, tearoff=0)
-        help_menu.add_command(label="License", command=callbacks["license"])
-        help_menu.add_command(label="How to use", command=callbacks["documentation"])
-        help_menu.add_command(label="About", command=callbacks["about"])
-        help_menu.add_command(label="Check updates", command=callbacks["update"])
-        help_menu.add_command(label="Show logs", command=callbacks["logs"])
-        menu_bar.add_cascade(label="Help", menu=help_menu)
-
-        return menu_bar
 
     def open_log_folder(self):
         """Handles the OS-specific logic to open the file explorer."""

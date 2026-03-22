@@ -4,7 +4,7 @@ from typing import Callable
 
 
 class HelpFrame(SlidingFrame):
-    def __init__(self, parent, *, open_width=200, closed_width=0, **kwargs):
+    def __init__(self, parent, *, open_width=150, closed_width=0, **kwargs):
         super().__init__(
             parent, open_width=open_width, closed_width=closed_width, **kwargs
         )
@@ -36,7 +36,7 @@ class HelpFrame(SlidingFrame):
             {
                 "id": "documentation_btn",
                 "text": "How to use",
-                "cmd":callbacks["documentation"],
+                "cmd": callbacks["documentation"],
                 "icon_name": "documentation_btn.png",
             },
             {
