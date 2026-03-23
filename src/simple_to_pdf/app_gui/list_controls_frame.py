@@ -3,21 +3,19 @@ import customtkinter as ctk
 from typing import Callable
 
 
-
-from simple_to_pdf.widgets import BaseFrame, PrimaryButton, BaseScrollableFrame
+from simple_to_pdf.widgets import BaseFrame
 
 logger = logging.getLogger(__name__)
 
 
 class ListControlsFrame(BaseFrame):
-    btns_padx = 2
-    btns_pady = 2
+    def __init__(self, parent: ctk.CTkFrame, *, width: int = 150, **kwargs):
+        super().__init__(parent, width=width, **kwargs)
 
-    def __init__(self, parent: ctk.CTkFrame):
-        super().__init__(parent)
-
-    def init_btns(self, *, callbacks: dict[str, Callable]) -> dict[str, ctk.CTkBaseClass]:
-        file_nav_btns: dict[str,ctk.CTkBaseClass] = self._build_file_navigation_panel(
+    def init_btns(
+        self, *, callbacks: dict[str, Callable]
+    ) -> dict[str, ctk.CTkBaseClass]:
+        file_nav_btns: dict[str, ctk.CTkBaseClass] = self._build_file_navigation_panel(
             callbacks=callbacks
         )
         action_btns: dict[str, ctk.CTkBaseClass] = self._build_action_panel(
@@ -107,9 +105,6 @@ class ListControlsFrame(BaseFrame):
     ) -> dict[str, ctk.CTkBaseClass]:
         self.settings_frame = BaseFrame(self, frame_type="btns_container")
         button_configs = [
-            # {"id": "btn_updates",       "text": "Check Updates", "cmd": callbacks["update"]},
-            # {"id": "btn_licence",       "text": "License",       "cmd": callbacks["license"]},
-            # {"id": "btn_about",         "text": "About",         "cmd": callbacks["documentation"]},
             {
                 "id": "btn_help",
                 "text": "Help",

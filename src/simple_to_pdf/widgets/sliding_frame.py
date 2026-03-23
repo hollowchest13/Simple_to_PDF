@@ -3,7 +3,7 @@ from simple_to_pdf.widgets import BaseFrame, BaseScrollableFrame
 
 class SlidingFrame(BaseFrame):
     def __init__(
-        self, parent, *, open_width: int = 200, closed_width: int = 0, **kwargs
+        self, parent, *, open_width: int = 150, closed_width: int = 0, **kwargs
     ) -> None:
         """
         Initialize the sliding panel.

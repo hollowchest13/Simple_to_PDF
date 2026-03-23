@@ -55,10 +55,15 @@ class BaseFrame(ctk.CTkFrame, ThemeProviderMixin):
         # Call the super constructor with prepared kwargs
         super().__init__(parent, **params)
 
-    def _buttons_pack(self, *, btns_config, parent: ctk.CTkFrame):
+    def _buttons_pack(
+        self,
+        *,
+        btns_config,
+        parent: ctk.CTkFrame,
+        btns_width: int = 140,
+        btns_height: int = 40,
+    ):
         btns = {}
-        btns_width = 115
-        btns_height = 40
 
         for i, cfg in enumerate(btns_config):
             icon = (
@@ -81,7 +86,7 @@ class BaseFrame(ctk.CTkFrame, ThemeProviderMixin):
             top_pad = 15 if is_first else 4
             bottom_pad = 15 if is_last else 4
 
-            btn.pack(side="top", fill="x", padx=15, pady=(top_pad, bottom_pad))
+            btn.pack(side="top", padx=15, pady=(top_pad, bottom_pad))
 
             btns[cfg["id"]] = btn
 

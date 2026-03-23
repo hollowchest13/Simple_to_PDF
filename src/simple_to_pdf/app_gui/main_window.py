@@ -14,6 +14,7 @@ from simple_to_pdf.app_gui.gui_callback import GUICallback
 from simple_to_pdf.app_gui.help_frame import HelpFrame
 from simple_to_pdf.app_gui.list_controls_frame import ListControlsFrame
 from simple_to_pdf.app_gui.main_frame import MainFrame
+from simple_to_pdf.app_gui.settings_frame import SettingsFrame
 from simple_to_pdf.cli.logger import get_log_dir
 from simple_to_pdf.core.version import VersionController
 from simple_to_pdf.pdf import PageExtractor, PdfMerger
@@ -63,12 +64,15 @@ class PDFMergerGUI(BaseWindow):
         self.help_controls: dict[str, ctk.CTkBaseClass] = self.help_panel.init_btns(
             callbacks=handlers
         )
+        self.settings_controls: dict[str, ctk.CTkBaseClass] = (
+            self.settings_panel.init_controls(callbacks=handlers)
+        )
         self.build_gui(callbacks=handlers)
 
     def init_panels(self) -> None:
         self.main_panel: MainFrame = MainFrame(self.root_container, merger=self.merger)
         self.btns_panel: ListControlsFrame = ListControlsFrame(self.root_container)
-        self.settings_panel: SlidingFrame = SlidingFrame(parent=self.root_container)
+        self.settings_panel: SettingsFrame = SettingsFrame(parent=self.root_container)
         self.help_panel: HelpFrame = HelpFrame(parent=self.root_container)
 
     def init_connections(self) -> None:
@@ -91,10 +95,8 @@ class PDFMergerGUI(BaseWindow):
 
         if active:
             btns_state = tk.NORMAL
-            menu_active = True
         else:
             btns_state = tk.DISABLED
-            menu_active = False
 
         # Disable all buttons and menu items
         change_state(widgets_dict=self.btns_panel.ui, state=btns_state)

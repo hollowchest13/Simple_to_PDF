@@ -85,7 +85,7 @@ class ThemeProviderMixin:
                     "font": ("Segoe UI", 16, "bold"),
                     "text_color": self.get_color(ThemeKeys.TEXT_TITLE),
                     "fg_color": bg_color,
-                    "anchor": "w",
+                    "anchor": "center",
                 }
 
             case "content":

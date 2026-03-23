@@ -4,11 +4,13 @@ from typing import Callable
 
 
 class HelpFrame(SlidingFrame):
-    def __init__(self, parent, *, open_width=150, closed_width=0, **kwargs):
+    def __init__(self, parent, *, open_width=170, closed_width=0, **kwargs):
         super().__init__(
             parent, open_width=open_width, closed_width=closed_width, **kwargs
         )
-        self.title_label = BaseLabel(self, label_type="title", text="Help")
+        self.title_label = BaseLabel(self, label_type="title", text="Help").pack(
+            side="top", fill="x", padx=(10, 10), pady=(10, 0)
+        )
 
     def init_btns(
         self, *, callbacks: dict[str, Callable]
