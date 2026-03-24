@@ -166,8 +166,22 @@ class PDFMergerGUI(BaseWindow):
             "logs": self.open_log_folder,
             "settings": lambda: self.settings_panel.toggle(),
             "help": lambda: self.help_panel.toggle(),
+            "change_language": lambda lang: self.on_change_language(lang),
         }
         return handlers
+
+        # У твоїх колбеках (callbacks):
+
+    def on_change_language(self, new_lang_name: str) -> None:
+        """Обробник зміни мови з інтерфейсу."""
+        # Викликаємо метод міксина
+        self.set_language(new_lang_name)
+
+        # Оновлюємо заголовок вікна відразу
+        self.title(self.get_text("title", section="ui"))
+
+    # Передаємо цей колбек у налаштування:
+    callbacks = {"change_language": on_change_language}
 
     def on_check_updates_click(self):
         """

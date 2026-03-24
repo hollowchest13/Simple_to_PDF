@@ -31,31 +31,26 @@ class HelpFrame(SlidingFrame):
         button_configs = [
             {
                 "id": "license_btn",
-                "text": "License",
                 "cmd": callbacks["license"],
                 "icon_name": "license_btn.png",
             },
             {
                 "id": "documentation_btn",
-                "text": "How to use",
                 "cmd": callbacks["documentation"],
                 "icon_name": "documentation_btn.png",
             },
             {
                 "id": "about_btn",
-                "text": "About",
                 "cmd": callbacks["about"],
                 "icon_name": "about_btn.png",
             },
             {
                 "id": "check_updates_btn",
-                "text": "Check updates",
                 "cmd": callbacks["update"],
                 "icon_name": "update_btn.png",
             },
             {
                 "id": "logs_btn",
-                "text": "Show logs",
                 "cmd": callbacks["logs"],
                 "icon_name": "logs.png",
             },

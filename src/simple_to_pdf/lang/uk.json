@@ -6,9 +6,20 @@
   "ui": {
     "title": "Simple to PDF",
     "buttons": {
-      "save": "Зберегти",
-      "cancel": "Скасувати",
-      "browse": "Огляд..."
+      "btn_add": "Додати файли",
+      "btn_up": "Вгору",
+      "btn_down": "Вниз",
+      "btn_remove": "Видалити файл",
+      "btn_merge": "Об'єднати в PDF",
+      "btn_extract": "Витягти сторінки",
+      "btn_status_clear": "Очистити консоль",
+      "btn_help": "Довідка",
+      "btn_settings": "Налаштування",
+      "license_btn": "Ліцензія",
+      "documentation_btn": "Як користуватися",
+      "about_btn": "Про програму",
+      "check_updates_btn": "Перевірити оновлення",
+      "logs_btn": "Показати логи"
     },
     "labels": {
       "filename": "Назва файлу:",
@@ -18,7 +29,7 @@
   },
   "msg": {
     "success": "Файл {name} успішно створено!",
-    "loading": "Зачекайте, триває генерація...",
+    "loading": "Зачекайте, триває генерація PDF...",
     "confirm_exit": "Ви впевнені, що хочете вийти?"
   },
   "errors": {

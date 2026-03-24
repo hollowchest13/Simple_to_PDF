@@ -55,6 +55,7 @@ class BaseFrame(ctk.CTkFrame, ThemeProviderMixin, LocalizationMixin):
         params.update(kwargs)
         # Call the super constructor with prepared kwargs
         super().__init__(parent, **params)
+        self.init_localization()
 
     def _buttons_pack(
         self,

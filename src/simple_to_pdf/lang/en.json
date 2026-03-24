@@ -8,13 +8,19 @@
     "buttons": {
       "btn_add": "Add files",
       "btn_up": "Move up",
-      "btn_down": "Move up",
+      "btn_down": "Move down",
       "btn_remove":"Remove file",
-      "btn_merge":"Mere to pdf",
+      "btn_merge":"Merge to pdf",
       "btn_extract":"Extract pages",
       "btn_status_clear":"Clear status",
       "btn_help":"Help",
-      "btn_settings":"Settings"
+      "btn_settings":"Settings",
+      "license_btn":"License",
+      "documentation_btn":"How to use",
+      "about_btn":"About",
+      "check_updates_btn":"Check updates",
+      "logs_btn":"Show logs"
+
     },
     "labels": {
       "filename": "Filename:",

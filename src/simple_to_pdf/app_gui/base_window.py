@@ -1,10 +1,11 @@
 import tkinter as tk
 import customtkinter as ctk
+from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.widgets import BaseFrame
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
 
 
-class BaseWindow(ctk.CTk, ThemeProviderMixin):
+class BaseWindow(ctk.CTk, ThemeProviderMixin, LocalizationMixin):
     """
     Base class for the main application window.
     Focuses on layout structure and consistent theming.
@@ -20,6 +21,7 @@ class BaseWindow(ctk.CTk, ThemeProviderMixin):
         self.geometry(window_size)
 
         self._init_base_layout()
+        self.init_localization()
 
     def _init_base_layout(self):
         """Creates top-level structural containers for the main window."""
