@@ -29,7 +29,6 @@ from simple_to_pdf.app_dialog import (
 )
 from simple_to_pdf.core import config
 from simple_to_pdf.app_gui.base_window import BaseWindow
-from simple_to_pdf.widgets.sliding_frame import SlidingFrame
 
 logger = logging.getLogger(__name__)
 
