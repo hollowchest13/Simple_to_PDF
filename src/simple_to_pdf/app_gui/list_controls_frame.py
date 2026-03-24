@@ -42,16 +42,15 @@ class ListControlsFrame(BaseFrame):
 
         self.nav_frame = BaseFrame(self, frame_type="btns_container")
 
+        # TODO Add enum for buttons id
         button_configs = [
             {
                 "id": "btn_add",
-                "text": "Add files",
                 "cmd": callbacks["add"],
                 "icon_name": "add_btn.png",
             },
             {
                 "id": "btn_up",
-                "text": "Move up",
                 "cmd": lambda: callbacks["move"](
                     direction="up",
                 ),
@@ -59,13 +58,11 @@ class ListControlsFrame(BaseFrame):
             },
             {
                 "id": "btn_down",
-                "text": "Move down",
                 "cmd": lambda: callbacks["move"](direction="down"),
                 "icon_name": "down_btn.png",
             },
             {
                 "id": "btn_remove",
-                "text": "Remove",
                 "cmd": callbacks["remove"],
                 "icon_name": "remove_btn.png",
             },
@@ -80,19 +77,16 @@ class ListControlsFrame(BaseFrame):
         button_configs = [
             {
                 "id": "btn_merge",
-                "text": "Merge files",
                 "cmd": callbacks["merge"],
                 "icon_name": "merge_btn.png",
             },
             {
                 "id": "btn_extract",
-                "text": "Extract pages",
                 "cmd": callbacks["extract"],
                 "icon_name": "extract_btn.png",
             },
             {
                 "id": "btn_status_clear",
-                "text": "Clear console",
                 "cmd": callbacks["clear_status"],
                 "icon_name": "clean_btn.png",
             },
@@ -107,13 +101,11 @@ class ListControlsFrame(BaseFrame):
         button_configs = [
             {
                 "id": "btn_help",
-                "text": "Help",
                 "cmd": callbacks["help"],
                 "icon_name": "help_btn.png",
             },
             {
                 "id": "btn_settings",
-                "text": "Settings",
                 "cmd": callbacks["settings"],
                 "icon_name": "settings_btn.png",
             },

@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from typing import Literal
+from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
 from simple_to_pdf.core.config import ICONS_PATH
 from PIL import Image
@@ -20,7 +21,7 @@ class PrimaryButton(ctk.CTkButton, ThemeProviderMixin):
         super().__init__(parent, **params)
 
 
-class BaseFrame(ctk.CTkFrame, ThemeProviderMixin):
+class BaseFrame(ctk.CTkFrame, ThemeProviderMixin, LocalizationMixin):
     def __init__(
         self,
         parent,
@@ -73,7 +74,7 @@ class BaseFrame(ctk.CTkFrame, ThemeProviderMixin):
             )
             btn = PrimaryButton(
                 parent,
-                text=cfg["text"],
+                text=self.get_text(cfg["id"], section="ui.buttons"),
                 command=cfg["cmd"],
                 image=icon,
                 width=btns_width,
@@ -145,7 +146,7 @@ class BaseProgress(ctk.CTkProgressBar, ThemeProviderMixin):
         super().__init__(parent, **params)
 
 
-class BaseTextBox(ctk.CTkTextbox, ThemeProviderMixin):
+class BaseTextBox(ctk.CTkTextbox, ThemeProviderMixin, LocalizationMixin):
     def __init__(
         self, parent, *, textbox_type: Literal["status_text", "info"] = "info", **kwargs
     ):

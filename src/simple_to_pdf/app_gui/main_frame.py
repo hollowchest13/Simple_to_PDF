@@ -8,8 +8,13 @@ from simple_to_pdf.utils.file_tools import get_files
 from simple_to_pdf.utils.ui_tools import (
     clear_text_widget,
 )
-from simple_to_pdf.widgets import BaseFrame, BaseLabel, BaseTextBox
-from simple_to_pdf.widgets import BaseProgress, BaseScrollableFrame, CTkListbox
+from simple_to_pdf.widgets import (
+    BaseFrame,
+    BaseLabel,
+    BaseTextBox,
+    BaseProgress,
+    CTkListbox,
+)
 
 
 logger = logging.getLogger(__name__)

@@ -1,0 +1,35 @@
+{
+  "info": {
+    "lang_name": "English",
+    "version": "1.0.0"
+  },
+  "ui": {
+    "title": "Simple to PDF",
+    "buttons": {
+      "btn_add": "Add files",
+      "btn_up": "Move up",
+      "btn_down": "Move up",
+      "btn_remove":"Remove file",
+      "btn_merge":"Mere to pdf",
+      "btn_extract":"Extract pages",
+      "btn_status_clear":"Clear status",
+      "btn_help":"Help",
+      "btn_settings":"Settings"
+    },
+    "labels": {
+      "filename": "Filename:",
+      "path": "Save path:",
+      "settings": "Settings"
+    }
+  },
+  "msg": {
+    "success": "File {name} created successfully!",
+    "loading": "Please wait, generating PDF...",
+    "confirm_exit": "Are you sure you want to exit?"
+  },
+  "errors": {
+    "file_exists": "A file with this name already exists.",
+    "permission_denied": "No permission to write in this folder.",
+    "unknown": "An unexpected error occurred: {err}"
+  }
+}

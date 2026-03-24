@@ -11,7 +11,7 @@ class LocalizationMixin:
     """
 
     _translations: Dict[str, Dict[str, Any]] = {}
-    _current_lang: str = "English"
+    _current_lang: str = "en"
     _lang_dir: Path = Path(__file__).parent.parent / "lang"
 
     @classmethod
@@ -43,14 +43,23 @@ class LocalizationMixin:
 
     def get_text(self, key: str, section: str = "ui", **kwargs: Any) -> str:
         """
-        Retrieves a translated string. Supports formatting with kwargs.
-        Searches within a specific section (e.g., 'ui', 'msg', 'errors').
+        Тепер підтримує вкладені секції, наприклад section="ui.buttons"
         """
+        # 1. Отримуємо дані для поточної мови
         lang_data = self._translations.get(self._current_lang, {})
-        section_data = lang_data.get(section, lang_data)
 
-        template = section_data.get(key, key)
+        # 2. Проходимо по вкладених секціях (ui -> buttons)
+        section_data = lang_data
+        for part in section.split("."):
+            if isinstance(section_data, dict):
+                section_data = section_data.get(part, {})
+            else:
+                section_data = {}
 
+        # 3. Шукаємо сам ключ
+        template = section_data.get(key, key) if isinstance(section_data, dict) else key
+
+        # 4. Форматуємо, якщо є змінні {name}
         try:
             return template.format(**kwargs)
         except (KeyError, IndexError, ValueError):
