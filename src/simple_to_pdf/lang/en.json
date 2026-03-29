@@ -1,10 +1,8 @@
 {
   "info": {
-    "lang_name": "English",
-    "version": "1.0.0"
+    "lang_name": "English"
   },
   "ui": {
-    "title": "Simple to PDF",
     "buttons": {
       "btn_add": "Add files",
       "btn_up": "Move up",
@@ -22,10 +20,12 @@
       "logs_btn":"Show logs"
 
     },
-    "labels": {
-      "filename": "Filename:",
-      "path": "Save path:",
-      "settings": "Settings"
+    "titles": {
+      "setting_panel": "Settings",
+      "help_panel": "Help:"
+    }
+    ,"labels": {
+      "progress_label": "Progress"
     }
   },
   "msg": {

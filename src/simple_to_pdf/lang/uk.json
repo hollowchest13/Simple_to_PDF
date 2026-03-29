@@ -1,14 +1,12 @@
 {
   "info": {
-    "lang_name": "Українська",
-    "version": "1.0.0"
+    "lang_name": "Українська"
   },
   "ui": {
-    "title": "Simple to PDF",
     "buttons": {
       "btn_add": "Додати файли",
-      "btn_up": "Вгору",
-      "btn_down": "Вниз",
+      "btn_up": "Перемістити вгору",
+      "btn_down": "Перемістити вниз",
       "btn_remove": "Видалити файл",
       "btn_merge": "Об'єднати в PDF",
       "btn_extract": "Витягти сторінки",
@@ -21,12 +19,15 @@
       "check_updates_btn": "Перевірити оновлення",
       "logs_btn": "Показати логи"
     },
-    "labels": {
-      "filename": "Назва файлу:",
-      "path": "Шлях збереження:",
-      "settings": "Налаштування"
+    "titles": {
+      "setting_panel": "Налаштування",
+      "help_panel": "Допомога:"
     }
-  },
+    ,"labels": {
+      "progress_label": "Стан виконання"
+    }
+      
+    },
   "msg": {
     "success": "Файл {name} успішно створено!",
     "loading": "Зачекайте, триває генерація PDF...",

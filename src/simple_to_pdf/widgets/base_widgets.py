@@ -62,8 +62,8 @@ class BaseFrame(ctk.CTkFrame, ThemeProviderMixin, LocalizationMixin):
         *,
         btns_config,
         parent: ctk.CTkFrame,
-        btns_width: int = 140,
-        btns_height: int = 40,
+        btns_width: int = 180,
+        btns_height: int = 50,
     ):
         btns = {}
 
@@ -147,7 +147,7 @@ class BaseProgress(ctk.CTkProgressBar, ThemeProviderMixin):
         super().__init__(parent, **params)
 
 
-class BaseTextBox(ctk.CTkTextbox, ThemeProviderMixin, LocalizationMixin):
+class BaseTextBox(ctk.CTkTextbox, ThemeProviderMixin):
     def __init__(
         self, parent, *, textbox_type: Literal["status_text", "info"] = "info", **kwargs
     ):

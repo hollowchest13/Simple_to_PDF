@@ -19,7 +19,7 @@ def main():
     except singleton.SingleInstanceException:
         sys.exit(0)
     LocalizationMixin.load_translations()
-    LocalizationMixin.set_language("en")
+    LocalizationMixin.switch_language("en")
     setup_logger()
     merger = PdfMerger()
     page_extractor = PageExtractor()

@@ -31,10 +31,10 @@ class LocalizationMixin:
                 with open(file_path, "r", encoding="utf-8") as f:
                     cls._translations[file_path.stem] = json.load(f)
             except Exception as e:
-                logging.error(f"Помилка завантаження {file_path.name}: {e}")
+                logging.error(f" Download error {file_path.name}: {e}")
 
     @classmethod
-    def set_language(cls, lang_name: str) -> None:
+    def switch_language(cls, lang_name: str) -> None:
         """
         Встановлює мову та автоматично оновлює всі підписані компоненти.
         lang_name може бути як 'en', так і 'Ukrainian'.
@@ -113,17 +113,19 @@ class LocalizationMixin:
         # Додай це у свій LocalizationMixin
 
     def refresh_localization(self) -> None:
-        # Список усіх назв словників, які ти використовуєш у різних панелях
-        # Додаємо сюди ті назви, що ми бачили у PDFMergerGUI
+        """Оптимізоване оновлення всіх зареєстрованих груп віджетів."""
 
-        # 1. Оновлюємо кнопки
-        for attr in ["btns", "list_controls", "help_controls"]:
-            data = getattr(self, attr, None)
-            if isinstance(data, dict):
-                self.update_widgets_text(data, section="ui.buttons")
+        # Словник-мапа: "ім'я_атрибута": "секція_в_json"
+        mapping = {
+            "btns": "ui.buttons",
+            "list_controls": "ui.buttons",
+            "help_controls": "ui.buttons",
+            "titles": "ui.titles",
+            "labels": "ui.labels",
+        }
 
-        # 2. Оновлюємо налаштування/контроли
-        for attr in ["controls", "settings_controls"]:
-            data = getattr(self, attr, None)
-            if isinstance(data, dict):
-                self.update_widgets_text(data, section="ui.settings")
+        for attr_name, section in mapping.items():
+            # Динамічно дістаємо словник віджетів з self (панелі)
+            data = getattr(self, attr_name, None)
+            if data is not None and isinstance(data, dict):
+                self.update_widgets_text(data, section=section)

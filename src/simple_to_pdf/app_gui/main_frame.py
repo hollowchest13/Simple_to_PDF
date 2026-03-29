@@ -16,7 +16,6 @@ from simple_to_pdf.widgets import (
     CTkListbox,
 )
 
-
 logger = logging.getLogger(__name__)
 
 

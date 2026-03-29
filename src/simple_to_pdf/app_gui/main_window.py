@@ -77,18 +77,7 @@ class PDFMergerGUI(BaseWindow):
     def init_connections(self) -> None:
         self.callback = GUICallback(main_frame=self.main_panel)
 
-    def _toggle_menu_items(self, *, menu_obj: tk.Menu, active: bool):
-        state = tk.NORMAL if active else tk.DISABLED
-        # index_count gets the index of the last menu item
-        last_item = menu_obj.index("end")
-
-        if last_item is not None:
-            for i in range(last_item + 1):
-                try:
-                    menu_obj.entryconfig(i, state=state)
-                except:  # noqa: E722
-                    continue  # Skip separators
-
+    # TODO Add a separate toggle_ui function for each panel.
     def toggle_ui(self, *, active: bool) -> None:
         """Enable or disable the entire UI."""
 
@@ -175,10 +164,7 @@ class PDFMergerGUI(BaseWindow):
     def on_change_language(self, new_lang_name: str) -> None:
         """Обробник зміни мови з інтерфейсу."""
         # Викликаємо метод міксина
-        self.set_language(new_lang_name)
-
-        # Оновлюємо заголовок вікна відразу
-        self.title(self.get_text("title", section="ui"))
+        self.switch_language(new_lang_name)
 
     # Передаємо цей колбек у налаштування:
     callbacks = {"change_language": on_change_language}
