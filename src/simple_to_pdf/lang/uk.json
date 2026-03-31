@@ -3,7 +3,10 @@
     "lang_name": "Українська"
   },
   "ui": {
-    "buttons": {
+     "main_panel":{
+
+    },
+    "list_controls_panel": {
       "btn_add": "Додати файли",
       "btn_up": "Перемістити вгору",
       "btn_down": "Перемістити вниз",
@@ -12,19 +15,17 @@
       "btn_extract": "Витягти сторінки",
       "btn_status_clear": "Очистити консоль",
       "btn_help": "Довідка",
-      "btn_settings": "Налаштування",
+      "btn_settings": "Налаштування"
+     
+    },
+    "help_panel":{
       "license_btn": "Ліцензія",
       "documentation_btn": "Як користуватися",
       "about_btn": "Про програму",
       "check_updates_btn": "Перевірити оновлення",
       "logs_btn": "Показати логи"
     },
-    "titles": {
-      "setting_panel": "Налаштування",
-      "help_panel": "Допомога:"
-    }
-    ,"labels": {
-      "progress_label": "Стан виконання"
+    "settings_panel":{
     }
       
     },

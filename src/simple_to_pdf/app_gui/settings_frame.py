@@ -10,6 +10,7 @@ class SettingsFrame(SlidingFrame):
         *,
         open_width: int = 200,
         closed_width: int = 0,
+        callbacks: Dict[str, Callable],
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -21,17 +22,17 @@ class SettingsFrame(SlidingFrame):
 
         # Placeholder for widgets dictionary
         self.ui: Dict[str, ctk.CTkBaseClass] = {}
+        self.loc_section = "ui.settings_panel"
+        self.callbacks = callbacks
+        self.init_controls()
+        self.init_localization()
 
-    def init_controls(
-        self, *, callbacks: Dict[str, Callable]
-    ) -> Dict[str, ctk.CTkBaseClass]:
+    def init_controls(self) -> Dict[str, ctk.CTkBaseClass]:
         """
         Public method to initialize settings controls, similar to init_btns in HelpFrame.
         """
         # Build the settings panel
-        settings_widgets: Dict[str, ctk.CTkBaseClass] = self._build_settings_panel(
-            callbacks=callbacks
-        )
+        settings_widgets: Dict[str, ctk.CTkBaseClass] = self._build_settings_panel()
 
         # Store in self.ui and set as attributes for direct access (self.language_selector, etc.)
         self.ui = settings_widgets
@@ -40,28 +41,20 @@ class SettingsFrame(SlidingFrame):
 
         return self.ui
 
-    def _build_settings_panel(
-        self, *, callbacks: Dict[str, Callable]
-    ) -> Dict[str, ctk.CTkBaseClass]:
+    def _build_settings_panel(self) -> Dict[str, ctk.CTkBaseClass]:
         """
         Internal method to construct specific setting rows.
+        Now uses the centralized _trigger mechanism.
         """
         widgets: Dict[str, ctk.CTkBaseClass] = {}
-
-        # Example: Language Selection Row
-        # We wrap it in our helper method
         widgets["language_selector"] = self._create_setting_row(
             parent=self,
             text="Language:",
             widget_class=ctk.CTkOptionMenu,
             values=["English", "Ukrainian"],
             width=120,
-            command=callbacks.get("change_language"),
+            command=self._trigger("change_language"),
         )
-
-        # You can add more rows here following the same pattern:
-        # widgets["theme_switch"] = self._create_setting_row(...)
-
         return widgets
 
     def _create_setting_row(

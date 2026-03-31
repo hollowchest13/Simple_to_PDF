@@ -3,7 +3,10 @@
     "lang_name": "English"
   },
   "ui": {
-    "buttons": {
+    "main_panel":{
+
+    },
+    "list_controls_panel": {
       "btn_add": "Add files",
       "btn_up": "Move up",
       "btn_down": "Move down",
@@ -12,7 +15,9 @@
       "btn_extract":"Extract pages",
       "btn_status_clear":"Clear status",
       "btn_help":"Help",
-      "btn_settings":"Settings",
+      "btn_settings":"Settings"
+    },
+    "help_panel":{
       "license_btn":"License",
       "documentation_btn":"How to use",
       "about_btn":"About",
@@ -20,13 +25,10 @@
       "logs_btn":"Show logs"
 
     },
-    "titles": {
-      "setting_panel": "Settings",
-      "help_panel": "Help:"
+    "settings_panel":{
+
     }
-    ,"labels": {
-      "progress_label": "Progress"
-    }
+
   },
   "msg": {
     "success": "File {name} created successfully!",

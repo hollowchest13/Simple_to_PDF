@@ -3,13 +3,12 @@ import os
 import subprocess
 import sys
 import tkinter as tk
-import customtkinter as ctk
 import webbrowser
 from pathlib import Path
 from tkinter import filedialog
 from CTkMessagebox import CTkMessagebox
 from typing import Callable
-
+from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.app_gui.gui_callback import GUICallback
 from simple_to_pdf.app_gui.help_frame import HelpFrame
 from simple_to_pdf.app_gui.list_controls_frame import ListControlsFrame
@@ -53,26 +52,24 @@ class PDFMergerGUI(BaseWindow):
         self.version_controller: VersionController = version_controller
         # build UI inside root_container inherited from BaseWindow
 
-        self.init_panels()
-        self.init_connections()
-
         handlers = self._setup_handlers()
-        self.list_controls: dict[str, ctk.CTkBaseClass] = self.btns_panel.init_btns(
-            callbacks=handlers
-        )
-        self.help_controls: dict[str, ctk.CTkBaseClass] = self.help_panel.init_btns(
-            callbacks=handlers
-        )
-        self.settings_controls: dict[str, ctk.CTkBaseClass] = (
-            self.settings_panel.init_controls(callbacks=handlers)
-        )
+        self.init_panels(callback=handlers)
+        self.init_connections()
         self.build_gui(callbacks=handlers)
 
-    def init_panels(self) -> None:
-        self.main_panel: MainFrame = MainFrame(self.root_container, merger=self.merger)
-        self.btns_panel: ListControlsFrame = ListControlsFrame(self.root_container)
-        self.settings_panel: SettingsFrame = SettingsFrame(parent=self.root_container)
-        self.help_panel: HelpFrame = HelpFrame(parent=self.root_container)
+    def init_panels(self, callback: dict[str, Callable]) -> None:
+        self.main_panel: MainFrame = MainFrame(
+            self.root_container, merger=self.merger, callbacks=callback
+        )
+        self.btns_panel: ListControlsFrame = ListControlsFrame(
+            self.root_container, callbacks=callback
+        )
+        self.settings_panel: SettingsFrame = SettingsFrame(
+            parent=self.root_container, callbacks=callback
+        )
+        self.help_panel: HelpFrame = HelpFrame(
+            parent=self.root_container, callbacks=callback
+        )
 
     def init_connections(self) -> None:
         self.callback = GUICallback(main_frame=self.main_panel)
@@ -138,33 +135,31 @@ class PDFMergerGUI(BaseWindow):
             except Exception as e:
                 logger.error(f"Could not open folder on Linux: {e}", exc_info=True)
 
-    def _setup_handlers(self) -> dict:
-        """Create a dictionary of commands to pass to the Builder."""
-
-        handlers: dict[str, Callable] = {
-            "add": self.main_panel.add_files,
+    def _setup_handlers(self) -> dict[str, Callable]:
+        """
+        Central registry of all UI commands.
+        Using lambdas for panel methods to ensure they are resolved only when clicked.
+        """
+        return {
             "merge": self.on_merge,
             "extract": self.prompt_pages_to_remove,
-            "remove": self.main_panel.remove_files,
-            "move": self.main_panel.move_on_listbox,
             "license": self.show_license,
-            "documentation": self.show_documentation,
-            "update": self.on_check_updates_click,
             "about": self.show_about,
-            "clear_status": self.main_panel.clear_status_text,
-            "logs": self.open_log_folder,
+            "update": self.on_check_updates_click,
+            "add": lambda: self.main_panel.add_files(),
+            "remove": lambda: self.main_panel.remove_files(),
+            "clear_status": lambda: self.main_panel.clear_status_text(),
+            "move": lambda direction: self.main_panel.move_on_listbox(
+                direction=direction
+            ),
             "settings": lambda: self.settings_panel.toggle(),
             "help": lambda: self.help_panel.toggle(),
             "change_language": lambda lang: self.on_change_language(lang),
         }
-        return handlers
-
-        # У твоїх колбеках (callbacks):
 
     def on_change_language(self, new_lang_name: str) -> None:
         """Обробник зміни мови з інтерфейсу."""
-        # Викликаємо метод міксина
-        self.switch_language(new_lang_name)
+        LocalizationMixin.switch_language(new_lang_name)
 
     # Передаємо цей колбек у налаштування:
     callbacks = {"change_language": on_change_language}

@@ -6,22 +6,18 @@ from typing import Dict, Any, List, Optional
 
 class LocalizationMixin:
     """
-    Міксин для локалізації. Тепер він сам керує оновленням підписаних віджетів.
+    Mixin for UI localization using an Observer pattern.
     """
 
     _translations: Dict[str, Dict[str, Any]] = {}
-    _current_lang: str = "en"  # Дефолт має збігатися з назвою файлу (en.json)
+    _current_lang: str = "en"
     _lang_dir: Path = Path(__file__).parent.parent / "lang"
-
-    # Список об'єктів (frames/windows), які хочуть оновлюватися автоматично
     _observers: List[Any] = []
-
-    # Мапа для перетворення назв з UI в коди файлів
     _LANG_MAP = {"English": "en", "Ukrainian": "uk", "Українська": "uk"}
 
     @classmethod
     def load_translations(cls) -> None:
-        """Завантажує всі JSON файли з папки lang."""
+        """Loads all JSON translation files from the lang directory."""
         if not cls._lang_dir.exists():
             cls._lang_dir.mkdir(parents=True, exist_ok=True)
             return
@@ -31,29 +27,26 @@ class LocalizationMixin:
                 with open(file_path, "r", encoding="utf-8") as f:
                     cls._translations[file_path.stem] = json.load(f)
             except Exception as e:
-                logging.error(f" Download error {file_path.name}: {e}")
+                logging.error(f"Failed to load {file_path.name}: {e}")
 
     @classmethod
     def switch_language(cls, lang_name: str) -> None:
-        """
-        Встановлює мову та автоматично оновлює всі підписані компоненти.
-        lang_name може бути як 'en', так і 'Ukrainian'.
-        """
-        # Перетворюємо "Ukrainian" -> "uk", якщо потрібно
+        """Sets the current language and notifies all registered observers."""
         target_lang = cls._LANG_MAP.get(lang_name, lang_name)
+        print(
+            f"Switching to {target_lang}. Total observers: {len(cls._observers)}"
+        )  # Для тесту
 
         if target_lang in cls._translations:
             cls._current_lang = target_lang
-            logging.info(f"Language changed to: {target_lang}")
-
-            # Оновлюємо всіх, хто підписався
+            logging.info(f"Language switched to: {target_lang}")
             cls._notify_observers()
         else:
-            logging.warning(f"Language file for '{target_lang}' not found.")
+            logging.warning(f"Translation not found for: {target_lang}")
 
     @classmethod
     def _notify_observers(cls):
-        """Викликає метод refresh_localization у всіх підписників."""
+        """Triggers refresh_localization on all subscribed components."""
         for observer in cls._observers:
             if hasattr(observer, "refresh_localization"):
                 try:
@@ -62,15 +55,14 @@ class LocalizationMixin:
                     logging.error(f"Error refreshing {observer}: {e}")
 
     def init_localization(self):
-        """Реєструє поточний об'єкт (self) на оновлення мови."""
+        """Registers the current instance as an observer for language changes."""
         if self not in self.__class__._observers:
             self.__class__._observers.append(self)
 
     def get_text(self, key: str, section: str = "ui", **kwargs: Any) -> str:
-        """Повертає перекладений текст, підтримує вкладеність через крапку."""
+        """Retrieves translated text from nested JSON sections."""
         lang_data = self._translations.get(self._current_lang, {})
 
-        # Прохід по вкладених секціях (напр. "ui.buttons")
         section_data = lang_data
         for part in section.split("."):
             if isinstance(section_data, dict):
@@ -85,47 +77,29 @@ class LocalizationMixin:
         except Exception:
             return template
 
-    def log_msg(self, key: str, level: str = "info", **kwargs: Any) -> str:
-        message = self.get_text(key, section="msg", **kwargs)
-        log_func = getattr(logging, level.lower(), logging.info)
-        log_func(f"[{self.__class__.__name__}] {message}")
-        return message
-
     def get_available_languages(self) -> List[str]:
-        """Повертає список назв для OptionMenu (English, Ukrainian тощо)."""
-        # Створюємо зворотну мапу для гарних назв
+        """Returns list of human-readable language names for UI menus."""
         reverse_map = {v: k for k, v in self._LANG_MAP.items()}
-        codes = self._translations.keys()
-        return [reverse_map.get(code, code.capitalize()) for code in codes]
+        return [
+            reverse_map.get(code, code.capitalize())
+            for code in self._translations.keys()
+        ]
 
-    def update_widgets_text(
-        self, widgets_dict: Dict[str, Any], section: str = "ui.buttons"
-    ) -> None:
-        """
-        Універсальний метод для оновлення тексту у віджетах.
-        Приймає словник {ID_перекладу: об'єкт_віджета}.
-        """
+    def update_widgets_text(self, widgets_dict: Dict[str, Any], section) -> None:
+        """Updates the 'text' property of widgets in the provided dictionary."""
         for key, widget in widgets_dict.items():
+            # Safety: don't try to update the window title via .configure(text=...)
+            if widget == self:
+                continue
+
             if hasattr(widget, "configure"):
                 new_text = self.get_text(key, section=section)
                 widget.configure(text=new_text)
 
-        # Додай це у свій LocalizationMixin
-
     def refresh_localization(self) -> None:
-        """Оптимізоване оновлення всіх зареєстрованих груп віджетів."""
+        # getattr знайде актуальний self.ui, навіть якщо він був перезаписаний
+        section = getattr(self, "loc_section", None)
+        widgets = getattr(self, "ui", None)
 
-        # Словник-мапа: "ім'я_атрибута": "секція_в_json"
-        mapping = {
-            "btns": "ui.buttons",
-            "list_controls": "ui.buttons",
-            "help_controls": "ui.buttons",
-            "titles": "ui.titles",
-            "labels": "ui.labels",
-        }
-
-        for attr_name, section in mapping.items():
-            # Динамічно дістаємо словник віджетів з self (панелі)
-            data = getattr(self, attr_name, None)
-            if data is not None and isinstance(data, dict):
-                self.update_widgets_text(data, section=section)
+        if section and isinstance(widgets, dict):
+            self.update_widgets_text(widgets, section=section)

@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from typing import Literal
+from typing import Literal, Any, Callable, Dict
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
 from simple_to_pdf.core.config import ICONS_PATH
@@ -55,7 +55,9 @@ class BaseFrame(ctk.CTkFrame, ThemeProviderMixin, LocalizationMixin):
         params.update(kwargs)
         # Call the super constructor with prepared kwargs
         super().__init__(parent, **params)
-        self.init_localization()
+        self.callbacks: Dict[str, Callable] = {}
+        self.ui: dict[str, Any] = {}
+        self.loc_section: str = ""
 
     def _buttons_pack(
         self,
@@ -75,7 +77,7 @@ class BaseFrame(ctk.CTkFrame, ThemeProviderMixin, LocalizationMixin):
             )
             btn = PrimaryButton(
                 parent,
-                text=self.get_text(cfg["id"], section="ui.buttons"),
+                text=self.get_text(cfg["id"], section=self.loc_section),
                 command=cfg["cmd"],
                 image=icon,
                 width=btns_width,
@@ -105,6 +107,39 @@ class BaseFrame(ctk.CTkFrame, ThemeProviderMixin, LocalizationMixin):
         except Exception as e:
             logger.error(f"❌ Error CTkImage: {e}")
             return None
+
+    def set_actions_state(self, enabled: bool) -> None:
+        """Lock or unlock all active ui in object"""
+        new_state = "normal" if enabled else "disabled"
+        for widget in self.ui.values():
+            if isinstance(widget, ctk.CTkButton):
+                widget.configure(state=new_state)
+
+    def _trigger(self, command: str | Callable) -> Callable:
+        """
+        A universal wrapper for UI commands.
+        Allows creating widgets in __init__ before all dependencies are fully initialized.
+        """
+
+        def wrapper(*args, **kwargs):
+            # Case 1: Command is a string key (Look up in callbacks dictionary)
+            if isinstance(command, str):
+                # The dictionary self.callbacks will be populated later by the MainWindow
+                callback = self.callbacks.get(command)
+                if callback:
+                    return callback(*args, **kwargs)
+
+                # Debug warning if the button is pressed but the handler isn't linked yet
+                print(
+                    f"Warning: Command '{command}' is not registered in {self.__class__.__name__}"
+                )
+                return None
+
+            # Case 2: Command is a direct reference to a method (e.g., self.some_internal_method)
+            elif callable(command):
+                return command(*args, **kwargs)
+
+        return wrapper
 
 
 class BaseScrollableFrame(ctk.CTkScrollableFrame, ThemeProviderMixin):

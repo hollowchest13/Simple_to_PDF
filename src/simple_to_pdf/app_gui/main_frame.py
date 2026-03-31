@@ -2,7 +2,7 @@ import logging
 import tkinter as tk
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
-from pathlib import Path
+from typing import Callable, Dict
 from simple_to_pdf.pdf.pdf_merger import PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
 from simple_to_pdf.utils.ui_tools import (
@@ -20,17 +20,21 @@ logger = logging.getLogger(__name__)
 
 
 class MainFrame(BaseFrame):
-    def __init__(self, parent: tk.Frame, merger: PdfMerger):
+    def __init__(
+        self, parent: tk.Frame, merger: PdfMerger, callbacks: Dict[str, Callable]
+    ):
         super().__init__(parent)
         self.merger = merger
-        self.ui: dict[str, tk.Widget] = {}
         self.status_text: BaseTextBox
         self.filebox: CTkListbox
         self.progress_bar: BaseProgress
         self.progress_label: BaseLabel
+        self.loc_section = "ui.main_panel"
+        self.callbacks = callbacks
 
         # Set attributes and register in self.ui
         self._register_components(self._setup_layout())
+        self.init_localization()
 
     def _setup_layout(self):
         raw_components = {}
