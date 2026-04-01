@@ -1,6 +1,6 @@
 import customtkinter as ctk
-from simple_to_pdf.widgets import BaseLabel, BaseFrame, SlidingFrame
-from typing import Callable
+from simple_to_pdf.widgets import BaseLabel, SlidingFrame
+from typing import Callable, Dict
 
 
 class HelpFrame(SlidingFrame):
@@ -10,38 +10,57 @@ class HelpFrame(SlidingFrame):
         *,
         open_width=210,
         closed_width=0,
-        callbacks: dict[str, Callable],
+        callbacks: Dict[str, Callable],
         **kwargs,
     ):
         super().__init__(
             parent, open_width=open_width, closed_width=closed_width, **kwargs
         )
 
-        self.title_label = BaseLabel(self, label_type="title", text="Help").pack(
-            side="top", fill="x", padx=(10, 10), pady=(10, 0)
-        )
+        # Localization section path in JSON
         self.loc_section = "ui.help_panel"
-        self.callbacks: dict[str, Callable] = callbacks
-        self.init_btns()
+        self.callbacks: Dict[str, Callable] = callbacks
+
+        # Centralized UI storage for localization updates
+        self.ui: Dict[str, ctk.CTkBaseClass] = {}
+
+        # Initialize all visual components
+        self._setup_ui()
+
+        # Register for language change notifications
         self.init_localization()
 
-    def init_btns(self) -> dict[str, ctk.CTkBaseClass]:
-        help_widgets: dict[str, ctk.CTkBaseClass] = self._build_help_panel()
-        self.grid_rowconfigure(3, weight=1)
-        self.ui = help_widgets
-        for key, value in self.ui.items():
-            setattr(self, key, value)
-        return self.ui
-
-    def _build_help_panel(self) -> dict[str, ctk.CTkBaseClass]:
+    def _setup_ui(self) -> None:
         """
-        Builds the help panel buttons using the internal _trigger mechanism.
-        No external callbacks injection needed at this stage.
+        Creates and arranges all UI elements, then stores them in self.ui.
+        """
+        # 1. Create Title Label
+        title = BaseLabel(self, label_type="title", text="Help")
+        title.pack(side="top", fill="x", padx=(10, 10), pady=(10, 0))
+
+        # Add to UI dict under 'title_label' key
+        self.ui["title_label"] = title
+
+        # 2. Create and pack Buttons
+        buttons = self._setup_help_buttons()
+        self.ui.update(buttons)
+
+        # Allow the last row to expand (pushes everything to the top)
+        self.grid_rowconfigure(len(self.ui) + 1, weight=1)
+
+        # Map UI dictionary keys to object attributes for direct access
+        for key, widget in self.ui.items():
+            setattr(self, key, widget)
+
+    def _setup_help_buttons(self) -> Dict[str, ctk.CTkBaseClass]:
+        """
+        Defines button configurations and generates them via _buttons_pack.
+        Returns a dictionary of created button objects.
         """
         button_configs = [
             {
                 "id": "license_btn",
-                "cmd": self._trigger("license"),  # Using string key
+                "cmd": self._trigger("license"),
                 "icon_name": "license_btn.png",
             },
             {
@@ -62,5 +81,6 @@ class HelpFrame(SlidingFrame):
                 "cmd": self._trigger("logs"),
             },
         ]
-        # Return the dictionary of created buttons for localization mapping
+
+        # Internal helper from BaseFrame that handles ctk.CTkButton creation and packing
         return self._buttons_pack(btns_config=button_configs, parent=self)

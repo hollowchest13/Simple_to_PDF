@@ -146,6 +146,7 @@ class PDFMergerGUI(BaseWindow):
             "license": self.show_license,
             "about": self.show_about,
             "update": self.on_check_updates_click,
+            "documentation": self.show_documentation,
             "add": lambda: self.main_panel.add_files(),
             "remove": lambda: self.main_panel.remove_files(),
             "clear_status": lambda: self.main_panel.clear_status_text(),

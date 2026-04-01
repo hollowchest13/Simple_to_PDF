@@ -21,7 +21,6 @@ class ListControlsFrame(BaseFrame):
         self.loc_section: str = "ui.list_controls_panel"
         self.callbacks = callbacks
         self.init_btns()
-        self.init_localization()
 
     def init_btns(
         self,

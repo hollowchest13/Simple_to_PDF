@@ -58,6 +58,7 @@ class BaseFrame(ctk.CTkFrame, ThemeProviderMixin, LocalizationMixin):
         self.callbacks: Dict[str, Callable] = {}
         self.ui: dict[str, Any] = {}
         self.loc_section: str = ""
+        self.init_localization()
 
     def _buttons_pack(
         self,

@@ -1,7 +1,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 
 
 class LocalizationMixin:
@@ -85,16 +85,40 @@ class LocalizationMixin:
             for code in self._translations.keys()
         ]
 
-    def update_widgets_text(self, widgets_dict: Dict[str, Any], section) -> None:
-        """Updates the 'text' property of widgets in the provided dictionary."""
+    def update_widgets_text(self, widgets_dict: Dict[str, Any], section: str) -> None:
+        """
+        Updates text-related properties of widgets.
+        Tries 'text', then 'label_text', then 'placeholder_text'.
+        """
         for key, widget in widgets_dict.items():
-            # Safety: don't try to update the window title via .configure(text=...)
-            if widget == self:
+            if widget == self or not hasattr(widget, "configure"):
                 continue
 
-            if hasattr(widget, "configure"):
+            try:
                 new_text = self.get_text(key, section=section)
-                widget.configure(text=new_text)
+
+                # Спроба 1: Стандартний текст (кнопки, лейбли)
+                try:
+                    widget.configure(text=new_text)
+                    continue  # Якщо спрацювало, переходимо до наступного віджета
+                except Exception:
+                    pass
+
+                # Спроба 2: Заголовок контейнера (Твій CTkListbox / ScrollableFrame)
+                try:
+                    widget.configure(label_text=new_text)
+                    continue
+                except Exception:
+                    pass
+
+                # Спроба 3: Підказка (Entry / Textbox)
+                try:
+                    widget.configure(placeholder_text=new_text)
+                except Exception:
+                    pass
+
+            except Exception as e:
+                logging.debug(f"Error updating widget '{key}': {e}")
 
     def refresh_localization(self) -> None:
         # getattr знайде актуальний self.ui, навіть якщо він був перезаписаний

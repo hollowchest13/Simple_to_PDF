@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from simple_to_pdf.widgets import BaseLabel, SlidingFrame
-from typing import Callable, Dict, Any
+from typing import Callable, Dict, Any, Type
 
 
 class SettingsFrame(SlidingFrame):
@@ -16,65 +16,81 @@ class SettingsFrame(SlidingFrame):
         super().__init__(
             parent, open_width=open_width, closed_width=closed_width, **kwargs
         )
-        # Initialize UI title immediately
-        self.title_label = BaseLabel(self, label_type="title", text="Settings")
-        self.title_label.pack(side="top", fill="x", padx=10, pady=(10, 0))
 
-        # Placeholder for widgets dictionary
-        self.ui: Dict[str, ctk.CTkBaseClass] = {}
+        # Path to settings section in translation JSON
         self.loc_section = "ui.settings_panel"
         self.callbacks = callbacks
-        self.init_controls()
+
+        # Centralized storage for all translatable widgets
+        self.ui: Dict[str, ctk.CTkBaseClass] = {}
+
+        # Build the interface
+        self._setup_ui()
+
+        # Register for localization updates
         self.init_localization()
 
-    def init_controls(self) -> Dict[str, ctk.CTkBaseClass]:
+    def _setup_ui(self) -> None:
         """
-        Public method to initialize settings controls, similar to init_btns in HelpFrame.
+        Creates all UI components and organizes them into the self.ui dictionary.
         """
-        # Build the settings panel
-        settings_widgets: Dict[str, ctk.CTkBaseClass] = self._build_settings_panel()
+        # 1. Create and pack Title
+        title = BaseLabel(self, label_type="title", text="Settings")
+        title.pack(side="top", fill="x", padx=10, pady=(10, 0))
+        self.ui["title_label"] = title
 
-        # Store in self.ui and set as attributes for direct access (self.language_selector, etc.)
-        self.ui = settings_widgets
-        for key, value in self.ui.items():
-            setattr(self, key, value)
+        # 2. Setup specific setting controls (Language selector, etc.)
+        settings_widgets = self._setup_settings_controls()
+        self.ui.update(settings_widgets)
 
-        return self.ui
+        # Map dictionary items to object attributes for easy 'self.widget_name' access
+        for key, widget in self.ui.items():
+            setattr(self, key, widget)
 
-    def _build_settings_panel(self) -> Dict[str, ctk.CTkBaseClass]:
+    def _setup_settings_controls(self) -> Dict[str, ctk.CTkBaseClass]:
         """
-        Internal method to construct specific setting rows.
-        Now uses the centralized _trigger mechanism.
+        Configures individual setting rows and returns a dict of widgets.
         """
         widgets: Dict[str, ctk.CTkBaseClass] = {}
-        widgets["language_selector"] = self._create_setting_row(
+
+        # Language Selection Row
+        # Returns both the label and the option menu to be stored in self.ui
+        row_widgets = self._create_setting_row(
             parent=self,
-            text="Language:",
+            row_id="language",  # Used to generate keys: 'language_label' and 'language_selector'
+            label_text="Language:",
             widget_class=ctk.CTkOptionMenu,
-            values=["English", "Ukrainian"],
+            values=["English", "Українська"],
             width=120,
             command=self._trigger("change_language"),
         )
+        widgets.update(row_widgets)
+
         return widgets
 
     def _create_setting_row(
         self,
         *,
         parent: ctk.CTkFrame,
-        text: str,
-        widget_class: Any,
+        row_id: str,
+        label_text: str,
+        widget_class: Type[ctk.CTkBaseClass],
         **widget_kwargs: Any,
-    ) -> Any:
+    ) -> Dict[str, ctk.CTkBaseClass]:
         """
-        Standardized row creator: Label on the left, Widget on the right.
+        Creates a row with a Label on the left and a functional Widget on the right.
+        Returns a dict with both components for localization purposes.
         """
         container = ctk.CTkFrame(parent, fg_color="transparent")
         container.pack(fill="x", padx=10, pady=8)
 
-        label = ctk.CTkLabel(container, text=text, font=("Arial", 12))
+        # Create label
+        label = ctk.CTkLabel(container, text=label_text, font=("Arial", 12))
         label.pack(side="left", padx=(5, 10))
 
+        # Create the control widget (OptionMenu, Entry, etc.)
         widget = widget_class(container, **widget_kwargs)
         widget.pack(side="right", expand=True, fill="x", padx=5)
 
-        return widget
+        # Return both so they can be added to self.ui for translation
+        return {f"{row_id}_label": label, f"{row_id}_selector": widget}

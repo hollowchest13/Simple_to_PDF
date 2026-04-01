@@ -4,6 +4,8 @@
   },
   "ui": {
      "main_panel":{
+      "filebox":"Вибрані файли",
+      "progress_label":"Стан виконання"
 
     },
     "list_controls_panel": {
@@ -19,6 +21,7 @@
      
     },
     "help_panel":{
+      "title_label":"Допомога",
       "license_btn": "Ліцензія",
       "documentation_btn": "Як користуватися",
       "about_btn": "Про програму",
@@ -26,6 +29,8 @@
       "logs_btn": "Показати логи"
     },
     "settings_panel":{
+      "language_label":"Мова",
+      "title_label":"Налаштування"
     }
       
     },
