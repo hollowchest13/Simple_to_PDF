@@ -127,3 +127,7 @@ class LocalizationMixin:
 
         if section and isinstance(widgets, dict):
             self.update_widgets_text(widgets, section=section)
+
+    def remove_from_observers(self):
+        if self in self._observers:
+            self._observers.remove(self)

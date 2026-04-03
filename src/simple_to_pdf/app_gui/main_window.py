@@ -233,8 +233,6 @@ class PDFMergerGUI(BaseWindow):
             InfoDialog(
                 self,
                 text=text,
-                title="License Agreement",
-                header_title="MIT License - Simple to PDF",
                 text_font="Consolas",
                 font_size=14,
                 size="750x600",
