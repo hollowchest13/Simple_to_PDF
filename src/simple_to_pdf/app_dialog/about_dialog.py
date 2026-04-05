@@ -8,12 +8,14 @@ from simple_to_pdf.core.config import GITHUB_REPO_URL
 
 
 class AboutDialog(BaseDialog):
-    """Displays information about the app and engine."""
+    """
+    Displays information about the app and engine.
+    Fully integrated with the centralized localization system.
+    """
 
     def __init__(self, parent, version: str, engine_name: str, size: str = "400x450"):
-        # Initialize BaseDialog with specific translation section
-        # BaseDialog calls init_localization() and sets up self.ui internally
-        super().__init__(parent, title="window_title", loc_section="ui.about_dialog")
+        # Initialize BaseDialog with translation section 'ui.about_dialog'
+        super().__init__(parent, loc_section="ui.about_dialog")
 
         self.version = version
         self.engine_name = engine_name
@@ -21,31 +23,36 @@ class AboutDialog(BaseDialog):
         if size:
             self.geometry(size)
 
-        # Create UI components and register them in self.ui
+        # Build UI structure and register widgets in self.ui
         self._setup_dialog_ui()
 
-        # Initial refresh to populate dynamic variables like {version} and {engine}
+        # Initial call to populate labels with localized text and dynamic data
         self.refresh_localization()
 
     def _setup_dialog_ui(self) -> None:
-        """Creates widgets and registers them in the self.ui dictionary for auto-translation."""
+        """
+        Creates widgets and registers them in self.ui for automatic translation updates.
+        Since set_header_text was removed, we create header labels manually.
+        """
+
 
         # --- Header Section ---
-        # Using BaseDialog helper to create title and subtitle labels
-        self.set_header_text("Simple to PDF", f"Version {self.version}")
+        # Main Title (Brand name)
+        self.ui["header_title"] = BaseLabel(self.header, text="", label_type="title")
+        self.ui["header_title"].pack(pady=(25, 2))
 
-        # Map header labels to self.ui to enable automatic text updates
-        header_children = self.header.winfo_children()
-        if len(header_children) >= 2:
-            self.ui["header_title"] = header_children[0]
-            self.ui["header_subtitle"] = header_children[1]
+        # Subtitle (Version info placeholder)
+        self.ui["header_subtitle"] = BaseLabel(
+            self.header, text="", label_type="subtitle"
+        )
+        self.ui["header_subtitle"].pack(pady=(0, 20))
 
         # --- Content Section ---
-        # Engine badge (text will be set in refresh_localization)
+        # Engine badge (e.g., PyMuPDF)
         self.ui["engine_badge"] = BaseLabel(self.content, text="", label_type="badge")
         self.ui["engine_badge"].pack(pady=(0, 20))
 
-        # Main description
+        # Main description text from JSON
         self.ui["description_label"] = BaseLabel(
             self.content,
             text="",
@@ -53,7 +60,7 @@ class AboutDialog(BaseDialog):
         )
         self.ui["description_label"].pack(pady=10)
 
-        # GitHub action button
+        # Action button to open GitHub repository
         self.ui["github_btn"] = PrimaryButton(
             self.content,
             text="",
@@ -65,19 +72,22 @@ class AboutDialog(BaseDialog):
 
     def refresh_localization(self) -> None:
         """
-        Overrides the mixin method to handle dynamic keys with placeholders.
-        This is called automatically by the LocalizationManager.
+        Updates UI text. Combines super() automatic mapping for static keys
+        with manual formatting for dynamic version/engine strings.
         """
-        # Step 1: Standard translation for simple keys (description, button, etc.)
+        # Step 1: Спочатку даємо базі заповнити статичні ключі (description, buttons)
         super().refresh_localization()
 
-        # Step 2: Manually update labels that require dynamic formatting (kwargs)
+        # Step 2: Тепер ПЕРЕЗАПИСУЄМО динамічні поля, щоб вставити версію та двигун
+
+        if "header_title" in self.ui:
+            self.ui["header_title"].configure(text="Simple to PDF")
+
         if "header_subtitle" in self.ui:
-            self.ui["header_subtitle"].configure(
-                text=self.get_text("header_subtitle", version=self.version)
-            )
+            # Використовуємо str(), щоб Pyright не сварився на "None"
+            text = str(self.get_text("header_subtitle", version=self.version))
+            self.ui["header_subtitle"].configure(text=text)
 
         if "engine_badge" in self.ui:
-            self.ui["engine_badge"].configure(
-                text=self.get_text("engine_badge", engine=self.engine_name)
-            )
+            text = str(self.get_text("engine_badge", engine=self.engine_name))
+            self.ui["engine_badge"].configure(text=text)

@@ -3,34 +3,64 @@
     "lang_name": "English"
   },
   "ui": {
-    "main_panel":{
-      "filebox":"Selected files",
-      "progress_label":"Progress"
+    "main_panel": {
+      "filebox": "Selected files",
+      "progress_label": "Progress"
     },
     "list_controls_panel": {
       "btn_add": "Add files",
       "btn_up": "Move up",
       "btn_down": "Move down",
-      "btn_remove":"Remove file",
-      "btn_merge":"Merge to pdf",
-      "btn_extract":"Extract pages",
-      "btn_status_clear":"Clear status",
-      "btn_help":"Help",
-      "btn_settings":"Settings"
+      "btn_remove": "Remove file",
+      "btn_merge": "Merge to PDF",
+      "btn_extract": "Extract pages",
+      "btn_status_clear": "Clear status",
+      "btn_help": "Help",
+      "btn_settings": "Settings"
     },
-    "help_panel":{
-      "title_label":"Help",
-      "license_btn":"License",
-      "documentation_btn":"How to use",
-      "about_btn":"About",
-      "check_updates_btn":"Check updates",
-      "logs_btn":"Show logs"
+    "help_panel": {
+      "title_label": "Help",
+      "license_btn": "License",
+      "documentation_btn": "How to use",
+      "about_btn": "About",
+      "check_updates_btn": "Check updates",
+      "logs_btn": "Show logs"
     },
-    "settings_panel":{
-      "language_label":"Language",
-      "title_label":"Settings"
+    "settings_panel": {
+      "language_label": "Language",
+      "title_label": "Settings"
+    },
+    "about_dialog": {
+      "window_title": "About Simple to PDF",
+      "header_title": "Simple to PDF",
+      "header_subtitle": "Version {version}",
+      "engine_badge": "Engine: {engine}",
+      "description_label": "Professional utility for batch PDF processing.\nBuilt for efficiency and speed.",
+      "github_btn": "View Source on GitHub"
+    },
+    "info_dialog": {
+      "window_title": "Information",
+      "header_title": "Details",
+      "btn_close": "Got it!"
+    },
+    "update_dialog": {
+      "window_title": "Update Available",
+      "header_title": "New Update!",
+      "header_subtitle": "Version {version} is ready",
+      "whats_new_title": "What's New:",
+      "changelog_text": "{logs}",
+      "btn_download": "Download Now",
+      "btn_later": "Later"
+    },
+    "page_selection_dialog": {
+      "window_title": "Extract Pages",
+      "header_title": "Page Selection",
+      "header_subtitle": "Extract specific pages from PDF",
+      "instruction_label": "Enter pages to extract:",
+      "hint_label": "Use commas for single pages (1, 3)\nand dashes for ranges (5-10).",
+      "page_entry_placeholder": "e.g. 1, 2, 5-8",
+      "btn_ok": "Confirm Extraction"
     }
-
   },
   "msg": {
     "success": "File {name} created successfully!",

@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from simple_to_pdf.core.config import ThemeKeys
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
-from simple_to_pdf.widgets import BaseFrame, BaseLabel
+from simple_to_pdf.widgets import BaseFrame
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 
 
@@ -11,12 +11,12 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
     Handles centering, theme consistency, and standard layout.
     """
 
-    def __init__(self, parent,*, title: str,loc_section:str):
+    def __init__(self, parent, *, loc_section: str):
         super().__init__(parent)
 
         # Window configuration
-        self.title(title)
-        self.ui={}
+        self._title_key="window_title"
+        self.ui = {}
 
         # Modal behavior: focus remains on this window until closed
         self.transient(parent)
@@ -29,7 +29,7 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         # Center the window relative to the parent
         self._center_window(parent)
         self.init_localization()
-        self.loc_section=loc_section
+        self.loc_section = loc_section
         self.protocol("WM_DELETE_WINDOW", self._on_close)
 
     def _init_layout(self):
@@ -47,23 +47,21 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         self.footer = BaseFrame(self, frame_type="footer")
         self.footer.pack(side="bottom", fill="x", pady=15)
 
-    def set_header_text(self, title: str, subtitle: str | None = None):
-        """Helper to quickly populate the header area with styled labels."""
-        BaseLabel(self.header, text=title, label_type="title").pack(pady=(25, 2))
-
-        if subtitle:
-            BaseLabel(self.header, text=subtitle, label_type="subtitle").pack(
-                pady=(0, 20)
-            )
-
     def _center_window(self, parent):
         """Calculates coordinates to center this dialog over the parent window."""
         self.update_idletasks()
         x = parent.winfo_x() + (parent.winfo_width() // 2) - (self.winfo_width() // 2)
         y = parent.winfo_y() + (parent.winfo_height() // 2) - (self.winfo_height() // 2)
         self.geometry(f"+{x}+{y}")
-
+    
     def _on_close(self):
         if hasattr(self, "remove_from_observers"):
             self.remove_from_observers()
         self.destroy()
+    
+    def refresh_localization(self) -> None:
+        super().refresh_localization()
+        if hasattr(self, "_title_key"):
+            translated_title = self.get_text(self._title_key)
+            self.title(translated_title)
+    
