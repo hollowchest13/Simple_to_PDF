@@ -62,8 +62,6 @@ class LocalizationMixin:
     def get_text(self, key: str, section: str | None = None, **kwargs: Any) -> str:
         """Retrieves translated text, prioritizing self.loc_section."""
 
-        # 1. Визначаємо цільову секцію:
-        # спочатку аргумент, потім атрибут екземпляра, в кінці - дефолт "ui"
         if section:
             target_section = section
         else:
@@ -72,26 +70,19 @@ class LocalizationMixin:
         lang_data = self._translations.get(self._current_lang, {})
         section_data = lang_data
 
-        # 2. Навігація по вкладених секціях (ui.about_dialog)
         for part in target_section.split("."):
             if isinstance(section_data, dict):
-                # Використовуємо .get(), щоб не "впасти", якщо секції немає
                 section_data = section_data.get(part, {})
             else:
                 section_data = {}
 
-        # 3. Отримуємо шаблон. Якщо його немає в секції - повертаємо назву ключа
         template = section_data.get(key, key) if isinstance(section_data, dict) else key
 
-        # Гарантуємо, що це рядок, щоб уникнути помилок типізації
         template_str = str(template)
 
-        # 4. Форматування (підстановка {version}, {engine} тощо)
         try:
-            # .format() проігнорує kwargs, якщо в рядку немає дужок {}
             return template_str.format(**kwargs)
         except (KeyError, ValueError, IndexError):
-            # Якщо в JSON є {placeholder}, але ти не передав його в kwargs - повернемо як є
             return template_str
 
     def get_available_languages(self) -> List[str]:
@@ -114,21 +105,21 @@ class LocalizationMixin:
             try:
                 new_text = self.get_text(key, section=section)
 
-                # Спроба 1: Стандартний текст (кнопки, лейбли)
+                # Attempt 1: Standard text (buttons, labels)
                 try:
                     widget.configure(text=new_text)
-                    continue  # Якщо спрацювало, переходимо до наступного віджета
+                    continue  # If it worked, moving on to the next widget.
                 except Exception:
                     pass
 
-                # Спроба 2: Заголовок контейнера (Твій CTkListbox / ScrollableFrame)
+                # Attempt 2: Container header (Your CTkListbox / ScrollableFrame)
                 try:
                     widget.configure(label_text=new_text)
                     continue
                 except Exception:
                     pass
 
-                # Спроба 3: Підказка (Entry / Textbox)
+                # Attempt 3: Input Hint (Entry / Textbox)
                 try:
                     widget.configure(placeholder_text=new_text)
                 except Exception:
@@ -138,8 +129,7 @@ class LocalizationMixin:
                 logging.debug(f"Error updating widget '{key}': {e}")
 
     def refresh_localization(self) -> None:
-    
-        # getattr знайде актуальний self.ui, навіть якщо він був перезаписаний
+
         section = getattr(self, "loc_section", None)
         widgets = getattr(self, "ui", None)
 
@@ -149,3 +139,6 @@ class LocalizationMixin:
     def remove_from_observers(self):
         if self in self._observers:
             self._observers.remove(self)
+
+
+# def show_msg(self,key:str,icon:str="info",)

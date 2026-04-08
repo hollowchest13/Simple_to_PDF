@@ -39,7 +39,9 @@
       "github_btn": "View Source on GitHub"
     },
     "info_dialog": {
-      "window_title": "Information",
+      "license_window_title": "LICENSE",
+      "license_header_title":"License Terms",
+      "window_title":"Information",
       "header_title": "Details",
       "btn_close": "Got it!"
     },
@@ -60,16 +62,23 @@
       "hint_label": "Use commas for single pages (1, 3)\nand dashes for ranges (5-10).",
       "page_entry_placeholder": "e.g. 1, 2, 5-8",
       "btn_ok": "Confirm Extraction"
+    },
+   "notifications":
+    {
+    "titles": {
+        "info": "Інформація",
+        "error": "Помилка",
+        "warning": "Попередження",
+        "success": "Успішно",
+        "update": "Оновлення ПЗ"
+    },
+    "messages": {
+        "update_found": "Доступна нова версія {version}!",
+        "no_updates": "У вас встановлена актуальна версія {version}.",
+        "update_error": "Не вдалося перевірити наявність оновлень:\n{error}",
+        "invalid_path": "Невірний шлях до файлу: {path}",
+        "process_complete": "PDF успішно створено за адресою: {location}"
     }
-  },
-  "msg": {
-    "success": "File {name} created successfully!",
-    "loading": "Please wait, generating PDF...",
-    "confirm_exit": "Are you sure you want to exit?"
-  },
-  "errors": {
-    "file_exists": "A file with this name already exists.",
-    "permission_denied": "No permission to write in this folder.",
-    "unknown": "An unexpected error occurred: {err}"
   }
+}
 }

@@ -35,7 +35,6 @@ class AboutDialog(BaseDialog):
         Since set_header_text was removed, we create header labels manually.
         """
 
-
         # --- Header Section ---
         # Main Title (Brand name)
         self.ui["header_title"] = BaseLabel(self.header, text="", label_type="title")
@@ -75,19 +74,21 @@ class AboutDialog(BaseDialog):
         Updates UI text. Combines super() automatic mapping for static keys
         with manual formatting for dynamic version/engine strings.
         """
-        # Step 1: Спочатку даємо базі заповнити статичні ключі (description, buttons)
+        # Step 1: Update static keys (description, buttons) via Mixin/Base class
         super().refresh_localization()
 
-        # Step 2: Тепер ПЕРЕЗАПИСУЄМО динамічні поля, щоб вставити версію та двигун
+        # Step 2: Overwrite dynamic fields with formatted values
 
         if "header_title" in self.ui:
+            # Static brand name (can also be moved to JSON if needed)
             self.ui["header_title"].configure(text="Simple to PDF")
 
         if "header_subtitle" in self.ui:
-            # Використовуємо str(), щоб Pyright не сварився на "None"
+            # Injecting 'version' into the localized string
             text = str(self.get_text("header_subtitle", version=self.version))
             self.ui["header_subtitle"].configure(text=text)
 
         if "engine_badge" in self.ui:
+            # Injecting 'engine_name' into the localized string
             text = str(self.get_text("engine_badge", engine=self.engine_name))
             self.ui["engine_badge"].configure(text=text)

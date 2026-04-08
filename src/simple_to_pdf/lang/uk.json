@@ -39,7 +39,9 @@
       "github_btn": "Вихідний код на GitHub"
     },
     "info_dialog": {
-      "window_title": "Інформація",
+      "license_window_title": "ЛІЦЕНЗІЯ",
+      "license_header_title":"Умови ліцензії",
+      "window_title":"Інформація",  
       "header_title": "Деталі",
       "btn_close": "Зрозуміло"
     },

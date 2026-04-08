@@ -234,6 +234,8 @@ class PDFMergerGUI(BaseWindow):
                 self,
                 text=text,
                 text_font="Consolas",
+                title_key="license_window_title",
+                header_key="license_header_title",
                 font_size=14,
                 size="750x600",
             )

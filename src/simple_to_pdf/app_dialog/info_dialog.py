@@ -22,7 +22,7 @@ class InfoDialog(BaseDialog):
         font_size: int = 16,
     ):
         # Initialize BaseDialog with the info_dialog section
-        super().__init__(parent, loc_section="ui.info_dialog")
+        super().__init__(parent,title_key=title_key, loc_section="ui.info_dialog")
 
         self.raw_text = text
         self.header_key = header_key
