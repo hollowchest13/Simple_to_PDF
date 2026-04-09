@@ -60,30 +60,36 @@ class LocalizationMixin:
             self.__class__._observers.append(self)
 
     def get_text(self, key: str, section: str | None = None, **kwargs: Any) -> str:
-        """Retrieves translated text, prioritizing self.loc_section."""
-
         if section:
             target_section = section
         else:
             target_section = getattr(self, "loc_section", "ui")
 
         lang_data = self._translations.get(self._current_lang, {})
-        section_data = lang_data
 
-        for part in target_section.split("."):
-            if isinstance(section_data, dict):
-                section_data = section_data.get(part, {})
+        # 1. Склеюємо секцію і ключ в один повний шлях
+        full_path = f"{target_section}.{key}"
+
+        # 2. Проходимо по всьому шляху крок за кроком
+        data = lang_data
+        parts = full_path.split(".")
+
+        for i, part in enumerate(parts):
+            if isinstance(data, dict) and part in data:
+                data = data[part]
             else:
-                section_data = {}
+                # Якщо шлях обірвався — повертаємо сам ключ як fallback
+                # (або останню частину ключа, залежно від твого бажання)
+                return key
 
-        template = section_data.get(key, key) if isinstance(section_data, dict) else key
+        # 3. Якщо результат — рядок, форматуємо його
+        if isinstance(data, str):
+            try:
+                return data.format(**kwargs)
+            except (KeyError, ValueError, IndexError):
+                return data
 
-        template_str = str(template)
-
-        try:
-            return template_str.format(**kwargs)
-        except (KeyError, ValueError, IndexError):
-            return template_str
+        return key
 
     def get_available_languages(self) -> List[str]:
         """Returns list of human-readable language names for UI menus."""
@@ -139,6 +145,3 @@ class LocalizationMixin:
     def remove_from_observers(self):
         if self in self._observers:
             self._observers.remove(self)
-
-
-# def show_msg(self,key:str,icon:str="info",)

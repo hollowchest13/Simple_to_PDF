@@ -11,11 +11,11 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
     Handles centering, theme consistency, and standard layout.
     """
 
-    def __init__(self, parent, *,title_key="window_title", loc_section: str):
+    def __init__(self, parent, *, title_key="window_title", loc_section: str):
         super().__init__(parent)
 
         # Window configuration
-        self._title_key=title_key
+        self._title_key = title_key
         self.ui = {}
 
         # Modal behavior: focus remains on this window until closed
@@ -53,15 +53,14 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         x = parent.winfo_x() + (parent.winfo_width() // 2) - (self.winfo_width() // 2)
         y = parent.winfo_y() + (parent.winfo_height() // 2) - (self.winfo_height() // 2)
         self.geometry(f"+{x}+{y}")
-    
+
     def _on_close(self):
         if hasattr(self, "remove_from_observers"):
             self.remove_from_observers()
         self.destroy()
-    
+
     def refresh_localization(self) -> None:
         super().refresh_localization()
         if hasattr(self, "_title_key"):
             translated_title = self.get_text(self._title_key)
             self.title(translated_title)
-    

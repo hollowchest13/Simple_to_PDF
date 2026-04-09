@@ -62,16 +62,28 @@
       "hint_label": "Використовуйте коми для окремих сторінок (1, 3)\nта дефіси для діапазонів (5-10).",
       "page_entry_placeholder": "напр. 1, 2, 5-8",
       "btn_ok": "Підтвердити"
+    },
+    "notifications": {
+      "titles": {
+          "info": "Інформація",
+          "error": "Помилка",
+          "warning": "Попередження",
+          "success": "Успіх",
+          "update": "Оновлення ПЗ"
+      },
+      "headers": {
+          "license_header": "Умови ліцензії"
+      },
+      "messages": {
+          "update_found": "Доступна нова версія {version}!",
+          "no_updates": "У вас встановлена актуальна версія {version}.",
+          "update_error": "Не вдалося перевірити оновлення:\n{error}",
+          "invalid_path": "Невірний шлях до файлу: {path}",
+          "process_complete": "PDF успішно створено за адресою: {location}"
+      },
+      "btns": {
+          "license_close": "Я згоден"
+      }
     }
-  },
-  "msg": {
-    "success": "Файл {name} успішно створено!",
-    "loading": "Зачекайте, триває генерація PDF...",
-    "confirm_exit": "Ви впевнені, що хочете вийти?"
-  },
-  "errors": {
-    "file_exists": "Файл з такою назвою вже існує.",
-    "permission_denied": "Немає прав для запису в цю папку.",
-    "unknown": "Сталася непередбачена помилка: {err}"
   }
 }

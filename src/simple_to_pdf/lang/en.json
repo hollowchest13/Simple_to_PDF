@@ -38,13 +38,6 @@
       "description_label": "Professional utility for batch PDF processing.\nBuilt for efficiency and speed.",
       "github_btn": "View Source on GitHub"
     },
-    "info_dialog": {
-      "license_window_title": "LICENSE",
-      "license_header_title":"License Terms",
-      "window_title":"Information",
-      "header_title": "Details",
-      "btn_close": "Got it!"
-    },
     "update_dialog": {
       "window_title": "Update Available",
       "header_title": "New Update!",
@@ -64,21 +57,27 @@
       "btn_ok": "Confirm Extraction"
     },
    "notifications":
-    {
-    "titles": {
-        "info": "Інформація",
-        "error": "Помилка",
-        "warning": "Попередження",
-        "success": "Успішно",
-        "update": "Оновлення ПЗ"
-    },
-    "messages": {
-        "update_found": "Доступна нова версія {version}!",
-        "no_updates": "У вас встановлена актуальна версія {version}.",
-        "update_error": "Не вдалося перевірити наявність оновлень:\n{error}",
-        "invalid_path": "Невірний шлях до файлу: {path}",
-        "process_complete": "PDF успішно створено за адресою: {location}"
+      {
+      "titles": {
+          "info": "Information",
+          "error": "Error",
+          "warning": "Warning",
+          "success": "Success",
+          "update": "Software Update"
+      },
+      "headers":{
+        "license_header":"License Terms"
+      },
+      "messages": {
+          "update_found": "A new version {version} is available!",
+          "no_updates": "You're all set! Version {version} is the latest.",
+          "update_error": "Unable to check for updates:\n{error}",
+          "invalid_path": "The file path is invalid: {path}",
+          "process_complete": "PDF successfully created at {location}"
+      },
+      "btns":{
+        "license_close":"I Agree"
+      }
     }
   }
-}
 }
