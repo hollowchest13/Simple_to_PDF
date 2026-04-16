@@ -1,4 +1,5 @@
 import logging
+from re import S
 import tkinter as tk
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
@@ -6,9 +7,11 @@ from typing import Callable, Dict, Any, Tuple
 
 from simple_to_pdf.pdf.pdf_merger import PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
+from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.utils.ui_tools import (
     clear_text_widget,
 )
+from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.widgets import (
     BaseFrame,
     BaseLabel,
@@ -22,10 +25,16 @@ logger = logging.getLogger(__name__)
 
 class MainFrame(BaseFrame):
     def __init__(
-        self, parent: tk.Frame, merger: PdfMerger, callbacks: Dict[str, Callable]
+        self,
+        *,
+        master: tk.Frame,
+        merger: PdfMerger,
+        notifier: NotificationManager,
+        callbacks: Dict[str, Callable],
     ):
-        super().__init__(parent)
+        super().__init__(master)
         self.merger = merger
+        self.notifier = notifier
         self.callbacks = callbacks
         self.loc_section = "ui.main_panel"
 
@@ -171,13 +180,7 @@ class MainFrame(BaseFrame):
         sel_files = self.filebox.get_selected_paths()
 
         if not all_files:
-            CTkMessagebox(
-                master=self.winfo_toplevel(),
-                title="No files",
-                message="The file list is already empty.",
-                icon="info",
-                option_1="OK",
-            )
+            self.notifier.show_msg(scenario_key="info.empty_file_list")
             return
         elif not sel_files:
             msg = CTkMessagebox(

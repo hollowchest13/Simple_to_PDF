@@ -64,25 +64,24 @@
       "btn_ok": "Підтвердити"
     },
     "notifications": {
-      "titles": {
-          "info": "Інформація",
-          "error": "Помилка",
-          "warning": "Попередження",
-          "success": "Успіх",
-          "update": "Оновлення ПЗ"
+    
+      "license_info": {
+          "title": "Інформація",
+          "header": "Умови ліцензії",
+          "message": "Тут міститься повний текст ліцензії...",
+          "btn": "Я згоден(на)"
       },
-      "headers": {
-          "license_header": "Умови ліцензії"
+      "update_success": {
+          "title": "Успішно",
+          "header": "Програмне забезпечення оновлено",
+          "message": "Версію {version} було успішно встановлено.",
+          "btn": "Чудово!"
       },
-      "messages": {
-          "update_found": "Доступна нова версія {version}!",
-          "no_updates": "У вас встановлена актуальна версія {version}.",
-          "update_error": "Не вдалося перевірити оновлення:\n{error}",
-          "invalid_path": "Невірний шлях до файлу: {path}",
-          "process_complete": "PDF успішно створено за адресою: {location}"
-      },
-      "btns": {
-          "license_close": "Я згоден"
+      "delete_confirm": {
+          "title": "Попередження",
+          "header": "Видалити файл?",
+          "message": "Ви впевнені, що хочете видалити цей файл?",
+          "btn": "Все одно видалити"
       }
     }
   }

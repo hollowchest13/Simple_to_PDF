@@ -4,6 +4,7 @@ import subprocess
 import sys
 import tkinter as tk
 import webbrowser
+from datetime import datetime
 from pathlib import Path
 from tkinter import filedialog
 from CTkMessagebox import CTkMessagebox
@@ -20,6 +21,7 @@ from simple_to_pdf.pdf import PageExtractor, PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
 from simple_to_pdf.utils.logic import get_pages
 from simple_to_pdf.utils.ui_tools import change_state, ui_locker
+from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.app_dialog import (
     AboutDialog,
     UpdateDialog,
@@ -33,8 +35,6 @@ logger = logging.getLogger(__name__)
 
 
 class PDFMergerGUI(BaseWindow):
-    APP_NAME: str = "Simple_to_PDF"
-
     def __init__(
         self,
         *,
@@ -50,6 +50,7 @@ class PDFMergerGUI(BaseWindow):
         self.merger: PdfMerger = merger
         self.page_extractor: PageExtractor = page_extractor
         self.version_controller: VersionController = version_controller
+        self.notifier: NotificationManager = NotificationManager(self)
         # build UI inside root_container inherited from BaseWindow
 
         handlers = self._setup_handlers()
@@ -59,7 +60,7 @@ class PDFMergerGUI(BaseWindow):
 
     def init_panels(self, callback: dict[str, Callable]) -> None:
         self.main_panel: MainFrame = MainFrame(
-            self.root_container, merger=self.merger, callbacks=callback
+            master=self.root_container, merger=self.merger, notifier=self.notifier,callbacks=callback
         )
         self.btns_panel: ListControlsFrame = ListControlsFrame(
             self.root_container, callbacks=callback
@@ -146,6 +147,7 @@ class PDFMergerGUI(BaseWindow):
             "license": self.show_license,
             "about": self.show_about,
             "update": self.on_check_updates_click,
+            "logs": self.open_log_folder,
             "documentation": self.show_documentation,
             "add": lambda: self.main_panel.add_files(),
             "remove": lambda: self.main_panel.remove_files(),
@@ -159,43 +161,34 @@ class PDFMergerGUI(BaseWindow):
         }
 
     def on_change_language(self, new_lang_name: str) -> None:
-        """Обробник зміни мови з інтерфейсу."""
+        """Handler for language changes from the interface."""
         LocalizationMixin.switch_language(new_lang_name)
 
-    # Передаємо цей колбек у налаштування:
+    # Pass this callback to the settings:
     callbacks = {"change_language": on_change_language}
 
     def on_check_updates_click(self):
         """
         Handles the update check event from the UI.
         """
-        # 1. Fetch data from controller
+        # Fetch data from controller
         result = self.version_controller.check_for_updates()
 
-        # 2. Handle errors
+        # Handle errors
         if result.error_message:
-            CTkMessagebox(
-                master=self,
-                title="Update Error",
-                message=f"Unable to check for updates:\n{result.error_message}",
-                icon="cancel",
+            self.notifier.show_msg(
+                scenario_key="error.update_error",
             )
             return
 
-        # 3. If update found, show the beautiful dialog
+        # If update found, show the beautiful dialog
         if result.is_available and result.release:
             UpdateDialog(self, result.release.version, result.release.notes)
 
-        # 4. If no update found
+        # If no update found
         else:
             current_v = self.version_controller._get_current_version()
-            CTkMessagebox(
-                master=self,
-                title="Software Update",
-                message=f"You're all set! Version {current_v} is the latest available.",
-                icon="check",
-                option_1="OK",
-            )
+            self.notifier.show_msg(scenario_key="info.no_updates", version=current_v)
 
     def show_about(self):
         """Gathers data and displays the About Dialog."""
@@ -212,43 +205,34 @@ class PDFMergerGUI(BaseWindow):
     def show_license(self) -> None:
         """Displays the license file in a styled TextWindow."""
         license_path = config.LICENCE_PATH
+        cur_year = datetime.now().year
 
         # Check if file exists
         if not license_path.exists():
             logger.warning(f"⚠️ License file not found at path: {license_path}")
-            CTkMessagebox(
-                master=self,
-                title="File Not Found",
-                message=f"License file could not be found at:\n{license_path}",
-                icon="warning",
-                option_1="OK",
-            )
+            self.notifier.show_msg(scenario_key="warning.file_not_found")
             return
-
         try:
             # Reading file (UTF-8 is essential for cross-platform compatibility)
             text = license_path.read_text(encoding="utf-8")
+            formatted_text = text.format(year=cur_year)
 
             # Call the new class instead of the old method
-            InfoDialog(
-                self,
-                text=text,
-                text_font="Consolas",
-                title_key="titles.info",
-                header_key="headers.license_header",
-                btn_key="btns.license_close",
+            self.notifier.show_msg(
+                text=formatted_text,
+                scenario_key="info.license_info",
                 font_size=14,
                 size="750x600",
+                year=cur_year,
+                app_name=config.APP_NAME,
+                with_footer=True,
             )
 
         except Exception as e:
             logger.error(f"❌ Error reading license file: {e}")
-            CTkMessagebox(
-                master=self,
-                title="Read Error",
-                message=f"An error occurred while reading the license:\n{str(e)}",
-                icon="cancel",
-                option_1="OK",
+            self.notifier.show_msg(
+                scenario_key="error.file_read_error",
+                file_name=license_path,
             )
 
     def show_documentation(self) -> None:
@@ -260,12 +244,8 @@ class PDFMergerGUI(BaseWindow):
         # Preparing data (quick operation, doing in main thread)
         files = [[i, path] for i, path in enumerate(self.main_panel.filebox.all_rows)]
         if not files:
-            CTkMessagebox(
-                master=self,
-                title="Warning",
-                message="No files to merge",
-                icon="warning",
-                option_1="OK",
+            self.notifier.show_msg(
+                scenario_key="warning.no_file_to_merge",
             )
             return
 
@@ -326,12 +306,8 @@ class PDFMergerGUI(BaseWindow):
         pages = get_pages(raw=raw_input.strip())
 
         if pages is None:
-            CTkMessagebox(
-                title="Invalid Input",
-                message="Please use the correct format (e.g., 1-5, 8, 10-12).",
-                icon="warning",
-                master=self,
-                option_1="OK",
+            self.notifier.show_msg(
+                scenario_key="warning.wrong_page_format",
             )
             return
 
@@ -341,21 +317,15 @@ class PDFMergerGUI(BaseWindow):
                 input_path=Path(input_path), pages_to_extract=pages
             )
         except ValueError as e:
-            CTkMessagebox(
-                title="Validation Error",
-                message=str(e),
-                icon="cancel",
-                master=self,
-                option_1="OK",
+            self.notifier.show_msg(
+                scenario_key="error.page_validation_error",
+                error=e,
             )
             return
         except Exception as e:
-            CTkMessagebox(
-                title="File Error",
-                message=f"Could not read PDF: {e}",
-                icon="cancel",
-                master=self,
-                option_1="OK",
+            self.notifier.show_msg(
+                scenario_key="error.file_read_error",
+                file_name=input_path,
             )
             return
 
@@ -394,12 +364,9 @@ class PDFMergerGUI(BaseWindow):
             if isinstance(e, ValueError):
                 self.after(
                     0,
-                    lambda: CTkMessagebox(
-                        title="Extraction Error",
-                        message=error_msg,
-                        icon="cancel",
-                        option_1="OK",
-                        master=self,
+                    lambda: self.notifier.show_msg(
+                        scenario_key="error.page_extraction_error",
+                        file_name=input_path,
                     ),
                 )
             else:
@@ -409,16 +376,9 @@ class PDFMergerGUI(BaseWindow):
 
     def _on_closing(self):
         if self.thread_running:
-            CTkMessagebox(
-                title="Process in Progress",
-                message=(
-                    "A background task is currently running.\n\n"
-                    "The application will close automatically once the task is finished. "
-                    "Please wait."
-                ),
-                master=self,
-                icon="warning",
-                option_1="Wait",
+            self.notifier.show_msg(
+                scenario_key="warning.process_in_progress",
+                with_icon=True,
             )
             self._wait_for_thread_finish()
         else:
@@ -430,7 +390,7 @@ class PDFMergerGUI(BaseWindow):
         before allowing the application to close.
         """
         if self.thread_running:
-            # Опитування кожні 100 мс
+            # Polling every 100ms
             logger.info(
                 "Waiting for background thread to finish... (re-checking in 1s)"
             )

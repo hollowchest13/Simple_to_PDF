@@ -29,7 +29,10 @@
     "settings_panel": {
       "language_label": "Language",
       "title_label": "Settings"
-    },
+    }
+  },
+
+  "dialogs": {
     "about_dialog": {
       "window_title": "About Simple to PDF",
       "header_title": "Simple to PDF",
@@ -38,6 +41,7 @@
       "description_label": "Professional utility for batch PDF processing.\nBuilt for efficiency and speed.",
       "github_btn": "View Source on GitHub"
     },
+
     "update_dialog": {
       "window_title": "Update Available",
       "header_title": "New Update!",
@@ -47,6 +51,7 @@
       "btn_download": "Download Now",
       "btn_later": "Later"
     },
+
     "page_selection_dialog": {
       "window_title": "Extract Pages",
       "header_title": "Page Selection",
@@ -56,28 +61,110 @@
       "page_entry_placeholder": "e.g. 1, 2, 5-8",
       "btn_ok": "Confirm Extraction"
     },
-   "notifications":
-      {
-      "titles": {
-          "info": "Information",
-          "error": "Error",
-          "warning": "Warning",
-          "success": "Success",
-          "update": "Software Update"
+
+    "confirm_delete": {
+      "header": "Delete file?",
+      "message": "Are you sure you want to delete this file?",
+      "btn_yes": "Yes",
+      "btn_no": "No"
+    }
+  },
+
+  "notifications": {
+    "info": {
+      "__title__": "Information",
+
+      "license_info": {
+        "header": "License Terms",
+        "message": "Full license text goes here...",
+        "footer_text": "Copyright © {year} {app_name}. All rights reserved...",
+        "btn": "I Agree"
       },
-      "headers":{
-        "license_header":"License Terms"
+
+      "no_updates": {
+        "header": "Software Update",
+        "message": "You're all set! Version {version} is the latest available.",
+        "btn": "Got it"
       },
-      "messages": {
-          "update_found": "A new version {version} is available!",
-          "no_updates": "You're all set! Version {version} is the latest.",
-          "update_error": "Unable to check for updates:\n{error}",
-          "invalid_path": "The file path is invalid: {path}",
-          "process_complete": "PDF successfully created at {location}"
+
+      "empty_file_list": {
+        "header": "No files!",
+        "message": "The file list is already empty.",
+        "btn": "OK"
+      }
+    },
+
+    "success": {
+      "__title__": "Success",
+
+      "update_success": {
+        "header": "Software Updated",
+        "message": "Version {version} has been installed successfully.",
+        "btn": "Great!"
+      }
+    },
+
+    "warning": {
+      "__title__": "Warning!",
+
+      "no_file_to_merge": {
+        "header": "No files to merge!",
+        "message": "Please add files to the list before proceeding with the merge.",
+        "btn": "OK"
       },
-      "btns":{
-        "license_close":"I Agree"
+
+      "wrong_page_format": {
+        "header": "Wrong page format!",
+        "message": "Please use the correct format (e.g., 1-5, 8, 10-12).",
+        "btn": "Got it"
+      },
+
+      "process_in_progress": {
+        "header": "Process in Progress!",
+        "message": "A background task is currently running.\n\nThe application will close automatically once the task is finished. Please wait.",
+        "btn": "Wait"
+      },
+
+      "file_not_found": {
+        "header": "Not Found",
+        "message": "File {file_name} not found",
+        "btn": "Got it"
+      }
+    },
+
+    "error": {
+      "__title__": "File Error",
+
+      "file_read_error": {
+        "header": "Read Failure",
+        "message": "File {file_name} read error",
+        "btn": "Got it"
+      },
+
+      "page_validation_error": {
+        "header": "Page validation error",
+        "message": "Fatal error, error description: {error}",
+        "btn": "Close"
+      },
+
+      "page_extraction_error": {
+        "header": "Page extraction error",
+        "message": "Error during page extraction, error description: {error}",
+        "btn": "Close"
+      },
+
+      "update_error": {
+        "header": "Update Error",
+        "message": "Unable to check for updates:\n{error}",
+        "btn": "Close"
       }
     }
+  },
+
+  "status": {
+    "merge_done": "Merged PDF saved to:\n{path}",
+    "extract_done": "Extraction completed successfully!\nSaved to:\n{path}",
+    "error": "Error: {error}",
+    "ready": "Ready"
   }
 }
