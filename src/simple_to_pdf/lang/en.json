@@ -162,9 +162,31 @@
   },
 
   "status": {
-    "merge_done": "Merged PDF saved to:\n{path}",
-    "extract_done": "Extraction completed successfully!\nSaved to:\n{path}",
-    "error": "Error: {error}",
-    "ready": "Ready"
+    "merge": {
+      "done": "Merged: {success}; Failed: {failed}\nMerged PDF saved to:\n{path}",
+      "error": "Error: Could not merge file: \n{path}\n\nReason: {error}"
+    },
+    "extract": {
+      "done": "Extraction completed successfully!\nSaved to:\n{path}",
+      "error": "Error: Could not extract page number: \n{number}\n\nReason: {error}"
+    },
+    "convert": {
+      "done": "Converted: {success}; Failed: {failed}",
+      "error": "Error: Could not convert file \n{path}\n\nReason: {error}"
+    },
+    "common": {
+      "ready": "Ready"
+    },
+    "processing_page": "Processing page ({current}/{total})..."
+ },
+ "progress": {
+    "stage": {
+      "processing": "Processing",
+      "extracting":"Extracting",
+      "converting": "Converting",
+      "merging": "Merging"
+    },
+    "indeterminate": "{stage} documents...",
+    "detailed": "{stage}: {filename} ({current}/{total}) — {percent:.1f}%"
   }
 }

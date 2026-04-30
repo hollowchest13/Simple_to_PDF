@@ -12,7 +12,7 @@ class PageSelectionDialog(BaseDialog):
     def __init__(self, parent):
         # Pass localization section and window title key to BaseDialog
         super().__init__(
-            parent, loc_section="ui.page_selection_dialog", title_key="window_title"
+            parent, loc_section="dialogs.page_selection_dialog", title_key="window_title"
         )
 
         self.geometry("400x380")

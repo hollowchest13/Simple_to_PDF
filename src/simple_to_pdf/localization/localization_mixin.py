@@ -77,10 +77,6 @@ class LocalizationMixin:
         for i, part in enumerate(parts):
             if isinstance(data, dict) and part in data:
                 data = data[part]
-            else:
-                # Якщо шлях обірвався — повертаємо сам ключ як fallback
-                # (або останню частину ключа, залежно від твого бажання)
-                return key
 
         # 3. Якщо результат — рядок, форматуємо його
         if isinstance(data, str):
@@ -111,21 +107,21 @@ class LocalizationMixin:
             try:
                 new_text = self.get_text(key, section=section)
 
-                # Attempt 1: Standard text (buttons, labels)
+                # Standard text (buttons, labels)
                 try:
                     widget.configure(text=new_text)
                     continue  # If it worked, moving on to the next widget.
                 except Exception:
                     pass
 
-                # Attempt 2: Container header (Your CTkListbox / ScrollableFrame)
+                # Container header (Your CTkListbox / ScrollableFrame)
                 try:
                     widget.configure(label_text=new_text)
                     continue
                 except Exception:
                     pass
 
-                # Attempt 3: Input Hint (Entry / Textbox)
+                # Input Hint (Entry / Textbox)
                 try:
                     widget.configure(placeholder_text=new_text)
                 except Exception:

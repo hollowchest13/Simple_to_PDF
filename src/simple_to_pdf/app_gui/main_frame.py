@@ -1,5 +1,4 @@
 import logging
-from re import S
 import tkinter as tk
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
@@ -180,7 +179,7 @@ class MainFrame(BaseFrame):
         sel_files = self.filebox.get_selected_paths()
 
         if not all_files:
-            self.notifier.show_msg(scenario_key="info.empty_file_list")
+            self.notifier.info(scenario_key="empty_file_list")
             return
         elif not sel_files:
             msg = CTkMessagebox(

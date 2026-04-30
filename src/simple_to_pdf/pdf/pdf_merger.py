@@ -1,12 +1,8 @@
 import io
 import logging
 from pathlib import Path
-
 from pypdf import PdfReader, PdfWriter
-
 from simple_to_pdf.converters import ConverterFactory
-from simple_to_pdf.converters.base_converter import BaseConverter
-from simple_to_pdf.converters.models import ConversionResult
 
 logger = logging.getLogger(__name__)
 
@@ -14,18 +10,14 @@ logger = logging.getLogger(__name__)
 class PdfMerger:
     def __init__(self):
         factory = ConverterFactory()
-        self.converter: BaseConverter = factory.get_converter()
+        self.converter = factory.get_converter()
 
     def _get_pdfs_bytes(
         self, files: list[tuple[int, str]], callback=None
     ) -> list[tuple[int, bytes]]:
-        """Step 1: Convert files to PDF bytes."""
-
-        # Massege to GUI, about starting (progress bar is at 0, but text has changed)
-        # stage = "Processing"
-        pdf_bytes: list[tuple[int, bytes]] = []
-        to_conversion: list[tuple[int, Path]] = []
-        total_inputs: int = len(files)
+        """Prepares PDF bytes, converting non-PDF files if necessary."""
+        pdf_bytes = []
+        to_conversion = []
 
         for idx, path_str in files:
             path = Path(path_str)
@@ -35,119 +27,119 @@ class PdfMerger:
                 pdf_bytes.append((idx, path.read_bytes()))
             elif self.converter.needs_conversion(file_path=path):
                 to_conversion.append((idx, path))
-        total_to_conversion: int = len(to_conversion)
 
-        if not total_to_conversion:
-            return pdf_bytes
-        stage: str = "Conversion"
-        if callback:
-            start_status_message = f"Starting conversion of {total_to_conversion} files from {total_inputs} added to PDF..."
+        if callback and to_conversion:
+            # Start indeterminate progress for conversion stage
+
             callback(
-                stage=stage,
-                progress_bar_mode="indeterminate",
-                current=0,
-                total=total_inputs,
-                status_message=start_status_message,
+                "progress",
+                **{
+                    "stage": "converting",
+                    "mode": "indeterminate",
+                    "total": len(files),
+                },
             )
-        conversion_res: ConversionResult = self.converter.convert_to_pdf(
-            files=to_conversion
-        )
-        total_success = len(conversion_res.successful)
-        status_message = f"✅ Converted {total_success} of {total_to_conversion} files."
 
-        if len(conversion_res.failed) > 0:
-            failed_objs = [p for _, p in conversion_res.failed]
+            # Bulk conversion
+            conversion_res = self.converter.convert_to_pdf(files=to_conversion)
 
-            if failed_objs:
-                # Format each line: extract only .name if it's a Path object. Add a hasattr check in case bytes are passed again
-                formatted_failed = [
-                    f"- ❌ Conversion failed: {obj.name if hasattr(obj, 'name') else 'Unknown File'}"
-                    for obj in failed_objs
-                ]
-
-                # Add header and file list
-                status_message += "\n" + "\n".join(formatted_failed)
-
-        if callback:
             callback(
-                stage=stage,
-                progress_bar_mode="determinate",
-                current=100,
-                total=total_inputs,
-                status_message=status_message,
+                "progress",
+                **{
+                    "stage": "converting",
+                    "mode": "determinate",
+                    "current": len(to_conversion),
+                    "total": len(to_conversion),
+                },
             )
-        pdf_bytes.extend(conversion_res.successful)
-        pdf_bytes.sort(key=lambda x: x[0])
+            pdf_bytes.extend(conversion_res.successful)
+            pdf_bytes.sort(key=lambda x: x[0])
+            callback(
+                "progress",
+                **{
+                    "stage": "converting",
+                    "mode": "determinate",
+                    "current": len(to_conversion),
+                    "total": len(to_conversion),
+                },
+            )
+            callback(
+                "status",
+                **{
+                    "key": "convert.done",
+                    "status": "info" if len(conversion_res.failed) == 0 else "warning",
+                    "success": len(conversion_res.successful),
+                    "failed": len(conversion_res.failed),
+                },
+            )
+
         return pdf_bytes
 
     def merge_to_pdf(
         self, *, files: list[tuple[int, str]], output_path: str | Path, callback=None
     ) -> Path:
         """Merges multiple files into a single PDF."""
-
+        # Sort and create lookup for filenames
         files_sorted = sorted(files, key=lambda x: x[0])
-        names_lookup = {file_idx: file_name for file_idx, file_name in files_sorted}
+        names_lookup = {idx: name for idx, name in files_sorted}
 
-        # 1. Convertation
-        pdfs_sorted: list[tuple[int, bytes]] = self._get_pdfs_bytes(
-            files=files, callback=callback
-        )
+        # Step 1: Get PDF bytes (includes potential conversion)
+        pdfs_sorted = self._get_pdfs_bytes(files_sorted, callback=callback)
 
+        # Step 2: Merge
         writer = PdfWriter()
         total = len(pdfs_sorted)
-        stage_name = "Merging"
-        if callback:
-            callback(
-                stage=stage_name,
-                progress_bar_mode="determinate",
-                current=0,
-                total=total,
-                status_message=f"Starting merging of {total} files to PDF...",
-            )
+        failed = 0
 
-        # 2. Base cycle of merging
-        failed: int = 0
-        for i, (idx, pdf_bytes) in enumerate(pdfs_sorted, 1):
-            current_filename = Path(names_lookup.get(idx, f"File {idx}")).name
+        for i, (idx, pdf_data) in enumerate(pdfs_sorted, 1):
+            full_path = Path(names_lookup.get(idx, f"File {idx}")).resolve()
+            filename = full_path.name
             try:
-                reader = PdfReader(io.BytesIO(pdf_bytes))
-                for page in reader.pages:
-                    writer.add_page(page)
+                reader = PdfReader(io.BytesIO(pdf_data))
+                writer.append(reader)
 
-                # If GUI gives us a function to update progress, we call it
                 if callback:
-                    # We pass current, total and filename
-                    # (Since there's no filename here, we can just use index or "File X")
                     callback(
-                        stage=stage_name,
-                        progress_bar_mode="determinate",
-                        current=i,
-                        total=total,
+                        event_type="progress",
+                        **{
+                            "stage": "merging",
+                            "mode": "determinate",
+                            "current": i,
+                            "total": total,
+                            "filename": filename,
+                        },
                     )
             except Exception as e:
                 failed += 1
-                logger.error(
-                    f"⚠️ Failed to read PDF with name {current_filename}: ({e})",
-                    exc_info=True,
-                )
+                logger.error(f"Failed to process {filename}: {e}", exc_info=True)
+                params = {
+                    "key": "merge.error",
+                    "status": "error",
+                    "path": str(full_path),
+                }
+                if callback:
+                    callback(event_type="status", **params)
 
         if len(writer.pages) == 0:
-            raise RuntimeError(
-                "Failed to add any pages. Input files are corrupted or empty."
-            )
+            raise RuntimeError("No pages were added. Check input files.")
+
+        # Save result
+        output_file = Path(output_path).resolve()
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        with output_file.open("wb") as f:
+            writer.write(f)
+
+        success = total - failed
 
         if callback:
             callback(
-                stage=stage_name,
-                progress_bar_mode="determinate",
-                current=total,
-                total=total,
-                status_message=f"Merged: {total - failed}; Failed: {failed}",
+                event_type="status",
+                **{
+                    "key": "merge.done",
+                    "status": "info" if failed == 0 else "warning",
+                    "path": str(output_file),
+                    "success": success,
+                    "failed": failed,
+                },
             )
-        # 3. Saving the result
-        output_file = Path(output_path).resolve()
-        output_file.parent.mkdir(parents=True, exist_ok=True)
-
-        with output_file.open("wb") as f:
-            writer.write(f)
         return output_file

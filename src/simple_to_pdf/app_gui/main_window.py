@@ -7,7 +7,6 @@ import webbrowser
 from datetime import datetime
 from pathlib import Path
 from tkinter import filedialog
-from CTkMessagebox import CTkMessagebox
 from typing import Callable
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.app_gui.gui_callback import GUICallback
@@ -25,7 +24,6 @@ from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.app_dialog import (
     AboutDialog,
     UpdateDialog,
-    InfoDialog,
     PageSelectionDialog,
 )
 from simple_to_pdf.core import config
@@ -60,7 +58,10 @@ class PDFMergerGUI(BaseWindow):
 
     def init_panels(self, callback: dict[str, Callable]) -> None:
         self.main_panel: MainFrame = MainFrame(
-            master=self.root_container, merger=self.merger, notifier=self.notifier,callbacks=callback
+            master=self.root_container,
+            merger=self.merger,
+            notifier=self.notifier,
+            callbacks=callback,
         )
         self.btns_panel: ListControlsFrame = ListControlsFrame(
             self.root_container, callbacks=callback
@@ -176,8 +177,8 @@ class PDFMergerGUI(BaseWindow):
 
         # Handle errors
         if result.error_message:
-            self.notifier.show_msg(
-                scenario_key="error.update_error",
+            self.notifier.error(
+                scenario_key="update_error",
             )
             return
 
@@ -188,7 +189,7 @@ class PDFMergerGUI(BaseWindow):
         # If no update found
         else:
             current_v = self.version_controller._get_current_version()
-            self.notifier.show_msg(scenario_key="info.no_updates", version=current_v)
+            self.notifier.info(scenario_key="no_updates", version=current_v)
 
     def show_about(self):
         """Gathers data and displays the About Dialog."""
@@ -210,7 +211,7 @@ class PDFMergerGUI(BaseWindow):
         # Check if file exists
         if not license_path.exists():
             logger.warning(f"⚠️ License file not found at path: {license_path}")
-            self.notifier.show_msg(scenario_key="warning.file_not_found")
+            self.notifier.warning(scenario_key="file_not_found")
             return
         try:
             # Reading file (UTF-8 is essential for cross-platform compatibility)
@@ -218,9 +219,9 @@ class PDFMergerGUI(BaseWindow):
             formatted_text = text.format(year=cur_year)
 
             # Call the new class instead of the old method
-            self.notifier.show_msg(
+            self.notifier.info(
                 text=formatted_text,
-                scenario_key="info.license_info",
+                scenario_key="license_info",
                 font_size=14,
                 size="750x600",
                 year=cur_year,
@@ -230,8 +231,8 @@ class PDFMergerGUI(BaseWindow):
 
         except Exception as e:
             logger.error(f"❌ Error reading license file: {e}")
-            self.notifier.show_msg(
-                scenario_key="error.file_read_error",
+            self.notifier.error(
+                scenario_key="file_read_error",
                 file_name=license_path,
             )
 
@@ -244,8 +245,8 @@ class PDFMergerGUI(BaseWindow):
         # Preparing data (quick operation, doing in main thread)
         files = [[i, path] for i, path in enumerate(self.main_panel.filebox.all_rows)]
         if not files:
-            self.notifier.show_msg(
-                scenario_key="warning.no_file_to_merge",
+            self.notifier.warning(
+                scenario_key="no_file_to_merge",
             )
             return
 
@@ -272,16 +273,10 @@ class PDFMergerGUI(BaseWindow):
                 output_path=output_path,
                 callback=self.callback.safe_callback,  # Use the wrapper
             )
-            self.main_panel.after(
-                0,
-                lambda: self.callback.show_status_message(
-                    f"Merged PDF saved to:\n{output_path}"
-                ),
-            )
+
         except Exception as e:
             err_msg = f"❌ Error: Could not merge files: \n{e}"
             logger.error(err_msg, exc_info=True)
-            self.after(0, lambda: self.callback.show_status_message(err_msg))
             self.main_panel.progress_bar_reset()
 
     def prompt_pages_to_remove(self):
@@ -306,8 +301,8 @@ class PDFMergerGUI(BaseWindow):
         pages = get_pages(raw=raw_input.strip())
 
         if pages is None:
-            self.notifier.show_msg(
-                scenario_key="warning.wrong_page_format",
+            self.notifier.warning(
+                scenario_key="wrong_page_format",
             )
             return
 
@@ -317,14 +312,14 @@ class PDFMergerGUI(BaseWindow):
                 input_path=Path(input_path), pages_to_extract=pages
             )
         except ValueError as e:
-            self.notifier.show_msg(
-                scenario_key="error.page_validation_error",
+            self.notifier.error(
+                scenario_key="page_validation_error",
                 error=e,
             )
             return
         except Exception as e:
-            self.notifier.show_msg(
-                scenario_key="error.file_read_error",
+            self.notifier.error(
+                scenario_key="file_read_error",
                 file_name=input_path,
             )
             return
@@ -355,8 +350,8 @@ class PDFMergerGUI(BaseWindow):
                 output_path=output_path,
                 callback=self.callback.safe_callback,
             )
-            self.callback.show_status_message(
-                f"✅ Extraction completed successfully! Extracted pages saved to:\n{output_path}"
+            self.callback.set_status(
+                key="extract.done", status="success", path=output_path
             )
 
         except Exception as e:
@@ -364,20 +359,20 @@ class PDFMergerGUI(BaseWindow):
             if isinstance(e, ValueError):
                 self.after(
                     0,
-                    lambda: self.notifier.show_msg(
-                        scenario_key="error.page_extraction_error",
+                    lambda: self.notifier.error(
+                        scenario_key="page_extraction_error",
                         file_name=input_path,
                     ),
                 )
             else:
-                self.callback.show_status_message(status_message=error_msg)
+                self.callback.set_status(key="extract.error", status="error", error=e)
                 logger.error(error_msg, exc_info=True)
                 self.after(0, lambda: self.main_panel.progress_bar_reset())
 
     def _on_closing(self):
         if self.thread_running:
-            self.notifier.show_msg(
-                scenario_key="warning.process_in_progress",
+            self.notifier.warning(
+                scenario_key="process_in_progress",
                 with_icon=True,
             )
             self._wait_for_thread_finish()

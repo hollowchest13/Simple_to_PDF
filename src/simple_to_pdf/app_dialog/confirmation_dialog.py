@@ -1,8 +1,10 @@
 import logging
 from typing import Any, Optional
-
+from pathlib import Path
 from simple_to_pdf.widgets import PrimaryButton, BaseLabel
 from .base_dialog import BaseDialog
+from customtkinter import CTkImage
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +18,7 @@ class ConfirmDialog(BaseDialog):
     def __init__(
         self,
         parent: Any,
-        scenario_key: str = "warning.confirm",
+        scenario_key: str,
         with_icon: bool = True,
         size: str = "400x200",
         **kwargs,
@@ -28,7 +30,7 @@ class ConfirmDialog(BaseDialog):
         super().__init__(
             parent,
             title_key=f"{group}.__title__",
-            loc_section="ui.notifications",
+            loc_section="dialogs",
         )
 
         self.scenario = scenario_key
@@ -36,9 +38,6 @@ class ConfirmDialog(BaseDialog):
 
         # Get localized message
         self.message = self.get_text(f"{scenario_key}.message", **kwargs)
-
-        # Initialize and load icon
-        self.icons = self._init_icons()
         self.current_icon = self._load_icon(with_icon=with_icon, window_type=group)
 
         if size:
@@ -52,8 +51,6 @@ class ConfirmDialog(BaseDialog):
 
         # Block execution until window is closed
         self.wait_window()
-
-    # ---------------- UI SETUP ---------------- #
 
     def _setup_dialog_ui(self):
         """Creates dialog layout (header, message, buttons)."""
@@ -83,8 +80,6 @@ class ConfirmDialog(BaseDialog):
         )
         self.ui["btn_no"].pack(side="right", padx=10, pady=15)
 
-    # ---------------- LOCALIZATION ---------------- #
-
     def refresh_localization(self, **kwargs):
         """Updates all UI texts based on current language."""
         super().refresh_localization()
@@ -106,8 +101,6 @@ class ConfirmDialog(BaseDialog):
         if "btn_no" in self.ui:
             self.ui["btn_no"].configure(text=self.get_text(f"{self.scenario}.btn_no"))
 
-    # ---------------- ACTIONS ---------------- #
-
     def _on_yes(self):
         """Handle Yes click."""
         self.result = True
@@ -124,31 +117,12 @@ class ConfirmDialog(BaseDialog):
             self.remove_from_observers()
         self.destroy()
 
-    # ---------------- ICONS ---------------- #
-
-    def _init_icons(self):
-        """Initialize icon paths."""
-        from pathlib import Path
-        from simple_to_pdf.core.config import BASE_PATH
-
-        base_path = Path(BASE_PATH) / "src" / "simple_to_pdf" / "icons"
-        return {
-            "info": str(base_path / "info.png"),
-            "error": str(base_path / "error.png"),
-            "success": str(base_path / "success.png"),
-            "warning": str(base_path / "warning.png"),
-        }
-
     def _load_icon(self, *, with_icon: bool, window_type: str):
         """Load and scale icon image."""
-        from pathlib import Path
-        from PIL import Image
-        from customtkinter import CTkImage
 
         if not with_icon:
             return None
-
-        raw_path = self.icons.get(window_type)
+        raw_path = self.icons.get(window_type) or self.icons.get("confirmation")
         if not raw_path:
             return None
 

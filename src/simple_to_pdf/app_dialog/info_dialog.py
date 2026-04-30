@@ -2,10 +2,8 @@ import logging
 from pathlib import Path
 from PIL import Image
 from customtkinter import CTkImage
-from typing import Any, Dict, Optional
-
+from typing import Any, Optional
 from simple_to_pdf.widgets.base_widgets import BaseTextBox
-from simple_to_pdf.core.config import BASE_PATH
 from .base_dialog import BaseDialog
 from simple_to_pdf.widgets import PrimaryButton, BaseLabel
 
@@ -45,7 +43,6 @@ class InfoDialog(BaseDialog):
         self.raw_text = msg
         self.footer_text = self.get_text(f"{scenario_key}.footer", **kwargs)
 
-        self.icons = self._init_icons()
         # Automatically use scenario_key as icon_type if not explicitly provided
         self.current_icon = self._load_icon(with_icon=with_icon, window_type=group)
 
@@ -55,7 +52,6 @@ class InfoDialog(BaseDialog):
         self.with_footer = with_footer
         self._setup_dialog_ui(text_font, font_size)
         self.refresh_localization(**kwargs)
-        print(group)
 
     def _load_icon(
         self, *, with_icon: bool = False, window_type: str
@@ -69,7 +65,6 @@ class InfoDialog(BaseDialog):
             return None
 
         icon_path = Path(raw_path)
-        print(icon_path)
         if icon_path.is_file():
             try:
                 return CTkImage(
@@ -78,18 +73,6 @@ class InfoDialog(BaseDialog):
             except (IOError, SyntaxError) as e:
                 logger.error(f"Failed to load icon for '{window_type}' window: {e}")
         return None
-
-    def _init_icons(self) -> Dict[str, str]:
-        """Maps icon types to their respective file paths."""
-
-        base_path = Path(BASE_PATH) / "src" / "simple_to_pdf" / "icons"
-        print(base_path)
-        return {
-            "info": str(base_path / "info.png"),
-            "error": str(base_path / "error.png"),
-            "success": str(base_path / "success.png"),
-            "warning": str(base_path / "warning.png"),
-        }
 
     def _setup_dialog_ui(self, font_name: str, font_size: int) -> None:
         """Constructs the UI layout and registers widgets for the localization engine."""

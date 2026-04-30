@@ -15,7 +15,7 @@ class UpdateDialog(BaseDialog):
 
     def __init__(self, parent, new_version: str, changelog: str):
         # Initialize BaseDialog with specific translation section and window title key
-        super().__init__(parent, loc_section="ui.update_dialog")
+        super().__init__(parent, loc_section="dialogs.update_dialog")
 
         self.new_version = new_version
         self.changelog = changelog

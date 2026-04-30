@@ -1,8 +1,11 @@
 import customtkinter as ctk
+from pathlib import Path
 from simple_to_pdf.core.config import ThemeKeys
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
 from simple_to_pdf.widgets import BaseFrame
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
+from simple_to_pdf.core.config import BASE_PATH
+from typing import Dict
 
 
 class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
@@ -24,6 +27,7 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
 
         # Initialize UI structure
         self._init_layout()
+        self.icons = self._init_icons()
         self.configure(fg_color=self.get_color(ThemeKeys.BG_MAIN))
 
         # Center the window relative to the parent
@@ -64,3 +68,16 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         if hasattr(self, "_title_key"):
             translated_title = self.get_text(self._title_key)
             self.title(translated_title)
+
+    def _init_icons(self) -> Dict[str, str]:
+        """Maps icon types to their respective file paths."""
+
+        base_path = Path(BASE_PATH) / "src" / "simple_to_pdf" / "icons"
+
+        return {
+            "info": str(base_path / "info.png"),
+            "error": str(base_path / "error.png"),
+            "success": str(base_path / "success.png"),
+            "warning": str(base_path / "warning.png"),
+            "confirmation": str(base_path / "confirmation.png"),
+        }
