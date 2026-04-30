@@ -2,7 +2,7 @@ import logging
 import os
 import subprocess
 import sys
-import tkinter as tk
+import customtkinter as ctk
 import webbrowser
 from datetime import datetime
 from pathlib import Path
@@ -81,9 +81,9 @@ class PDFMergerGUI(BaseWindow):
         """Enable or disable the entire UI."""
 
         if active:
-            btns_state = tk.NORMAL
+            btns_state = ctk.NORMAL
         else:
-            btns_state = tk.DISABLED
+            btns_state = ctk.DISABLED
 
         # Disable all buttons and menu items
         change_state(widgets_dict=self.btns_panel.ui, state=btns_state)

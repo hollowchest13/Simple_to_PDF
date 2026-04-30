@@ -2,6 +2,7 @@ import functools
 import logging
 import threading
 import tkinter as tk
+from typing import Literal
 import customtkinter as ctk
 
 from simple_to_pdf.widgets.base_widgets import BaseTextBox
@@ -41,14 +42,19 @@ def reselect_items(*, all_items: list, selected_values: list, listbox: tk.Listbo
             listbox.selection_set(idx)
 
 
-def change_state(*, widgets_dict: dict[str, ctk.CTkBaseClass], state: str) -> None:
+def change_state(
+    *, widgets_dict: dict[str, ctk.CTkBaseClass], state: Literal["normal", "disabled"]
+) -> None:
     """Universal state switcher for a group of widgets."""
 
-    for widget in widgets_dict.values():
+    for name, widget in widgets_dict.items():
         try:
-            if "state" in widget.keys():
-                widget["state"] = state
-        except tk.TclError:
+            widget.configure(state=state)
+        except (tk.TclError, ValueError, KeyError, AttributeError) as e:
+            logger.debug(
+                f"Could not set '{state}' for widget '{name}'"
+                f"({type(widget).__name__}): {e}"
+            )
             # Skip if widget doesn't have a state parameter (e.g., Frame)
             pass
 
