@@ -88,8 +88,6 @@ class PdfMerger:
 
         # Step 2: Merge
         writer = PdfWriter()
-        total = len(pdfs_sorted)
-        failed = 0
 
         for i, (idx, pdf_data) in enumerate(pdfs_sorted, 1):
             full_path = Path(names_lookup.get(idx, f"File {idx}")).resolve()
@@ -100,25 +98,25 @@ class PdfMerger:
 
                 if callback:
                     callback(
-                        event_type="progress",
+                        "progress",
                         **{
                             "stage": "merging",
                             "mode": "determinate",
                             "current": i,
-                            "total": total,
                             "filename": filename,
                         },
                     )
             except Exception as e:
-                failed += 1
                 logger.error(f"Failed to process {filename}: {e}", exc_info=True)
-                params = {
-                    "key": "merge.error",
-                    "status": "error",
-                    "path": str(full_path),
-                }
                 if callback:
-                    callback(event_type="status", **params)
+                    callback(
+                        "status",
+                        **{
+                            "key": "merge.error",
+                            "status": "error",
+                            "path": str(full_path),
+                        },
+                    )
 
         if len(writer.pages) == 0:
             raise RuntimeError("No pages were added. Check input files.")
@@ -129,17 +127,9 @@ class PdfMerger:
         with output_file.open("wb") as f:
             writer.write(f)
 
-        success = total - failed
-
         if callback:
             callback(
-                event_type="status",
-                **{
-                    "key": "merge.done",
-                    "status": "info" if failed == 0 else "warning",
-                    "path": str(output_file),
-                    "success": success,
-                    "failed": failed,
-                },
+                "status",
+                **{"key": "merge.done", "status": "info", "path": str(output_file)},
             )
         return output_file

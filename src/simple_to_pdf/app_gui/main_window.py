@@ -18,7 +18,7 @@ from simple_to_pdf.cli.logger import get_log_dir
 from simple_to_pdf.core.version import VersionController
 from simple_to_pdf.pdf import PageExtractor, PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
-from simple_to_pdf.utils.logic import get_pages
+from simple_to_pdf.utils.logic import get_selected_pages
 from simple_to_pdf.utils.ui_tools import change_state, ui_locker
 from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.app_dialog import (
@@ -298,14 +298,13 @@ class PDFMergerGUI(BaseWindow):
 
     def on_confirm(self, *, raw_input: str, input_path) -> None:
         # Parse string input into a list of page indices
-        pages = get_pages(raw=raw_input.strip())
+        pages = get_selected_pages(raw=raw_input.strip())
 
         if pages is None:
             self.notifier.warning(
                 scenario_key="wrong_page_format",
             )
             return
-
         # Validate page numbers against the actual PDF file
         try:
             self.page_extractor.validate_pages(
@@ -324,11 +323,15 @@ class PDFMergerGUI(BaseWindow):
             )
             return
 
+        clean_tag = raw_input.strip()
+        short_tag = clean_tag[:30] + "..." if len(clean_tag) > 30 else clean_tag
+        suggested_name = f"pages_{short_tag}_from_{Path(input_path).stem}.pdf"
+
         # Ask user for the output destination
         output_path = filedialog.asksaveasfilename(
             defaultextension=".pdf",
             filetypes=[("PDF files", "*.pdf")],
-            initialfile=f"extracted_{Path(input_path).stem}.pdf",
+            initialfile=suggested_name,
             title="Save PDF",
         )
 
@@ -350,10 +353,6 @@ class PDFMergerGUI(BaseWindow):
                 output_path=output_path,
                 callback=self.callback.safe_callback,
             )
-            self.callback.set_status(
-                key="extract.done", status="success", path=output_path
-            )
-
         except Exception as e:
             error_msg = f"❌ Error during page extraction: {e}"
             if isinstance(e, ValueError):

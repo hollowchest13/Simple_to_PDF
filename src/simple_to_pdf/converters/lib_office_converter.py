@@ -13,7 +13,7 @@ from simple_to_pdf.converters.models import ConversionResult
 logger = logging.getLogger(__name__)
 
 
-class LibreOfficeConverter(ImageConverter,LibreSetupMixin):
+class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
     SUPPORTED_FORMATS = {
         "table": {".xlsx", ".xlsm", ".xltx", ".xltm", ".xls", ".xlsb", ".ods", ".csv"},
         "document": {".doc", ".docx", ".odt", ".rtf", ".txt"},
@@ -26,9 +26,7 @@ class LibreOfficeConverter(ImageConverter,LibreSetupMixin):
         self.soffice_path = soffice_path
         self.SUPPORTED_FORMATS = self.get_supported_formats()
 
-    def convert_to_pdf(
-        self, *, files: list[tuple[int, Path]]
-    ) -> ConversionResult:
+    def convert_to_pdf(self, *, files: list[tuple[int, Path]]) -> ConversionResult:
         docs: list[tuple[int, Path]] = []
         imgs: list[tuple[int, Path]] = []
         final_result: ConversionResult = ConversionResult()
@@ -171,7 +169,6 @@ class LibreOfficeConverter(ImageConverter,LibreSetupMixin):
                 # If it's .xlsx or any other file - just adding it back
                 updated.append(p)
         return updated
-
 
     def _run_libreoffice_command(
         self, *, input_paths: list[str], out_dir: Path

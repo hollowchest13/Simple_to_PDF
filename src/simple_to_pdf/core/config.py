@@ -96,3 +96,14 @@ DEFAULT_COLORS = {
     ThemeKeys.ERROR: "#EF4444",  # Semantic red for failed processes or alerts
     ThemeKeys.PROGRESS_COLOR: "#3B82F6",
 }
+
+PAGE_FORMATS = {
+    "Original Size": None,
+    "A4 (210 x 297 mm)": (595, 842),
+    "A3 (297 x 420 mm)": (842, 1191),
+    "A5 (148 x 210 mm)": (420, 595),
+    "US Letter": (612, 792),
+    "US Legal": (612, 1008),
+}
+
+DEFAULT_FORMAT = "A4 (210 x 297 mm)"
