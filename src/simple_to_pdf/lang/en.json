@@ -163,12 +163,12 @@
 
   "status": {
     "merge": {
-      "done": "Merged PDF saved to:\n{path}",
+      "done": "Merged: {success}; Failed: {failed}.\nMerged PDF saved to:\n{path}",
       "error": "Error: Could not merge file:\n{path}\n\nReason: {error}"
     },
     "extract": {
       "done": "Page extracting completed.\nExtracted pages saved to:\n{path}",
-      "error": "Error: Could not extract page number: \n{page_number}\n\nReason: {error}"
+      "error": "Error: Could not extract page number:\n{page_number}\n\nReason: {error}"
     },
     "convert": {
       "done": "Converted: {success}; Failed: {failed}",
