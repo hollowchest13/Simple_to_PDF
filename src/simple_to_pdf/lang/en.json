@@ -60,17 +60,21 @@
       "hint_label": "Use commas for single pages (1, 3)\nand dashes for ranges (5-10).",
       "page_entry_placeholder": "e.g. 1, 2, 5-8",
       "btn_ok": "Confirm Extraction"
-    },
-
-    "confirm_delete": {
-      "header": "Delete file?",
-      "message": "Are you sure you want to delete this file?",
-      "btn_yes": "Yes",
-      "btn_no": "No"
     }
   },
 
   "notifications": {
+    "confirmation":{
+      "__title__": "Confirmation",
+
+      "confirm_delete": {
+        "header": "Delete all files?",
+        "message": "No files are currently selected. Would you like to clear the entire list instead?",
+        "btn_yes": "Yes",
+        "btn_no": "No"
+      }
+    },
+
     "info": {
       "__title__": "Information",
 

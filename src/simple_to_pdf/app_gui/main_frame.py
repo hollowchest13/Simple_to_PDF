@@ -10,6 +10,7 @@ from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.utils.ui_tools import (
     clear_text_widget,
 )
+from simple_to_pdf.app_dialog import ConfirmDialog
 from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.widgets import (
     BaseFrame,
@@ -135,8 +136,6 @@ class MainFrame(BaseFrame):
         bar.pack(pady=8, fill="x")
         return bar, label
 
-    # --- Business Logic ---
-
     def clear_status_text(self) -> None:
         """Clears the status textbox content."""
         content = self.status_text.get("1.0", "end-1c")
@@ -182,15 +181,11 @@ class MainFrame(BaseFrame):
             self.notifier.info(scenario_key="empty_file_list")
             return
         elif not sel_files:
-            msg = CTkMessagebox(
-                master=self.winfo_toplevel(),
-                title="Confirm Action",
-                message="No files selected. Do you want to remove all files?",
-                icon="question",
-                option_1="No",
-                option_2="Yes",
+            confirmed = ConfirmDialog.ask(
+                parent=self.master, scenario_key="confirmation.confirm_delete"
             )
-            if msg.get() == "Yes":
+
+            if confirmed == True:
                 self.filebox.clear(callback=self.reset_progress_widgets)
                 return
 

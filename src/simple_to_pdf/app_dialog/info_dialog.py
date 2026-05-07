@@ -1,7 +1,4 @@
 import logging
-from pathlib import Path
-from PIL import Image
-from customtkinter import CTkImage
 from typing import Any, Optional
 from simple_to_pdf.widgets.base_widgets import BaseTextBox
 from .base_dialog import BaseDialog
@@ -52,27 +49,6 @@ class InfoDialog(BaseDialog):
         self.with_footer = with_footer
         self._setup_dialog_ui(text_font, font_size)
         self.refresh_localization(**kwargs)
-
-    def _load_icon(
-        self, *, with_icon: bool = False, window_type: str
-    ) -> Optional[CTkImage]:
-        """Loads and scales the icon for the header section."""
-        if not with_icon:
-            return None
-
-        raw_path = self.icons.get(window_type)
-        if not raw_path:
-            return None
-
-        icon_path = Path(raw_path)
-        if icon_path.is_file():
-            try:
-                return CTkImage(
-                    light_image=Image.open(icon_path).convert("RGBA"), size=(60, 60)
-                )
-            except (IOError, SyntaxError) as e:
-                logger.error(f"Failed to load icon for '{window_type}' window: {e}")
-        return None
 
     def _setup_dialog_ui(self, font_name: str, font_size: int) -> None:
         """Constructs the UI layout and registers widgets for the localization engine."""

@@ -1,12 +1,11 @@
 import logging
 from typing import Any, Optional
-from pathlib import Path
 from simple_to_pdf.widgets import PrimaryButton, BaseLabel
 from .base_dialog import BaseDialog
-from customtkinter import CTkImage
-from PIL import Image
+
 
 logger = logging.getLogger(__name__)
+# TODO Попрацювати із шрифтами повідомлення для цього вікна
 
 
 class ConfirmDialog(BaseDialog):
@@ -20,25 +19,22 @@ class ConfirmDialog(BaseDialog):
         parent: Any,
         scenario_key: str,
         with_icon: bool = True,
-        size: str = "400x200",
+        size: str = "400x400",
         **kwargs,
     ):
         # Determine group (info, warning, error, etc.)
-        group = scenario_key.split(".")[0]
+        self.group = scenario_key.split(".")[0]
 
         # Initialize base dialog with localized title
         super().__init__(
             parent,
-            title_key=f"{group}.__title__",
-            loc_section="dialogs",
+            title_key=f"{self.group}.__title__",
+            loc_section="notifications",
         )
 
         self.scenario = scenario_key
         self.result: Optional[bool] = None
-
-        # Get localized message
-        self.message = self.get_text(f"{scenario_key}.message", **kwargs)
-        self.current_icon = self._load_icon(with_icon=with_icon, window_type=group)
+        self.current_icon = self._load_icon(with_icon=with_icon, window_type=self.group)
 
         if size:
             self.geometry(size)
@@ -50,6 +46,7 @@ class ConfirmDialog(BaseDialog):
         self.refresh_localization(**kwargs)
 
         # Block execution until window is closed
+        self.grab_set()
         self.wait_window()
 
     def _setup_dialog_ui(self):
@@ -92,7 +89,9 @@ class ConfirmDialog(BaseDialog):
 
         # Message
         if "message" in self.ui:
-            self.ui["message"].configure(text=self.message)
+            self.ui["message"].configure(
+                text=self.get_text(f"{self.scenario}.message", **kwargs)
+            )
 
         # Buttons
         if "btn_yes" in self.ui:
@@ -104,35 +103,26 @@ class ConfirmDialog(BaseDialog):
     def _on_yes(self):
         """Handle Yes click."""
         self.result = True
-        self._close()
+        self._on_close()
 
     def _on_no(self):
         """Handle No click."""
         self.result = False
-        self._close()
+        self._on_close()
 
-    def _close(self):
+    def _on_close(self):
         """Cleanup and close dialog."""
         if hasattr(self, "remove_from_observers"):
             self.remove_from_observers()
         self.destroy()
 
-    def _load_icon(self, *, with_icon: bool, window_type: str):
-        """Load and scale icon image."""
-
-        if not with_icon:
-            return None
-        raw_path = self.icons.get(window_type) or self.icons.get("confirmation")
-        if not raw_path:
-            return None
-
-        icon_path = Path(raw_path)
-        if icon_path.is_file():
-            try:
-                return CTkImage(
-                    light_image=Image.open(icon_path).convert("RGBA"),
-                    size=(50, 50),
-                )
-            except Exception as e:
-                logger.error(f"Icon load failed: {e}")
-        return None
+    @classmethod
+    def ask(cls, parent: Any, scenario_key: str, **kwargs) -> bool:
+        """
+        Static helper to launck the dialog and return the boolean result.
+        Usage: if ConfirmationDialog.ask(self."confirmation.confirm_delete")
+        """
+        dialog = cls(parent, scenario_key, **kwargs)
+        if dialog.result is None:
+            return False
+        return dialog.result

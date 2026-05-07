@@ -1,4 +1,9 @@
+import logging
 import customtkinter as ctk
+from pathlib import Path
+from PIL import Image
+from customtkinter import CTkImage
+from typing import Optional
 from pathlib import Path
 from simple_to_pdf.core.config import ThemeKeys
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
@@ -7,6 +12,7 @@ from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.core.config import BASE_PATH
 from typing import Dict
 
+logger = logging.getLogger(__name__)
 
 class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
     """
@@ -81,3 +87,25 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
             "warning": str(base_path / "warning.png"),
             "confirmation": str(base_path / "confirmation.png"),
         }
+    
+    def _load_icon(
+        self, *, with_icon: bool = False, window_type: str
+    ) -> Optional[CTkImage]:
+        """Loads and scales the icon for the header section."""
+        if not with_icon:
+            return None
+
+        raw_path = self.icons.get(window_type)
+        if not raw_path:
+            return None
+
+        icon_path = Path(raw_path)
+        if icon_path.is_file():
+            try:
+                return CTkImage(
+                    light_image=Image.open(icon_path).convert("RGBA"), size=(60, 60)
+                )
+            except (IOError, SyntaxError) as e:
+                logger.error(f"Failed to load icon for '{window_type}' window: {e}")
+        return None
+
