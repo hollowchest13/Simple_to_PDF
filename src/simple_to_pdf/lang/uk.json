@@ -29,7 +29,10 @@
     "settings_panel": {
       "language_label": "Мова",
       "title_label": "Налаштування"
-    },
+    }
+  },
+
+  "dialogs": {
     "about_dialog": {
       "window_title": "Про Simple to PDF",
       "header_title": "Simple to PDF",
@@ -38,22 +41,17 @@
       "description_label": "Професійна утиліта для пакетної обробки PDF.\nСтворено для ефективності та швидкості.",
       "github_btn": "Вихідний код на GitHub"
     },
-    "info_dialog": {
-      "license_window_title": "ЛІЦЕНЗІЯ",
-      "license_header_title": "Умови ліцензії",
-      "window_title": "Інформація",
-      "header_title": "Деталі",
-      "btn_close": "Зрозуміло"
-    },
+
     "update_dialog": {
       "window_title": "Доступне оновлення",
       "header_title": "Нове оновлення!",
-      "header_subtitle": "Версія {version} готова до встановлення",
+      "header_subtitle": "Версія {version} готова",
       "whats_new_title": "Що нового:",
       "changelog_text": "{logs}",
       "btn_download": "Завантажити зараз",
       "btn_later": "Пізніше"
     },
+
     "page_selection_dialog": {
       "window_title": "Витягти сторінки",
       "header_title": "Вибір сторінок",
@@ -62,74 +60,98 @@
       "hint_label": "Використовуйте коми для окремих сторінок (1, 3)\nта дефіси для діапазонів (5-10).",
       "page_entry_placeholder": "напр. 1, 2, 5-8",
       "btn_ok": "Підтвердити"
+    }
+  },
+
+  "notifications": {
+    "confirmation": {
+      "__title__": "Підтвердження",
+      "confirm_delete": {
+        "header": "Видалити всі файли?",
+        "message": "Наразі не вибрано жодного файлу. Бажаєте замість цього очистити весь список?",
+        "btn_yes": "Так",
+        "btn_no": "Ні"
+      }
     },
-    "notifications": {
-      "info": {
-        "title": "Інформація",
-        "no_updates": {
-          "header": "Оновлення ПЗ",
-          "message": "У вас встановлена найновіша версія {version}.",
-          "btn": "Зрозуміло"
-        },
-        "empty_file_list": {
-          "header": "Список порожній!",
-          "message": "Список файлів уже порожній.",
-          "btn": "ОК"
-        }
-      },
+
+    "info": {
+      "__title__": "Інформація",
       "license_info": {
-        "title": "Інформація",
         "header": "Умови ліцензії",
-        "message": "Тут міститься повний текст ліцензії...",
+        "message": "Повний текст ліцензії...",
         "footer_text": "Copyright © {year} {app_name}. Усі права захищено...",
         "btn": "Я згоден(на)"
       },
+      "no_updates": {
+        "header": "Оновлення ПЗ",
+        "message": "У вас встановлена найновіша версія {version}.",
+        "btn": "Зрозуміло"
+      },
+      "empty_file_list": {
+        "header": "Список порожній!",
+        "message": "Список файлів уже порожній.",
+        "btn": "ОК"
+      }
+    },
+
+    "success": {
+      "__title__": "Успішно",
       "update_success": {
-        "title": "Успішно",
         "header": "Програмне забезпечення оновлено",
         "message": "Версію {version} було успішно встановлено.",
         "btn": "Чудово!"
+      }
+    },
+
+    "warning": {
+      "__title__": "Увага!",
+      "no_file_to_merge": {
+        "header": "Немає файлів!",
+        "message": "Будь ласка, додайте файли до списку перед початком об'єднання.",
+        "btn": "ОК"
       },
-      "delete_confirm": {
-        "title": "Попередження",
-        "header": "Видалити файл?",
-        "message": "Ви впевнені, що хочете видалити цей файл?",
-        "btn": "Все одно видалити",
-        "btn_no": "Скасувати"
+      "wrong_page_format": {
+        "header": "Невірний формат!",
+        "message": "Будь ласка, використовуйте правильний формат (напр., 1-5, 8, 10-12).",
+        "btn": "Зрозуміло"
       },
-      "warning": {
-        "title": "Увага!",
-        "no_file_to_merge": {
-          "header": "Немає файлів для об'єднання!",
-          "message": "Будь ласка, додайте файли до списку перед початком.",
-          "btn": "ОК"
-        },
-        "wrong_page_format": {
-          "header": "Невірний формат сторінок!",
-          "message": "Будь ласка, використовуйте правильний формат (напр., 1-5, 8, 10-12).",
-          "btn": "Зрозуміло"
-        },
-        "process_in_progress": {
-          "header": "Процес триває!",
-          "message": "Наразі виконується фонове завдання.\n\nПрограма закриється автоматично після завершення. Будь ласка, зачекайте.",
-          "btn": "Зачекати"
-        }
+      "process_in_progress": {
+        "header": "Процес триває!",
+        "message": "Наразі виконується фонове завдання.\n\nПрограма закриється автоматично після завершення. Будь ласка, зачекайте.",
+        "btn": "Зачекати"
       },
-      "error": {
-        "title": "Помилка",
-        "file_read_error": {
-          "header": "Помилка читання",
-          "message": "Не вдалося прочитати файл {file_name}",
-          "btn": "Закрити"
-        },
-        "page_validation_error": {
-          "header": "Помилка валідації",
-          "message": "Критична помилка: {error}",
-          "btn": "Закрити"
-        }
+      "file_not_found": {
+        "header": "Не знайдено",
+        "message": "Файл {file_name} не знайдено",
+        "btn": "Зрозуміло"
+      }
+    },
+
+    "error": {
+      "__title__": "Помилка файлу",
+      "file_read_error": {
+        "header": "Помилка читання",
+        "message": "Не вдалося прочитати файл {file_name}",
+        "btn": "Зрозуміло"
+      },
+      "page_validation_error": {
+        "header": "Помилка валідації",
+        "message": "Критична помилка: {error}",
+        "btn": "Закрити"
+      },
+      "page_extraction_error": {
+        "header": "Помилка витягування",
+        "message": "Помилка під час витягування сторінок: {error}",
+        "btn": "Закрити"
+      },
+      "update_error": {
+        "header": "Помилка оновлення",
+        "message": "Не вдалося перевірити оновлення:\n{error}",
+        "btn": "Закрити"
       }
     }
   },
+
   "status": {
     "merge": {
       "done": "Об'єднано: {success}; Помилок: {failed}.\nФайл збережено за шляхом:\n{path}",
@@ -138,6 +160,10 @@
     "extract": {
       "done": "Витягування завершено.\nФайли збережено тут:\n{path}",
       "error": "Помилка: Не вдалося витягти сторінку {page_number}.\n\nПричина: {error}"
+    },
+    "convert": {
+      "done": "Конвертовано: {success}; Помилок: {failed}",
+      "error": "Помилка: Не вдалося конвертувати файл \n{path}\n\nПричина: {error}"
     },
     "common": {
       "ready": "Готово"

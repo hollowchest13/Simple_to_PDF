@@ -62,7 +62,7 @@ class ConfirmDialog(BaseDialog):
 
         # Message label (no TextBox needed for short text)
         self.ui["message"] = BaseLabel(
-            self.content, text="", wraplength=320, label_type="subtitle"
+            self.content, text="", wraplength=320, label_type="content"
         )
         self.ui["message"].pack(expand=True, fill="both", padx=20, pady=10)
         self.ui["message"].bind(
