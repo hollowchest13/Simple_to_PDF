@@ -168,7 +168,7 @@ class BaseLabel(ctk.CTkLabel, ThemeProviderMixin):
         self,
         parent,
         *,
-        label_type: Literal["badge", "title", "content", "title", "subtitle"] = "badge",
+        label_type: Literal["badge", "title", "content", "subtitle"] = "badge",
         **kwargs,
     ):
         params = self.set_label_params(label_type=label_type)

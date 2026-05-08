@@ -5,7 +5,6 @@ from .base_dialog import BaseDialog
 
 
 logger = logging.getLogger(__name__)
-# TODO Попрацювати із шрифтами повідомлення для цього вікна
 
 
 class ConfirmDialog(BaseDialog):
@@ -62,18 +61,35 @@ class ConfirmDialog(BaseDialog):
         self.ui["header_title"].pack(expand=True, pady=(20, 10))
 
         # Message label (no TextBox needed for short text)
-        self.ui["message"] = BaseLabel(self.content, text="", wraplength=320)
+        self.ui["message"] = BaseLabel(
+            self.content, text="", wraplength=320, label_type="subtitle"
+        )
         self.ui["message"].pack(expand=True, fill="both", padx=20, pady=10)
+        self.ui["message"].bind(
+            "<Configure>",
+            lambda e: self.ui["message"].configure(wraplength=e.width - 10),
+        )
+        btns_height = 50
+        btns_width = 110
 
         # Yes button
+
         self.ui["btn_yes"] = PrimaryButton(
-            self.footer, text="", command=self._on_yes, width=100
+            self.footer,
+            text="",
+            command=self._on_yes,
+            width=btns_width,
+            height=btns_height,
         )
         self.ui["btn_yes"].pack(side="right", padx=(10, 20), pady=15)
 
         # No button
         self.ui["btn_no"] = PrimaryButton(
-            self.footer, text="", command=self._on_no, width=100
+            self.footer,
+            text="",
+            command=self._on_no,
+            width=btns_width,
+            height=btns_height,
         )
         self.ui["btn_no"].pack(side="right", padx=10, pady=15)
 

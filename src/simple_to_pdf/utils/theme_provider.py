@@ -73,7 +73,7 @@ class ThemeProviderMixin:
                 }
             case "subtitle":
                 return {
-                    "font": ("Segoe UI", 12, "italic"),
+                    "font": ("Segoe UI", 14, "italic"),
                     "text_color": self.get_color(ThemeKeys.TEXT_SECONDARY),
                     "fg_color": bg_color,
                     "corner_radius": 6,
@@ -90,7 +90,7 @@ class ThemeProviderMixin:
 
             case "content":
                 return {
-                    "font": ("Segoe UI", 12),
+                    "font": ("Segoe UI", 14),
                     "text_color": self.get_color(ThemeKeys.TEXT_CONTENT),
                     "fg_color": bg_color,
                     "justify": "left",
