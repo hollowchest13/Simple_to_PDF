@@ -26,7 +26,7 @@ class SlidingFrame(BaseFrame):
 
     def _animate_width(self, *, target: int) -> None:
         """Incrementally adjust frame width to create a smooth transition."""
-        current_width = self.winfo_width()
+        current_width = int(self.cget("width"))
         step = 25
 
         if abs(current_width - target) > step:
