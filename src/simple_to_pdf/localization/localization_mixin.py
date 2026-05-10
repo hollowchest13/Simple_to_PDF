@@ -13,7 +13,7 @@ class LocalizationMixin:
     _current_lang: str = "en"
     _lang_dir: Path = Path(__file__).parent.parent / "lang"
     _observers: List[Any] = []
-    _LANG_MAP = {"English": "en", "Ukrainian": "uk", "Українська": "uk"}
+    _LANG_MAP = {"English": "en", "Українська": "uk"}
 
     @classmethod
     def load_translations(cls) -> None:
@@ -33,9 +33,8 @@ class LocalizationMixin:
     def switch_language(cls, lang_name: str) -> None:
         """Sets the current language and notifies all registered observers."""
         target_lang = cls._LANG_MAP.get(lang_name, lang_name)
-        print(
-            f"Switching to {target_lang}. Total observers: {len(cls._observers)}"
-        )  # Для тесту
+        # Add logging
+        print(f"Switching to {target_lang}. Total observers: {len(cls._observers)}")
 
         if target_lang in cls._translations:
             cls._current_lang = target_lang
@@ -100,7 +99,10 @@ class LocalizationMixin:
         Updates text-related properties of widgets.
         Tries 'text', then 'label_text', then 'placeholder_text'.
         """
+        EXCLUDED_KEYS = {"language_selector"}
         for key, widget in widgets_dict.items():
+            if key in EXCLUDED_KEYS:
+                continue
             if widget == self or not hasattr(widget, "configure"):
                 continue
 

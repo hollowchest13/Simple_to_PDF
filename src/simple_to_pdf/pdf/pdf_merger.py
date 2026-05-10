@@ -145,8 +145,9 @@ class PdfMerger:
                         **{
                             "stage": "merging",
                             "mode": "determinate",
-                            "current": str(i),
+                            "current": i,
                             "filename": str(filename),
+                            "total": total,
                         },
                     )
             except Exception as e:

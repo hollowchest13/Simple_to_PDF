@@ -22,10 +22,7 @@ def main():
     settings_manager = SettingsManager(
         settings_path=config.SETTINGS_PATH, default_settings=config.DEFAULT_SETTINGS
     )
-    app_settings = settings_manager.get_settings()
-    app_language = app_settings.get("language", "uk")
     LocalizationMixin.load_translations()
-    LocalizationMixin.switch_language(app_language)
     setup_logger()
     merger = PdfMerger()
     page_extractor = PageExtractor()

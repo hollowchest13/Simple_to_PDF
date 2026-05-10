@@ -22,7 +22,7 @@ class SettingsFrame(SlidingFrame):
         self.callbacks = callbacks
 
         # Centralized storage for all translatable widgets
-        self.ui: Dict[str, ctk.CTkBaseClass] = {}
+        self.ui: Dict[str, Any] = {}
 
         # Build the interface
         self._setup_ui()
@@ -47,11 +47,11 @@ class SettingsFrame(SlidingFrame):
         for key, widget in self.ui.items():
             setattr(self, key, widget)
 
-    def _setup_settings_controls(self) -> Dict[str, ctk.CTkBaseClass]:
+    def _setup_settings_controls(self) -> Dict[str, Any]:
         """
         Configures individual setting rows and returns a dict of widgets.
         """
-        widgets: Dict[str, ctk.CTkBaseClass] = {}
+        widgets: Dict[str, Any] = {}
 
         # Language Selection Row
         # Returns both the label and the option menu to be stored in self.ui
@@ -74,9 +74,9 @@ class SettingsFrame(SlidingFrame):
         parent: ctk.CTkFrame,
         row_id: str,
         label_text: str,
-        widget_class: Type[ctk.CTkBaseClass],
+        widget_class: Any,
         **widget_kwargs: Any,
-    ) -> Dict[str, ctk.CTkBaseClass]:
+    ) -> Dict[str,Any]:
         """
         Creates a row with a Label on the left and a functional Widget on the right.
         Returns a dict with both components for localization purposes.
@@ -94,3 +94,5 @@ class SettingsFrame(SlidingFrame):
 
         # Return both so they can be added to self.ui for translation
         return {f"{row_id}_label": label, f"{row_id}_selector": widget}
+
+

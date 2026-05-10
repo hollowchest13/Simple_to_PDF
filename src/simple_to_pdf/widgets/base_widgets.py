@@ -121,7 +121,7 @@ class BaseFrame(ctk.CTkFrame, ThemeProviderMixin, LocalizationMixin):
         A universal wrapper for UI commands.
         Allows creating widgets in __init__ before all dependencies are fully initialized.
         """
-
+        #TODO Add logging
         def wrapper(*args, **kwargs):
             # Case 1: Command is a string key (Look up in callbacks dictionary)
             if isinstance(command, str):
@@ -190,3 +190,7 @@ class BaseTextBox(ctk.CTkTextbox, ThemeProviderMixin):
         params = self.set_textbox_params(textbox_type=textbox_type)
         params.update(kwargs)
         super().__init__(parent, **params)
+
+class BaseOptionMenu(ctk.CTkOptionMenu,ThemeProviderMixin):
+    def __init__(self,parent,**kwargs):
+        pass

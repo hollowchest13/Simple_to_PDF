@@ -40,7 +40,7 @@ class PDFMergerGUI(BaseWindow):
         merger: PdfMerger,
         page_extractor: PageExtractor,
         version_controller: VersionController,
-        settings_manager:SettingsManager
+        settings_manager: SettingsManager,
     ):
 
         # Initialize BaseWindow
@@ -51,13 +51,14 @@ class PDFMergerGUI(BaseWindow):
         self.page_extractor: PageExtractor = page_extractor
         self.version_controller: VersionController = version_controller
         self.notifier: NotificationManager = NotificationManager(self)
-        self.settings_manager=settings_manager
+        self.settings_manager = settings_manager
         # build UI inside root_container inherited from BaseWindow
 
         handlers = self._setup_handlers()
         self.init_panels(callback=handlers)
         self.init_connections()
         self.build_gui(callbacks=handlers)
+        self.setup_language()
 
     def init_panels(self, callback: dict[str, Callable]) -> None:
         self.main_panel: MainFrame = MainFrame(
@@ -164,12 +165,17 @@ class PDFMergerGUI(BaseWindow):
             "change_language": lambda lang: self.on_change_language(lang),
         }
 
+    def setup_language(self):
+        settings = self.settings_manager.get_settings()
+        lang = settings.get("lang", "Українська")
+        if "language_selector" in self.settings_panel.ui:
+            lang_selector = self.settings_panel.ui["language_selector"]
+            lang_selector.set(lang)
+            self.on_change_language(lang)
+
     def on_change_language(self, new_lang_name: str) -> None:
         """Handler for language changes from the interface."""
         LocalizationMixin.switch_language(new_lang_name)
-
-    # Pass this callback to the settings:
-    callbacks = {"change_language": on_change_language}
 
     def on_check_updates_click(self):
         """
