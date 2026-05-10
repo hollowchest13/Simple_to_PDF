@@ -17,6 +17,7 @@ from simple_to_pdf.app_gui.settings_frame import SettingsFrame
 from simple_to_pdf.cli.logger import get_log_dir
 from simple_to_pdf.core.version import VersionController
 from simple_to_pdf.pdf import PageExtractor, PdfMerger
+from simple_to_pdf.settings.settings_manager import SettingsManager
 from simple_to_pdf.utils.file_tools import get_files
 from simple_to_pdf.utils.logic import get_selected_pages
 from simple_to_pdf.utils.ui_tools import change_state, ui_locker
@@ -39,6 +40,7 @@ class PDFMergerGUI(BaseWindow):
         merger: PdfMerger,
         page_extractor: PageExtractor,
         version_controller: VersionController,
+        settings_manager:SettingsManager
     ):
 
         # Initialize BaseWindow
@@ -49,6 +51,7 @@ class PDFMergerGUI(BaseWindow):
         self.page_extractor: PageExtractor = page_extractor
         self.version_controller: VersionController = version_controller
         self.notifier: NotificationManager = NotificationManager(self)
+        self.settings_manager=settings_manager
         # build UI inside root_container inherited from BaseWindow
 
         handlers = self._setup_handlers()

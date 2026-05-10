@@ -4,6 +4,7 @@ from datetime import datetime
 from enum import Enum
 
 # --- PATHS CONFIGURATION ---
+
 # Determine the base directory whether running as a script or a frozen executable.
 if getattr(sys, "frozen", False):
     # If the application is bundled by PyInstaller
@@ -17,8 +18,14 @@ else:
 CONFIG_PATH = BASE_PATH / "pyproject.toml"
 LICENCE_PATH = BASE_PATH / "LICENSE"
 ICONS_PATH = BASE_PATH / "src" / "simple_to_pdf" / "icons"
+SETTINGS_PATH = BASE_PATH / "settings.json"
+
+# ---DEFAULT SETTINGS ---
+
+DEFAULT_SETTINGS = {"language": "uk"}
 
 # --- GITHUB CONFIGURATION ---
+
 GITHUB_USER = "hollowchest13"
 GITHUB_REPO = "Simple_to_PDF"
 
