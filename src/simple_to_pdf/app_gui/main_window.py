@@ -29,6 +29,7 @@ from simple_to_pdf.app_dialog import (
 )
 from simple_to_pdf.core import config
 from simple_to_pdf.app_gui.base_window import BaseWindow
+from typing import Dict
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +168,7 @@ class PDFMergerGUI(BaseWindow):
 
     def setup_language(self):
         settings = self.settings_manager.get_settings()
-        self.lang = settings.get("lang", "Українська")
+        self.lang = settings.get("language", "Українська")
         if "language_selector" in self.settings_panel.ui:
             lang_selector = self.settings_panel.ui["language_selector"]
             lang_selector.set(self.lang)
@@ -385,7 +386,7 @@ class PDFMergerGUI(BaseWindow):
             )
             self._wait_for_thread_finish()
         else:
-            self.destroy()
+            self._save_and_destroy()
 
     def _wait_for_thread_finish(self):
         """
@@ -400,4 +401,9 @@ class PDFMergerGUI(BaseWindow):
             self.after(1000, self._wait_for_thread_finish)
         else:
             logger.info("Background thread finished. Closing the application.")
-            self.destroy()
+            self._save_and_destroy()
+
+    def _save_and_destroy(self):
+        settings: Dict[str, str] = self.settings_panel.collect_data()
+        self.settings_manager.save_settings(settings=settings)
+        self.destroy()

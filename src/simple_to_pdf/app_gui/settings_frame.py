@@ -18,6 +18,7 @@ class SettingsFrame(SlidingFrame):
         super().__init__(
             parent, open_width=open_width, closed_width=closed_width, **kwargs
         )
+        self.language_selector: BaseOptionMenu
 
         # Path to settings section in translation JSON
         self.loc_section = "ui.settings_panel"
@@ -36,6 +37,7 @@ class SettingsFrame(SlidingFrame):
         """
         Creates all UI components and organizes them into the self.ui dictionary.
         """
+
         # 1. Create and pack Title
         title = BaseLabel(self, label_type="title", text="Settings")
         title.pack(side="top", fill="x", padx=10, pady=(10, 0))
@@ -96,3 +98,10 @@ class SettingsFrame(SlidingFrame):
 
         # Return both so they can be added to self.ui for translation
         return {f"{row_id}_label": label, f"{row_id}_selector": widget}
+
+    def collect_data(self) -> Dict[str, str]:
+        data = {}
+        # Check for language selector
+        if hasattr(self, "language_selector"):
+            data["language"] = self.language_selector.get()
+        return data
