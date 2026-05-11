@@ -2,6 +2,8 @@ import customtkinter as ctk
 from simple_to_pdf.widgets import BaseLabel, SlidingFrame
 from typing import Callable, Dict, Any, Type
 
+from simple_to_pdf.widgets.base_widgets import BaseOptionMenu
+
 
 class SettingsFrame(SlidingFrame):
     def __init__(
@@ -59,7 +61,7 @@ class SettingsFrame(SlidingFrame):
             parent=self,
             row_id="language",  # Used to generate keys: 'language_label' and 'language_selector'
             label_text="Language:",
-            widget_class=ctk.CTkOptionMenu,
+            widget_class=BaseOptionMenu,
             values=["English", "Українська"],
             width=120,
             command=self._trigger("change_language"),
@@ -76,7 +78,7 @@ class SettingsFrame(SlidingFrame):
         label_text: str,
         widget_class: Any,
         **widget_kwargs: Any,
-    ) -> Dict[str,Any]:
+    ) -> Dict[str, Any]:
         """
         Creates a row with a Label on the left and a functional Widget on the right.
         Returns a dict with both components for localization purposes.
@@ -85,7 +87,7 @@ class SettingsFrame(SlidingFrame):
         container.pack(fill="x", padx=10, pady=8)
 
         # Create label
-        label = ctk.CTkLabel(container, text=label_text, font=("Arial", 12))
+        label = BaseLabel(container, text=label_text, label_type="content")
         label.pack(side="left", padx=(5, 10))
 
         # Create the control widget (OptionMenu, Entry, etc.)
@@ -94,5 +96,3 @@ class SettingsFrame(SlidingFrame):
 
         # Return both so they can be added to self.ui for translation
         return {f"{row_id}_label": label, f"{row_id}_selector": widget}
-
-

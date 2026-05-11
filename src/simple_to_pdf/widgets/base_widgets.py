@@ -1,7 +1,15 @@
 import customtkinter as ctk
-from typing import Literal, Any, Callable, Dict
+from typing import Literal, Any, Callable, Dict, List
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
-from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
+from simple_to_pdf.utils.theme_provider import (
+    LabelThemeMixit,
+    ProgressThemeMixin,
+    TextboxThemeMixin,
+    OptionMenuThemeMixin,
+    ButtonThemeMixin,
+    FrameThemeMixit,
+    ScrolableFrameThemeMixin,
+)
 from simple_to_pdf.core.config import ICONS_PATH
 from PIL import Image
 import logging
@@ -9,7 +17,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class PrimaryButton(ctk.CTkButton, ThemeProviderMixin):
+class PrimaryButton(ctk.CTkButton, ButtonThemeMixin):
     """
     A pre-styled button for main actions.
     Includes a hover effect that changes the background color.
@@ -21,7 +29,7 @@ class PrimaryButton(ctk.CTkButton, ThemeProviderMixin):
         super().__init__(parent, **params)
 
 
-class BaseFrame(ctk.CTkFrame, ThemeProviderMixin, LocalizationMixin):
+class BaseFrame(ctk.CTkFrame, FrameThemeMixit, LocalizationMixin):
     def __init__(
         self,
         parent,
@@ -121,7 +129,8 @@ class BaseFrame(ctk.CTkFrame, ThemeProviderMixin, LocalizationMixin):
         A universal wrapper for UI commands.
         Allows creating widgets in __init__ before all dependencies are fully initialized.
         """
-        #TODO Add logging
+
+        # TODO Add logging
         def wrapper(*args, **kwargs):
             # Case 1: Command is a string key (Look up in callbacks dictionary)
             if isinstance(command, str):
@@ -143,7 +152,7 @@ class BaseFrame(ctk.CTkFrame, ThemeProviderMixin, LocalizationMixin):
         return wrapper
 
 
-class BaseScrollableFrame(ctk.CTkScrollableFrame, ThemeProviderMixin):
+class BaseScrollableFrame(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
     def __init__(
         self,
         parent,
@@ -158,7 +167,7 @@ class BaseScrollableFrame(ctk.CTkScrollableFrame, ThemeProviderMixin):
         super().__init__(parent, **params)
 
 
-class BaseLabel(ctk.CTkLabel, ThemeProviderMixin):
+class BaseLabel(ctk.CTkLabel, LabelThemeMixit):
     """
     A label styled as a 'badge' or 'chip'.
     Ideal for displaying versions, engine names, or status tags.
@@ -176,14 +185,14 @@ class BaseLabel(ctk.CTkLabel, ThemeProviderMixin):
         super().__init__(parent, **params)
 
 
-class BaseProgress(ctk.CTkProgressBar, ThemeProviderMixin):
+class BaseProgress(ctk.CTkProgressBar, ProgressThemeMixin):
     def __init__(self, parent, *, progress_type: Literal["merge_progress"], **kwargs):
         params = self.set_progress_params(progress_type=progress_type)
         params.update(kwargs)
         super().__init__(parent, **params)
 
 
-class BaseTextBox(ctk.CTkTextbox, ThemeProviderMixin):
+class BaseTextBox(ctk.CTkTextbox, TextboxThemeMixin):
     def __init__(
         self, parent, *, textbox_type: Literal["status_text", "info"] = "info", **kwargs
     ):
@@ -191,6 +200,16 @@ class BaseTextBox(ctk.CTkTextbox, ThemeProviderMixin):
         params.update(kwargs)
         super().__init__(parent, **params)
 
-class BaseOptionMenu(ctk.CTkOptionMenu,ThemeProviderMixin):
-    def __init__(self,parent,**kwargs):
-        pass
+
+class BaseOptionMenu(ctk.CTkOptionMenu, OptionMenuThemeMixin):
+    def __init__(
+        self,
+        parent,
+        menu_type: Literal["settings"] = "settings",
+        values: List[str] | None = None,
+        **kwargs,
+    ):
+        params = self.set_option_menu_params(menu_type=menu_type)
+        params["values"] = values or ["None"]
+        params.update(kwargs)
+        super().__init__(parent, **params)

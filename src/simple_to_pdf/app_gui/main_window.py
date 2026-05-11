@@ -167,11 +167,11 @@ class PDFMergerGUI(BaseWindow):
 
     def setup_language(self):
         settings = self.settings_manager.get_settings()
-        lang = settings.get("lang", "Українська")
+        self.lang = settings.get("lang", "Українська")
         if "language_selector" in self.settings_panel.ui:
             lang_selector = self.settings_panel.ui["language_selector"]
-            lang_selector.set(lang)
-            self.on_change_language(lang)
+            lang_selector.set(self.lang)
+            self.on_change_language(self.lang)
 
     def on_change_language(self, new_lang_name: str) -> None:
         """Handler for language changes from the interface."""

@@ -6,6 +6,8 @@ class ThemeProviderMixin:
     def get_color(self, key):
         return DEFAULT_COLORS.get(key, "#ffffff")
 
+
+class ButtonThemeMixin(ThemeProviderMixin):
     def set_button_params(self) -> dict:
 
         default_accent = self.get_color(ThemeKeys.ACCENT)
@@ -22,6 +24,8 @@ class ThemeProviderMixin:
         }
         return theme
 
+
+class FrameThemeMixit(ThemeProviderMixin):
     def set_frame_params(
         self,
         *,
@@ -60,6 +64,8 @@ class ThemeProviderMixin:
             case "list_item":
                 return {"fg_color": "transparent"}
 
+
+class LabelThemeMixit(ThemeProviderMixin):
     def set_label_params(self, label_type: str) -> dict:
         bg_color = "transparent"
 
@@ -97,6 +103,8 @@ class ThemeProviderMixin:
                 }
         return {}
 
+
+class ScrolableFrameThemeMixin(ThemeProviderMixin):
     def set_scrollable_frame_params(
         self,
         *,
@@ -159,6 +167,8 @@ class ThemeProviderMixin:
                 )
         return params
 
+
+class TextboxThemeMixin(ThemeProviderMixin):
     def set_textbox_params(
         self, *, textbox_type: Literal["status_text", "info"]
     ) -> dict:
@@ -183,6 +193,8 @@ class ThemeProviderMixin:
                 }
         return params
 
+
+class ProgressThemeMixin(ThemeProviderMixin):
     def set_progress_params(self, *, progress_type: Literal["merge_progress"]) -> dict:
         match progress_type:
             case "merge_progress":
@@ -192,4 +204,31 @@ class ThemeProviderMixin:
                     "corner_radius": 6,
                     "orientation": "horizontal",
                 }
+        return params
+
+
+class OptionMenuThemeMixin(ThemeProviderMixin):
+    def set_option_menu_params(self, menu_type: str = "standard") -> dict:
+        accent = self.get_color(ThemeKeys.ACCENT)
+        accent_hover = self.get_color(ThemeKeys.ACCENT_HOVER)
+
+        # Base parameters for CTkOptionMenu
+        params = {
+            "fg_color": accent,
+            "button_color": accent_hover,
+            "button_hover_color": accent,
+            "text_color": self.get_color(ThemeKeys.TEXT_ON_ACCENT),
+            "dropdown_fg_color": self.get_color(ThemeKeys.BG_MAIN),
+            "dropdown_hover_color": accent,
+            "dropdown_text_color": self.get_color(ThemeKeys.TEXT_CONTENT),
+            "font": ("Segoe UI", 13),
+            "dropdown_font": ("Segoe UI", 13),
+            "corner_radius": 8,
+            "anchor": "center",
+        }
+
+        # Specific adjustments for settings rows
+        if menu_type == "settings":
+            params.update({"width": 140, "dynamic_resizing": False})
+
         return params

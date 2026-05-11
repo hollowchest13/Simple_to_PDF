@@ -1,12 +1,12 @@
 from typing import Callable
-from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
+from simple_to_pdf.utils.theme_provider import ScrolableFrameThemeMixin
 from simple_to_pdf.core.config import ThemeKeys
 from simple_to_pdf.widgets import BaseFrame, BaseLabel
 from pathlib import Path
 import customtkinter as ctk
 
 
-class CTkListbox(ctk.CTkScrollableFrame, ThemeProviderMixin):
+class CTkListbox(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
     def __init__(self, parent, **kwargs):
         params = self.set_scrollable_frame_params(scr_frame_type="file_list")
         params.update(kwargs)
