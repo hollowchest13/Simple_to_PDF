@@ -1,0 +1,174 @@
+{
+  "info": {
+    "lang_name": "Polski"
+  },
+  "ui": {
+    "main_panel": {
+      "filebox": "Wybrane pliki",
+      "progress_label": "Postęp"
+    },
+    "list_controls_panel": {
+      "btn_add": "Dodaj pliki",
+      "btn_up": "Przenieś w górę",
+      "btn_down": "Przenieś w dół",
+      "btn_remove": "Usuń plik",
+      "btn_merge": "Połącz w PDF",
+      "btn_extract": "Wyodrębnij strony",
+      "btn_status_clear": "Wyczyść status",
+      "btn_help": "Pomoc",
+      "btn_settings": "Ustawienia"
+    },
+    "help_panel": {
+      "title_label": "Pomoc",
+      "license_btn": "Licencja",
+      "documentation_btn": "Instrukcja obsługi",
+      "about_btn": "O programie",
+      "check_updates_btn": "Sprawdź aktualizacje",
+      "logs_btn": "Pokaż logi"
+    },
+    "settings_panel": {
+      "language_label": "Język",
+      "title_label": "Ustawienia"
+    }
+  },
+  "dialogs": {
+    "about_dialog": {
+      "window_title": "O programie Simple to PDF",
+      "header_title": "Simple to PDF",
+      "header_subtitle": "Wersja {version}",
+      "engine_badge": "Silnik: {engine}",
+      "description_label": "Profesjonalne narzędzie do wsadowego przetwarzania PDF.\nStworzone dla wydajności i szybkości.",
+      "github_btn": "Zobacz źródło na GitHub"
+    },
+    "update_dialog": {
+      "window_title": "Dostępna aktualizacja",
+      "header_title": "Nowa aktualizacja!",
+      "header_subtitle": "Wersja {version} jest gotowa",
+      "whats_new_title": "Co nowego:",
+      "changelog_text": "{logs}",
+      "btn_download": "Pobierz teraz",
+      "btn_later": "Później"
+    },
+    "page_selection_dialog": {
+      "window_title": "Wyodrębnij strony",
+      "header_title": "Wybór stron",
+      "header_subtitle": "Wyodrębnij konkretne strony z PDF",
+      "instruction_label": "Wprowadź strony do wyodrębnienia:",
+      "hint_label": "Użyj przecinków dla pojedynczych stron (1, 3)\ni myślników dla zakresów (5-10).",
+      "page_entry_placeholder": "np. 1, 2, 5-8",
+      "btn_ok": "Potwierdź wyodrębnianie"
+    }
+  },
+  "notifications": {
+    "confirmation": {
+      "__title__": "Potwierdzenie",
+      "confirm_delete": {
+        "header": "Usunąć wszystkie pliki?",
+        "message": "Obecnie nie wybrano żadnych plików. Czy chcesz wyczyścić całą listę?",
+        "btn_yes": "Tak",
+        "btn_no": "Nie"
+      }
+    },
+    "info": {
+      "__title__": "Informacja",
+      "license_info": {
+        "header": "Warunki licencji",
+        "message": "Pełny tekst licencji znajduje się tutaj...",
+        "footer_text": "Copyright © {year} {app_name}. Wszelkie prawa zastrzeżone...",
+        "btn": "Zgadzam się"
+      },
+      "no_updates": {
+        "header": "Aktualizacja oprogramowania",
+        "message": "Wszystko aktualne! Wersja {version} jest najnowszą dostępną wersją.",
+        "btn": "Rozumiem"
+      },
+      "empty_file_list": {
+        "header": "Brak plików!",
+        "message": "Lista plików jest już pusta.",
+        "btn": "OK"
+      }
+    },
+    "success": {
+      "__title__": "Sukces",
+      "update_success": {
+        "header": "Oprogramowanie zaktualizowane",
+        "message": "Wersja {version} została pomyślnie zainstalowana.",
+        "btn": "Świetnie!"
+      }
+    },
+    "warning": {
+      "__title__": "Ostrzeżenie!",
+      "no_file_to_merge": {
+        "header": "Brak plików do połączenia!",
+        "message": "Proszę dodać pliki do listy przed przystąpieniem do łączenia.",
+        "btn": "OK"
+      },
+      "wrong_page_format": {
+        "header": "Błędny format stron!",
+        "message": "Proszę użyć poprawnego formatu (np. 1-5, 8, 10-12).",
+        "btn": "Rozumiem"
+      },
+      "process_in_progress": {
+        "header": "Proces w toku!",
+        "message": "Zadanie w tle jest aktualnie wykonywane.\n\nAplikacja zamknie się automatycznie po zakończeniu zadania. Proszę czekać.",
+        "btn": "Czekaj"
+      },
+      "file_not_found": {
+        "header": "Nie znaleziono",
+        "message": "Plik {file_name} nie został znaleziony",
+        "btn": "Rozumiem"
+      }
+    },
+    "error": {
+      "__title__": "Błąd pliku",
+      "file_read_error": {
+        "header": "Błąd odczytu",
+        "message": "Błąd odczytu pliku {file_name}",
+        "btn": "Rozumiem"
+      },
+      "page_validation_error": {
+        "header": "Błąd walidacji stron",
+        "message": "Błąd krytyczny, opis błędu: {error}",
+        "btn": "Zamknij"
+      },
+      "page_extraction_error": {
+        "header": "Błąd wyodrębniania stron",
+        "message": "Błąd podczas wyodrębniania stron, opis błędu: {error}",
+        "btn": "Zamknij"
+      },
+      "update_error": {
+        "header": "Błąd aktualizacji",
+        "message": "Nie można sprawdzić aktualizacji:\n{error}",
+        "btn": "Zamknij"
+      }
+    }
+  },
+  "status": {
+    "merge": {
+      "done": "Połączono: {success}; Błąd: {failed}.\nPołączony PDF zapisano w:\n{path}",
+      "error": "Błąd: Nie można połączyć pliku:\n{path}\n\nPrzyczyna: {error}"
+    },
+    "extract": {
+      "done": "Wyodrębnianie stron zakończone.\nWyodrębnione strony zapisano w:\n{path}",
+      "error": "Błąd: Nie można wyodrębnić numeru strony:\n{page_number}\n\nPrzyczyna: {error}"
+    },
+    "convert": {
+      "done": "Przekonwertowano: {success}; Błąd: {failed}",
+      "error": "Błąd: Nie można przekonwertować pliku \n{path}\n\nPrzyczyna: {error}"
+    },
+    "common": {
+      "ready": "Gotowy"
+    },
+    "processing_page": "Przetwarzanie strony ({current}/{total})..."
+  },
+  "progress": {
+    "stage": {
+      "processing": "Przetwarzanie",
+      "extracting": "Wyodrębnianie",
+      "converting": "Konwertowanie",
+      "merging": "Łączenie"
+    },
+    "indeterminate": "{stage} dokumenty...",
+    "detailed": "{stage}: {filename} ({current}/{total}) — {percent:.1f}%"
+  }
+}

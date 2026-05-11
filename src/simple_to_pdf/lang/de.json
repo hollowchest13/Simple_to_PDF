@@ -1,0 +1,174 @@
+{
+  "info": {
+    "lang_name": "Deutsch"
+  },
+  "ui": {
+    "main_panel": {
+      "filebox": "Ausgewählte Dateien",
+      "progress_label": "Fortschritt"
+    },
+    "list_controls_panel": {
+      "btn_add": "Dateien hinzufügen",
+      "btn_up": "Nach oben",
+      "btn_down": "Nach unten",
+      "btn_remove": "Datei entfernen",
+      "btn_merge": "Zu PDF zusammenfügen",
+      "btn_extract": "Seiten extrahieren",
+      "btn_status_clear": "Status löschen",
+      "btn_help": "Hilfe",
+      "btn_settings": "Einstellungen"
+    },
+    "help_panel": {
+      "title_label": "Hilfe",
+      "license_btn": "Lizenz",
+      "documentation_btn": "Anleitung",
+      "about_btn": "Über uns",
+      "check_updates_btn": "Updates suchen",
+      "logs_btn": "Logs anzeigen"
+    },
+    "settings_panel": {
+      "language_label": "Sprache",
+      "title_label": "Einstellungen"
+    }
+  },
+  "dialogs": {
+    "about_dialog": {
+      "window_title": "Über Simple to PDF",
+      "header_title": "Simple to PDF",
+      "header_subtitle": "Version {version}",
+      "engine_badge": "Engine: {engine}",
+      "description_label": "Professionelles Dienstprogramm zur PDF-Stapelverarbeitung.\nEntwickelt für Effizienz und Geschwindigkeit.",
+      "github_btn": "Quellcode auf GitHub anzeigen"
+    },
+    "update_dialog": {
+      "window_title": "Update verfügbar",
+      "header_title": "Neues Update!",
+      "header_subtitle": "Version {version} ist bereit",
+      "whats_new_title": "Was ist neu:",
+      "changelog_text": "{logs}",
+      "btn_download": "Jetzt herunterladen",
+      "btn_later": "Später"
+    },
+    "page_selection_dialog": {
+      "window_title": "Seiten extrahieren",
+      "header_title": "Seitenauswahl",
+      "header_subtitle": "Bestimmte Seiten aus PDF extrahieren",
+      "instruction_label": "Zu extrahierende Seiten eingeben:",
+      "hint_label": "Verwenden Sie Kommas für einzelne Seiten (1, 3)\nund Bindestriche für Bereiche (5-10).",
+      "page_entry_placeholder": "z.B. 1, 2, 5-8",
+      "btn_ok": "Extraktion bestätigen"
+    }
+  },
+  "notifications": {
+    "confirmation": {
+      "__title__": "Bestätigung",
+      "confirm_delete": {
+        "header": "Alle Dateien löschen?",
+        "message": "Es sind derzeit keine Dateien ausgewählt. Möchten Sie stattdessen die gesamte Liste leeren?",
+        "btn_yes": "Ja",
+        "btn_no": "Nein"
+      }
+    },
+    "info": {
+      "__title__": "Information",
+      "license_info": {
+        "header": "Lizenzbedingungen",
+        "message": "Der vollständige Lizenztext befindet sich hier...",
+        "footer_text": "Copyright © {year} {app_name}. Alle Rechte vorbehalten...",
+        "btn": "Ich stimme zu"
+      },
+      "no_updates": {
+        "header": "Software-Update",
+        "message": "Alles auf dem neuesten Stand! Version {version} ist die aktuellste verfügbare Version.",
+        "btn": "Verstanden"
+      },
+      "empty_file_list": {
+        "header": "Keine Dateien!",
+        "message": "Die Dateiliste ist bereits leer.",
+        "btn": "OK"
+      }
+    },
+    "success": {
+      "__title__": "Erfolg",
+      "update_success": {
+        "header": "Software aktualisiert",
+        "message": "Version {version} wurde erfolgreich installiert.",
+        "btn": "Super!"
+      }
+    },
+    "warning": {
+      "__title__": "Warnung!",
+      "no_file_to_merge": {
+        "header": "Keine Dateien zum Zusammenfügen!",
+        "message": "Bitte fügen Sie Dateien zur Liste hinzu, bevor Sie fortfahren.",
+        "btn": "OK"
+      },
+      "wrong_page_format": {
+        "header": "Falsches Seitenformat!",
+        "message": "Bitte verwenden Sie das richtige Format (z.B. 1-5, 8, 10-12).",
+        "btn": "Verstanden"
+      },
+      "process_in_progress": {
+        "header": "Vorgang läuft!",
+        "message": "Eine Hintergrundaufgabe wird derzeit ausgeführt.\n\nDie Anwendung wird nach Abschluss der Aufgabe automatisch geschlossen. Bitte warten.",
+        "btn": "Warten"
+      },
+      "file_not_found": {
+        "header": "Nicht gefunden",
+        "message": "Datei {file_name} nicht gefunden",
+        "btn": "Verstanden"
+      }
+    },
+    "error": {
+      "__title__": "Dateifehler",
+      "file_read_error": {
+        "header": "Lesefehler",
+        "message": "Dateilesefehler bei {file_name}",
+        "btn": "Verstanden"
+      },
+      "page_validation_error": {
+        "header": "Seitenvalidierungsfehler",
+        "message": "Kritischer Fehler, Fehlerbeschreibung: {error}",
+        "btn": "Schließen"
+      },
+      "page_extraction_error": {
+        "header": "Seitenextraktionsfehler",
+        "message": "Fehler beim Extrahieren der Seiten, Fehlerbeschreibung: {error}",
+        "btn": "Schließen"
+      },
+      "update_error": {
+        "header": "Update-Fehler",
+        "message": "Updates konnten nicht gesucht werden:\n{error}",
+        "btn": "Schließen"
+      }
+    }
+  },
+  "status": {
+    "merge": {
+      "done": "Zusammengefügt: {success}; Fehlgeschlagen: {failed}.\nZusammengefügtes PDF gespeichert unter:\n{path}",
+      "error": "Fehler: Datei konnte nicht zusammengefügt werden:\n{path}\n\nGrund: {error}"
+    },
+    "extract": {
+      "done": "Seitenextraktion abgeschlossen.\nExtrahierte Seiten gespeichert unter:\n{path}",
+      "error": "Fehler: Seitennummer konnte nicht extrahiert werden:\n{page_number}\n\nGrund: {error}"
+    },
+    "convert": {
+      "done": "Konvertiert: {success}; Fehlgeschlagen: {failed}",
+      "error": "Fehler: Datei konnte nicht konvertiert werden \n{path}\n\nGrund: {error}"
+    },
+    "common": {
+      "ready": "Bereit"
+    },
+    "processing_page": "Seite wird verarbeitet ({current}/{total})..."
+  },
+  "progress": {
+    "stage": {
+      "processing": "Verarbeitung",
+      "extracting": "Extraktion",
+      "converting": "Konvertierung",
+      "merging": "Zusammenfügen"
+    },
+    "indeterminate": "{stage} Dokumente...",
+    "detailed": "{stage}: {filename} ({current}/{total}) — {percent:.1f}%"
+  }
+}

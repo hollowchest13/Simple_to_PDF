@@ -13,7 +13,7 @@ class LocalizationMixin:
     _current_lang: str = "en"
     _lang_dir: Path = Path(__file__).parent.parent / "lang"
     _observers: List[Any] = []
-    _LANG_MAP = {"English": "en", "Українська": "uk"}
+    _LANG_MAP = {"English": "en", "Українська": "uk", "Deutsch": "de", "Polski": "pl"}
 
     @classmethod
     def load_translations(cls) -> None:
