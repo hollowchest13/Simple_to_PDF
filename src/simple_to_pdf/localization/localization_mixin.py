@@ -111,7 +111,9 @@ class LocalizationMixin:
 
                 # Standard text (buttons, labels)
                 try:
-                    widget.configure(text=new_text)
+                    self.update_widget_with_adaptive_font(
+                        widget=widget, new_text=new_text, threshold=16
+                    )
                     continue  # If it worked, moving on to the next widget.
                 except Exception:
                     pass
@@ -131,6 +133,75 @@ class LocalizationMixin:
 
             except Exception as e:
                 logging.debug(f"Error updating widget '{key}': {e}")
+
+    def update_widget_with_adaptive_font(
+        self, widget: Any, new_text: str, threshold: int
+    ):
+        """
+        Dynamically updates widget text and adjusts font size based on text length.
+        """
+        try:
+            # 1. If a widget doesn't have a 'text' attribute, we don't need it.
+            try:
+                widget.configure(text=new_text)
+            except Exception:
+                return
+
+            # Get base font size
+            base_size = getattr(widget, "base_font_size", None)
+
+            if base_size is None:
+                try:
+                    current_font = widget.cget("font")
+                    # Extracting the size based on what cget returned
+                    if hasattr(current_font, "cget"):
+                        base_size = int(current_font.cget("size"))
+                    elif isinstance(current_font, (list, tuple)):
+                        base_size = int(current_font[1])
+                    else:
+                        # Attempting to parse the string."
+                        base_size = int(str(current_font).split()[1])
+                except:
+                    base_size = 13  # Default if unable to determine.
+
+                widget.base_font_size = base_size
+
+            # 3. Calculating the new size.
+            reduction = max(0, (len(new_text) - threshold) // 2)
+            new_size = max(base_size - reduction, 10)
+
+            # 4. Font updating
+            try:
+                current_font = widget.cget("font")
+                if hasattr(current_font, "cget"):
+                    family = current_font.cget("family")
+                    # Checking the font style (bold/italic).
+                    weight = current_font.cget("weight")
+                    new_font = (family, new_size, weight)
+                elif isinstance(current_font, (list, tuple)):
+                    new_font = (current_font[0], new_size, *current_font[2:])
+                else:
+                    new_font = ("Segoe UI", new_size)
+
+                widget.configure(font=new_font)
+            except Exception:
+                # If the widget supports text but not fonts
+                pass
+
+        except Exception as e:
+            # Останній рубіж — просто виводимо помилку в консоль, щоб не "класти" GUI
+            print(f"Critical font error: {e}")
+
+    def _get_adaptive_font_size(
+        self, text: str, threshold: int = 14, base_size: int | None = 14
+    ) -> int | None:
+        if base_size == None:
+            return None
+        lenght = len(text)
+        if lenght <= threshold:
+            return base_size
+        reduction = (lenght - threshold) // 4
+        return max(base_size - reduction, 10)
 
     def refresh_localization(self) -> None:
 

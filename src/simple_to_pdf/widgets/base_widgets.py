@@ -7,7 +7,7 @@ from simple_to_pdf.utils.theme_provider import (
     TextboxThemeMixin,
     OptionMenuThemeMixin,
     ButtonThemeMixin,
-    FrameThemeMixit,
+    FrameThemeMixin,
     ScrolableFrameThemeMixin,
 )
 from simple_to_pdf.core.config import ICONS_PATH
@@ -29,7 +29,7 @@ class PrimaryButton(ctk.CTkButton, ButtonThemeMixin):
         super().__init__(parent, **params)
 
 
-class BaseFrame(ctk.CTkFrame, FrameThemeMixit, LocalizationMixin):
+class BaseFrame(ctk.CTkFrame, FrameThemeMixin, LocalizationMixin):
     def __init__(
         self,
         parent,

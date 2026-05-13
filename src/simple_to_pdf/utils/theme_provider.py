@@ -25,7 +25,7 @@ class ButtonThemeMixin(ThemeProviderMixin):
         return theme
 
 
-class FrameThemeMixit(ThemeProviderMixin):
+class FrameThemeMixin(ThemeProviderMixin):
     def set_frame_params(
         self,
         *,
