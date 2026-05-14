@@ -205,7 +205,9 @@ class MainFrame(BaseFrame):
         self.set_progress_determinate()
         self.progress_bar.set(0)
         self.progress_bar.configure(progress_color=self.progress_bar.cget("fg_color"))
-        self.progress_label.configure(text="Progress: Ready")
+        self.progress_label.configure(
+            text=self.get_text(key="main_panel.progress_label", section="ui")
+        )
         self.update_idletasks()
 
     def set_progress_determinate(self) -> None:

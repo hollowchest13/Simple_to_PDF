@@ -56,16 +56,15 @@ class SettingsFrame(SlidingFrame):
         Configures individual setting rows and returns a dict of widgets.
         """
         widgets: Dict[str, Any] = {}
-        # TODO Make single source of truth for languages
 
         # Language Selection Row
         # Returns both the label and the option menu to be stored in self.ui
         row_widgets = self._create_setting_row(
             parent=self,
             row_id="language",  # Used to generate keys: 'language_label' and 'language_selector'
-            label_text="Language:",
+            label_text=self.get_text("settings_panel.language_label", section="ui"),
             widget_class=BaseOptionMenu,
-            values=["English", "Українська", "Deutsch", "Polski"],
+            values=sorted(self._LANG_MAP.keys()),
             width=120,
             command=self._trigger("change_language"),
         )

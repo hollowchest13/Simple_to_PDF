@@ -1,7 +1,9 @@
-import json
 import logging
+import json
 from pathlib import Path
 from typing import Dict, Any, List
+
+logger = logging.getLogger(__name__)
 
 
 class LocalizationMixin:
@@ -13,21 +15,35 @@ class LocalizationMixin:
     _current_lang: str = "en"
     _lang_dir: Path = Path(__file__).parent.parent / "lang"
     _observers: List[Any] = []
-    _LANG_MAP = {"English": "en", "Українська": "uk", "Deutsch": "de", "Polski": "pl"}
+    _LANG_MAP: Dict[str, str] = {}
 
     @classmethod
     def load_translations(cls) -> None:
-        """Loads all JSON translation files from the lang directory."""
+        """Loads all JSON translation files and builds the language map."""
+
         if not cls._lang_dir.exists():
             cls._lang_dir.mkdir(parents=True, exist_ok=True)
             return
 
+        # Clear translations
+        cls._translations = {}
+        cls._LANG_MAP = {}
+
         for file_path in cls._lang_dir.glob("*.json"):
             try:
                 with open(file_path, "r", encoding="utf-8") as f:
-                    cls._translations[file_path.stem] = json.load(f)
+                    data = json.load(f)
+                    lang_code = file_path.stem
+
+                    # Saving translating data
+                    cls._translations[lang_code] = data
+                    lang_name = data.get("info", {}).get(
+                        "lang_name", lang_code.capitalize()
+                    )
+                    cls._LANG_MAP[lang_name] = lang_code
+
             except Exception as e:
-                logging.error(f"Failed to load {file_path.name}: {e}")
+                logger.error(f"Failed to load {file_path.name}: {e}")
 
     @classmethod
     def switch_language(cls, lang_name: str) -> None:
@@ -96,112 +112,144 @@ class LocalizationMixin:
 
     def update_widgets_text(self, widgets_dict: Dict[str, Any], section: str) -> None:
         """
-        Updates text-related properties of widgets.
-        Tries 'text', then 'label_text', then 'placeholder_text'.
+        Main entry point for updating UI localization.
+        Iterates through widgets and applies translation.
         """
         EXCLUDED_KEYS = {"language_selector"}
+
         for key, widget in widgets_dict.items():
-            if key in EXCLUDED_KEYS:
+            if (
+                key in EXCLUDED_KEYS
+                or widget == self
+                or not hasattr(widget, "configure")
+            ):
                 continue
-            if widget == self or not hasattr(widget, "configure"):
-                continue
 
-            try:
-                new_text = self.get_text(key, section=section)
+            new_text = self.get_text(key, section=section)
+            self._apply_text_to_widget(key, widget, new_text)
 
-                # Standard text (buttons, labels)
-                try:
-                    self.update_widget_with_adaptive_font(
-                        widget=widget, new_text=new_text, threshold=16
-                    )
-                    continue  # If it worked, moving on to the next widget.
-                except Exception:
-                    pass
+    def _apply_text_to_widget(self, key: str, widget: Any, text: str) -> None:
+        """
+        Determines the correct attribute to update based on widget type and attributes.
+        """
+        try:
+            # 1. Handle Buttons with Adaptive Font
+            if self._is_button_widget(widget):
+                if self.update_widget_with_adaptive_font(widget, text, threshold=16):
+                    return
 
-                # Container header (Your CTkListbox / ScrollableFrame)
-                try:
-                    widget.configure(label_text=new_text)
-                    continue
-                except Exception:
-                    pass
+            # 2. Standard 'text' attribute (Labels, Checkboxes)
+            if self._try_configure(widget, text=text):
+                return
 
-                # Input Hint (Entry / Textbox)
-                try:
-                    widget.configure(placeholder_text=new_text)
-                except Exception:
-                    pass
+            # 3. Container 'label_text' (ScrollableFrame, Listbox)
+            if self._try_configure(widget, label_text=text):
+                return
 
-            except Exception as e:
-                logging.debug(f"Error updating widget '{key}': {e}")
+            # 4. Input 'placeholder_text' (Entry, Textbox)
+            if self._try_configure(widget, placeholder_text=text):
+                return
+
+            logger.debug(
+                f"Widget '{key}' ({type(widget).__name__}) has no supported text attribute."
+            )
+
+        except Exception as e:
+            logger.error(f"Error updating widget '{key}': {e}")
+
+    def _is_button_widget(self, widget: Any) -> bool:
+        """Returns True if the widget is a button-like component."""
+        return "button" in widget.__class__.__name__.lower()
+
+    def _try_configure(self, widget: Any, **kwargs) -> bool:
+        """Safe wrapper for widget.configure(). Returns True if successful."""
+        try:
+            widget.configure(**kwargs)
+            return True
+        except Exception:
+            return False
 
     def update_widget_with_adaptive_font(
         self, widget: Any, new_text: str, threshold: int
-    ):
+    ) -> bool:
         """
-        Dynamically updates widget text and adjusts font size based on text length.
+        Sets text and adjusts font size. Specialized for button-like widgets.
         """
+        if not self._try_configure(widget, text=new_text):
+            return False
+
+        base_size = self._get_or_store_base_font_size(widget)
+        new_size = self._calculate_adaptive_size(new_text, base_size, threshold)
+
+        self._apply_font_size(widget, new_size)
+        return True
+
+    def _get_or_store_base_font_size(self, widget: Any) -> int:
+        """Retrieves or initializes the original font size for the widget."""
+        # 1. Check if we already cached it
+        base_size = getattr(widget, "base_font_size", None)
+        if base_size is not None:
+            return base_size
+
         try:
-            # 1. If a widget doesn't have a 'text' attribute, we don't need it.
-            try:
-                widget.configure(text=new_text)
-            except Exception:
-                return
-
-            # Get base font size
-            base_size = getattr(widget, "base_font_size", None)
-
-            if base_size is None:
-                try:
-                    current_font = widget.cget("font")
-                    # Extracting the size based on what cget returned
-                    if hasattr(current_font, "cget"):
-                        base_size = int(current_font.cget("size"))
-                    elif isinstance(current_font, (list, tuple)):
-                        base_size = int(current_font[1])
-                    else:
-                        # Attempting to parse the string."
-                        base_size = int(str(current_font).split()[1])
-                except:
-                    base_size = 13  # Default if unable to determine.
-
-                widget.base_font_size = base_size
-
-            # 3. Calculating the new size.
-            reduction = max(0, (len(new_text) - threshold) // 2)
-            new_size = max(base_size - reduction, 10)
-
-            # 4. Font updating
-            try:
+            # 2. Safely get the font object
+            current_font = None
+            if hasattr(widget, "cget"):
                 current_font = widget.cget("font")
-                if hasattr(current_font, "cget"):
-                    family = current_font.cget("family")
-                    # Checking the font style (bold/italic).
-                    weight = current_font.cget("weight")
-                    new_font = (family, new_size, weight)
-                elif isinstance(current_font, (list, tuple)):
-                    new_font = (current_font[0], new_size, *current_font[2:])
-                else:
-                    new_font = ("Segoe UI", new_size)
 
-                widget.configure(font=new_font)
-            except Exception:
-                # If the widget supports text but not fonts
-                pass
+            # 3. Handle the case where current_font is None
+            if current_font is None:
+                base_size = 13  # Default fallback
+
+            # 4. Extract size based on type (Object, Tuple, or String)
+            elif hasattr(current_font, "cget"):  # CTkFont or similar object
+                base_size = int(current_font.cget("size"))
+
+            elif isinstance(current_font, (list, tuple)) and len(current_font) > 1:
+                base_size = int(current_font[1])
+
+            else:
+                # String parsing: e.g., "Arial 14 bold"
+                parts = str(current_font).split()
+                # Check if the second part is actually a number
+                if len(parts) > 1 and parts[1].replace("-", "").isdigit():
+                    base_size = int(parts[1])
+                else:
+                    base_size = 13
 
         except Exception as e:
-            # Останній рубіж — просто виводимо помилку в консоль, щоб не "класти" GUI
-            print(f"Critical font error: {e}")
+            logger.debug(f"Could not determine font size for {widget}: {e}")
+            base_size = 13
 
-    def _get_adaptive_font_size(
-        self, text: str, threshold: int = 14, base_size: int | None = 14
-    ) -> int | None:
-        if base_size == None:
-            return None
-        lenght = len(text)
-        if lenght <= threshold:
-            return base_size
-        reduction = (lenght - threshold) // 4
+        # Store it so we don't have to calculate this mess again
+        widget.base_font_size = base_size
+        return base_size
+
+    def _calculate_adaptive_size(
+        self, text: str, base_size: int, threshold: int
+    ) -> int:
+        """Logic for decreasing font size based on text length."""
+        reduction = max(0, (len(text) - threshold) // 2)
         return max(base_size - reduction, 10)
+
+    def _apply_font_size(self, widget: Any, new_size: int) -> None:
+        """Safely applies a new size to the existing widget font."""
+        try:
+            current_font = widget.cget("font")
+            if hasattr(current_font, "cget"):
+                new_font = (
+                    current_font.cget("family"),
+                    new_size,
+                    current_font.cget("weight"),
+                )
+            elif isinstance(current_font, (list, tuple)):
+                new_font = (current_font[0], new_size, *current_font[2:])
+            else:
+                new_font = ("Segoe UI", new_size)
+
+            widget.configure(font=new_font)
+        except Exception as e:
+            logger.debug(f"Could not update font for {widget}: {e}")
 
     def refresh_localization(self) -> None:
 
