@@ -1,9 +1,13 @@
-from typing import Callable
+import logging
+from typing import Callable, Dict
 from simple_to_pdf.utils.theme_provider import ScrolableFrameThemeMixin
 from simple_to_pdf.core.config import ThemeKeys
 from simple_to_pdf.widgets import BaseFrame, BaseLabel
 from pathlib import Path
+from PIL import Image
 import customtkinter as ctk
+
+logger = logging.getLogger(__name__)
 
 
 class CTkListbox(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
@@ -21,6 +25,8 @@ class CTkListbox(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
         self.selected_data = {}
         # self.all_widgets stores ALL created widgets: {Path: {"frame": ..., "label": ...}}
         self.all_widgets = {}
+        self._icon_cache = {}
+        self._icon_size = (24, 24)
 
         self.default_text_color = self.get_color(ThemeKeys.TEXT_PRIMARY)
         self.selected_row_color = self.get_color(ThemeKeys.TEXT_PRIMARY)
@@ -51,19 +57,57 @@ class CTkListbox(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
             frame.pack_forget()
             frame.pack(fill="x", padx=5, pady=2)
 
+    def _get_file_icon(self, *, file_path: Path):
+        """Returns a cached icon based on file extention"""
+        ext = file_path.suffix.lower
+        if ext in self._icon_cache:
+            return self._icon_cache[ext]
+
+        # Icon getting logic
+        icon_map = {
+            ".pdf": "pdf_icon.png",
+            ".jpg": "img_icon.png",
+            ".png": "img_icon.png",
+            "docx": "word_icon.png",
+        }
+        icon_file = icon_map.get(str(ext), "default_icon.png")
+        try:
+            img_path = BASE_ICONS_PATH / icon_file
+            pil_image = Image.open(img_path)
+            ctk_image = ctk.CTkImage(
+                light_image=pil_image, dark_image=pil_image, size=self._icon_size
+            )
+            self._icon_cache[ext] = ctk_image
+            return ctk_image
+        except:
+            return None
+
     def _create_file_row(self, file_path: Path):
         """Creates a widget row and stores it in the all_widgets registry."""
+
         row = BaseFrame(self, frame_type="list_item", border_width=1)
+
+        # Icon logic
+
+        icon_image = self._get_file_icon(file_path=file_path)
+        icon_label = BaseLabel(row, image=icon_image, text="", label_type="content")
+        icon_label.pack(side="left", padx=(10, 5), pady=5)
+
         path_label = BaseLabel(
             row, text=str(file_path), label_type="content", anchor="w", justify="left"
         )
         path_label.pack(side="left", fill="x", expand=True, padx=(10, 10), pady=5)
 
         # Save to the global registry
-        self.all_widgets[file_path] = {"frame": row, "label": path_label}
+        self.all_widgets[file_path] = {
+            "frame": row,
+            "label": path_label,
+            "icon": icon_label,
+        }
         # Register all parts of the row for mouse wheel scrolling
-        self._bind_mouse_wheel(row)
-        self._bind_mouse_wheel(path_label)
+        for widget in [row, path_label, icon_label]:
+            self._bind_mouse_wheel(widget)
+            widget.bind("<Button-1>", lambda e, p=file_path: self._select_row(p))
 
         def on_click(event):
             self._select_row(file_path=file_path)

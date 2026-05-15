@@ -176,7 +176,7 @@ class PDFMergerGUI(BaseWindow):
 
     def on_change_language(self, new_lang_name: str) -> None:
         """Handler for language changes from the interface."""
-        LocalizationMixin.switch_language(new_lang_name)
+        LocalizationMixin.switch_language(lang_name=new_lang_name)
 
     def on_check_updates_click(self):
         """

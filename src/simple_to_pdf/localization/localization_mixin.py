@@ -46,7 +46,7 @@ class LocalizationMixin:
                 logger.error(f"Failed to load {file_path.name}: {e}")
 
     @classmethod
-    def switch_language(cls, lang_name: str) -> None:
+    def switch_language(cls, *,lang_name: str) -> None:
         """Sets the current language and notifies all registered observers."""
         target_lang = cls._LANG_MAP.get(lang_name, lang_name)
         # Add logging
