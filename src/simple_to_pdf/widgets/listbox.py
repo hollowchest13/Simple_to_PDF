@@ -1,7 +1,8 @@
 import logging
 from typing import Callable, Dict
+from simple_to_pdf.utils.file_tools import get_file_category
 from simple_to_pdf.utils.theme_provider import ScrolableFrameThemeMixin
-from simple_to_pdf.core.config import ThemeKeys
+from simple_to_pdf.core.config import ThemeKeys,ICONS_PATH
 from simple_to_pdf.widgets import BaseFrame, BaseLabel
 from pathlib import Path
 from PIL import Image
@@ -59,61 +60,62 @@ class CTkListbox(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
 
     def _get_file_icon(self, *, file_path: Path):
         """Returns a cached icon based on file extention"""
-        ext = file_path.suffix.lower
-        if ext in self._icon_cache:
-            return self._icon_cache[ext]
+        file_category=get_file_category(file_path=file_path)
 
         # Icon getting logic
         icon_map = {
-            ".pdf": "pdf_icon.png",
-            ".jpg": "img_icon.png",
-            ".png": "img_icon.png",
-            "docx": "word_icon.png",
+            "pdf": "pdf_icon.png",
+            "table": "table_icon.png",
+            "document": "doc_icon.png",
+            "presentation":"pres_icon.png",
+            "image":"image_icon.png",
         }
-        icon_file = icon_map.get(str(ext), "default_icon.png")
+        icon_file = icon_map.get(str(file_category), "default_icon.png")
         try:
-            img_path = BASE_ICONS_PATH / icon_file
+            img_path = ICONS_PATH / icon_file
             pil_image = Image.open(img_path)
             ctk_image = ctk.CTkImage(
                 light_image=pil_image, dark_image=pil_image, size=self._icon_size
             )
-            self._icon_cache[ext] = ctk_image
+            self._icon_cache[file_category] = ctk_image
             return ctk_image
         except:
             return None
 
     def _create_file_row(self, file_path: Path):
-        """Creates a widget row and stores it in the all_widgets registry."""
 
+        """Creates a UI widget row for a file and registers it for events."""
+
+        # Initialize the main container for the row
         row = BaseFrame(self, frame_type="list_item", border_width=1)
 
-        # Icon logic
-
+        # Resolve and display the appropriate file icon based on its type
         icon_image = self._get_file_icon(file_path=file_path)
         icon_label = BaseLabel(row, image=icon_image, text="", label_type="content")
         icon_label.pack(side="left", padx=(10, 5), pady=5)
 
+        # Display the full file path string
         path_label = BaseLabel(
             row, text=str(file_path), label_type="content", anchor="w", justify="left"
         )
         path_label.pack(side="left", fill="x", expand=True, padx=(10, 10), pady=5)
 
-        # Save to the global registry
+        # Cache references to widgets for dynamic style changes during selection
         self.all_widgets[file_path] = {
             "frame": row,
             "label": path_label,
             "icon": icon_label,
         }
-        # Register all parts of the row for mouse wheel scrolling
+        
+        # Bind interactions to all parts of the row (container, text, and icon)
         for widget in [row, path_label, icon_label]:
+            # Enable mouse wheel scrolling on child widgets
             self._bind_mouse_wheel(widget)
-            widget.bind("<Button-1>", lambda e, p=file_path: self._select_row(p))
-
-        def on_click(event):
-            self._select_row(file_path=file_path)
-
-        row.bind("<Button-1>", on_click)
-        path_label.bind("<Button-1>", on_click)
+            
+            # Bind left-click selection. 
+            # Using 'p=file_path' creates a local closure lock, ensuring the correct
+            # path is preserved and passed when this specific row is clicked.
+            widget.bind("<Button-1>", lambda event, p=file_path: self._select_row(p))
 
     def _select_row(self, file_path: Path):
         """Manages the selection state of a row."""

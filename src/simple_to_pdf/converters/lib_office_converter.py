@@ -5,7 +5,6 @@ import tempfile
 from pathlib import Path
 
 import openpyxl
-
 from simple_to_pdf.converters.lib_mixin import LibreSetupMixin
 from simple_to_pdf.converters.img_converter import ImageConverter
 from simple_to_pdf.converters.models import ConversionResult

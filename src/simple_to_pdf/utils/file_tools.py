@@ -2,9 +2,29 @@ import logging
 import os
 from tkinter import filedialog, messagebox
 from typing import overload, Literal, Sequence, Union
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+FileCategory = Literal["pdf", "table", "image", "document", "presentation"]
+
+GLOBAL_EXTENSIONS: dict[FileCategory, set[str]] = {
+    "pdf": {".pdf"},
+    "table": {".xlsx", ".xlsm", ".xltx", ".xltm", ".xls", ".xlsb", ".ods", ".csv"},
+    "document": {".doc", ".docx", ".odt", ".rtf", ".txt"},
+    "presentation": {".ppt", ".pptx", ".odp"},
+    "image": {".jpg", ".jpeg", ".png", ".svg", ".gif"}
+}
+
+def get_file_category(file_path: Path) -> FileCategory | None:
+
+    """Return file category by path"""
+    
+    ext = file_path.suffix.lower()
+    for category, exts in GLOBAL_EXTENSIONS.items():
+        if ext in exts:
+            return category
+    return None
 
 def get_text(*, file_name: str, file_path: str) -> str|None:
     if not os.path.exists(file_path):
