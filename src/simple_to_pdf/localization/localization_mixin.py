@@ -89,7 +89,7 @@ class LocalizationMixin:
         data = lang_data
         parts = full_path.split(".")
 
-        for i, part in enumerate(parts):
+        for part in parts:  # тепер part — це чистий рядок 'settings', 'compress' тощо
             if isinstance(data, dict) and part in data:
                 data = data[part]
 
@@ -115,7 +115,7 @@ class LocalizationMixin:
         Main entry point for updating UI localization.
         Iterates through widgets and applies translation.
         """
-        EXCLUDED_KEYS = {"language_selector"}
+        EXCLUDED_KEYS = {"language_selector","compress_selector"}
 
         for key, widget in widgets_dict.items():
             if (
@@ -161,7 +161,7 @@ class LocalizationMixin:
         """Returns True if the widget is a button-like component."""
         return "button" in widget.__class__.__name__.lower()
 
-    def _try_configure(self, widget: Any, **kwargs) -> bool:
+    def _try_configure(self, widget: Any, **kwargs:Any) -> bool:
         """Safe wrapper for widget.configure(). Returns True if successful."""
         try:
             widget.configure(**kwargs)
@@ -195,7 +195,7 @@ class LocalizationMixin:
             # 2. Safely get the font object
             current_font = None
             if hasattr(widget, "cget"):
-                current_font = widget.cget("font")
+                current_font:Any = widget.cget("font")
 
             # 3. Handle the case where current_font is None
             if current_font is None:

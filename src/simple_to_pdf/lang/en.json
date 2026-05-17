@@ -28,6 +28,7 @@
     },
     "settings_panel": {
       "language_label": "Language",
+      "compress_label":"Compress PDF",
       "title_label": "Settings"
     }
   },

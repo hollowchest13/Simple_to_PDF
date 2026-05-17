@@ -2,7 +2,7 @@ import logging
 from typing import Callable, Dict
 from simple_to_pdf.utils.file_tools import get_file_category
 from simple_to_pdf.utils.theme_provider import ScrolableFrameThemeMixin
-from simple_to_pdf.core.config import ThemeKeys,ICONS_PATH
+from simple_to_pdf.core.config import ThemeKeys, ICONS_PATH
 from simple_to_pdf.widgets import BaseFrame, BaseLabel
 from pathlib import Path
 from PIL import Image
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class CTkListbox(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
     def __init__(self, parent, **kwargs):
-        params = self.set_scrollable_frame_params(scr_frame_type="file_list")
+        params = self.set_params(scr_frame_type="file_list")
         params.update(kwargs)
         super().__init__(parent, **params)
 
@@ -29,7 +29,7 @@ class CTkListbox(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
         self._icon_cache = {}
         self._icon_size = (24, 24)
 
-        self.default_text_color = self.get_color(ThemeKeys.TEXT_PRIMARY)
+        self.default_text_color = self.get_color(ThemeKeys.TEXT_CONTENT)
         self.selected_row_color = self.get_color(ThemeKeys.TEXT_PRIMARY)
         self.selected_text_color = self.get_color(ThemeKeys.TEXT_ON_ACCENT)
 
@@ -60,15 +60,15 @@ class CTkListbox(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
 
     def _get_file_icon(self, *, file_path: Path):
         """Returns a cached icon based on file extention"""
-        file_category=get_file_category(file_path=file_path)
+        file_category = get_file_category(file_path=file_path)
 
         # Icon getting logic
         icon_map = {
             "pdf": "pdf_icon.png",
             "table": "table_icon.png",
             "document": "doc_icon.png",
-            "presentation":"pres_icon.png",
-            "image":"image_icon.png",
+            "presentation": "pres_icon.png",
+            "image": "image_icon.png",
         }
         icon_file = icon_map.get(str(file_category), "default_icon.png")
         try:
@@ -83,7 +83,6 @@ class CTkListbox(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
             return None
 
     def _create_file_row(self, file_path: Path):
-
         """Creates a UI widget row for a file and registers it for events."""
 
         # Initialize the main container for the row
@@ -106,13 +105,13 @@ class CTkListbox(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
             "label": path_label,
             "icon": icon_label,
         }
-        
+
         # Bind interactions to all parts of the row (container, text, and icon)
         for widget in [row, path_label, icon_label]:
             # Enable mouse wheel scrolling on child widgets
             self._bind_mouse_wheel(widget)
-            
-            # Bind left-click selection. 
+
+            # Bind left-click selection.
             # Using 'p=file_path' creates a local closure lock, ensuring the correct
             # path is preserved and passed when this specific row is clicked.
             widget.bind("<Button-1>", lambda event, p=file_path: self._select_row(p))

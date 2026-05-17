@@ -1,7 +1,6 @@
 import logging
 import tkinter as tk
 import customtkinter as ctk
-from CTkMessagebox import CTkMessagebox
 from typing import Callable, Dict, Any, Tuple
 
 from simple_to_pdf.pdf.pdf_merger import PdfMerger

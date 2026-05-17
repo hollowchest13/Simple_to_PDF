@@ -1,5 +1,6 @@
+from abc import ABC, abstractmethod
+from typing import Literal, Dict, Any
 from simple_to_pdf.core.config import ThemeKeys, DEFAULT_COLORS
-from typing import Literal
 
 
 class ThemeProviderMixin:
@@ -7,13 +8,19 @@ class ThemeProviderMixin:
         return DEFAULT_COLORS.get(key, "#ffffff")
 
 
-class ButtonThemeMixin(ThemeProviderMixin):
-    def set_button_params(self) -> dict:
+class WidgetThemeProviderMixin(ThemeProviderMixin, ABC):
+    @abstractmethod
+    def set_params(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+        pass
+
+
+class ButtonThemeMixin(WidgetThemeProviderMixin):
+    def set_params(self) -> Dict[str, Any]:
 
         default_accent = self.get_color(ThemeKeys.ACCENT)
         hover_accent = self.get_color(ThemeKeys.ACCENT_HOVER)
         text_color = self.get_color(ThemeKeys.TEXT_ON_ACCENT)
-        theme: dict = {
+        params: Dict[str, Any] = {
             "fg_color": default_accent,
             "hover_color": hover_accent,
             "text_color": text_color,
@@ -22,11 +29,11 @@ class ButtonThemeMixin(ThemeProviderMixin):
             "cursor": "hand2",
             "command": None,
         }
-        return theme
+        return params
 
 
-class FrameThemeMixin(ThemeProviderMixin):
-    def set_frame_params(
+class FrameThemeMixin(WidgetThemeProviderMixin):
+    def set_params(
         self,
         *,
         frame_type: Literal[
@@ -38,7 +45,7 @@ class FrameThemeMixin(ThemeProviderMixin):
             "scr_frame_container",
             "list_item",
         ],
-    ) -> dict:
+    ) -> Dict[str, Any]:
 
         match frame_type:
             case "main":
@@ -65,8 +72,8 @@ class FrameThemeMixin(ThemeProviderMixin):
                 return {"fg_color": "transparent"}
 
 
-class LabelThemeMixit(ThemeProviderMixin):
-    def set_label_params(self, label_type: str) -> dict:
+class LabelThemeMixit(WidgetThemeProviderMixin):
+    def set_params(self, label_type: str) -> Dict[str, Any]:
         bg_color = "transparent"
 
         match label_type:
@@ -104,12 +111,12 @@ class LabelThemeMixit(ThemeProviderMixin):
         return {}
 
 
-class ScrolableFrameThemeMixin(ThemeProviderMixin):
-    def set_scrollable_frame_params(
+class ScrolableFrameThemeMixin(WidgetThemeProviderMixin):
+    def set_params(
         self,
         *,
         scr_frame_type: Literal["file_list", "button_list", "settings", "preview"],
-    ) -> dict:
+    ) -> Dict[str, Any]:
         """
         Generates configuration parameters for different types of CTkScrollableFrames.
         Ensures consistent UI across the application using the theme's color palette.
@@ -168,10 +175,10 @@ class ScrolableFrameThemeMixin(ThemeProviderMixin):
         return params
 
 
-class TextboxThemeMixin(ThemeProviderMixin):
-    def set_textbox_params(
+class TextboxThemeMixin(WidgetThemeProviderMixin):
+    def set_params(
         self, *, textbox_type: Literal["status_text", "info"]
-    ) -> dict:
+    ) -> Dict[str, Any]:
         match textbox_type:
             case "status_text":
                 params = {
@@ -194,8 +201,8 @@ class TextboxThemeMixin(ThemeProviderMixin):
         return params
 
 
-class ProgressThemeMixin(ThemeProviderMixin):
-    def set_progress_params(self, *, progress_type: Literal["merge_progress"]) -> dict:
+class ProgressThemeMixin(WidgetThemeProviderMixin):
+    def set_params(self, *, progress_type: Literal["merge_progress"]) -> Dict[str, Any]:
         match progress_type:
             case "merge_progress":
                 params = {
@@ -207,8 +214,8 @@ class ProgressThemeMixin(ThemeProviderMixin):
         return params
 
 
-class OptionMenuThemeMixin(ThemeProviderMixin):
-    def set_option_menu_params(self, menu_type: str = "standard") -> dict:
+class OptionMenuThemeMixin(WidgetThemeProviderMixin):
+    def set_params(self, menu_type: str = "standard") -> Dict[str, Any]:
         accent = self.get_color(ThemeKeys.ACCENT)
         accent_hover = self.get_color(ThemeKeys.ACCENT_HOVER)
 
@@ -231,4 +238,25 @@ class OptionMenuThemeMixin(ThemeProviderMixin):
         if menu_type == "settings":
             params.update({"width": 140, "dynamic_resizing": False})
 
+        return params
+
+
+class SwitcherThemeMixin(WidgetThemeProviderMixin):
+    def set_params(self, variable: Any, text: str = "", **kwargs) -> Dict[str, Any]:
+        "Return style parameters for CTKSwitch."
+        accent_color = self.get_color(ThemeKeys.ACCENT)
+        text_color = self.get_color(ThemeKeys.TEXT_CONTENT)
+        button_color = self.get_color(ThemeKeys.TEXT_PRIMARY)
+
+        params: Dict[str, Any] = {
+            "variable": variable,
+            "text": text,  # Зазвичай "" (якщо підпис робимо через Label)
+            "progress_color": accent_color,  # Колір лінії, коли світчер ON
+            "button_color": button_color,  # Колір кульки у вимкненому стані
+            "button_hover_color": accent_color,  # Колір кульки при наведенні
+            "text_color": text_color,
+            "font": ("Segoe UI", 13),
+            "cursor": "hand2",
+        }
+        params.update(**kwargs)
         return params

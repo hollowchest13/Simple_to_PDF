@@ -13,7 +13,20 @@ GLOBAL_EXTENSIONS: dict[FileCategory, set[str]] = {
     "table": {".xlsx", ".xlsm", ".xltx", ".xltm", ".xls", ".xlsb", ".ods", ".csv"},
     "document": {".doc", ".docx", ".odt", ".rtf", ".txt"},
     "presentation": {".ppt", ".pptx", ".odp"},
-    "image": {".jpg", ".jpeg", ".png", ".svg", ".gif"}
+    "image": {".jpg",
+            ".jpeg",
+            ".png",
+            ".bmp",
+            ".gif",
+            ".tiff",
+            ".tif",
+            ".webp",
+            ".ppm",
+            ".icns",
+            ".ico",
+            ".jfif",
+            ".jpe",
+            ".tga",}
 }
 
 def get_file_category(file_path: Path) -> FileCategory | None:

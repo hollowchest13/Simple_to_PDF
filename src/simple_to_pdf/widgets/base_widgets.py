@@ -1,3 +1,4 @@
+from tkinter import BooleanVar
 import customtkinter as ctk
 from typing import Literal, Any, Callable, Dict, List
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
@@ -9,6 +10,7 @@ from simple_to_pdf.utils.theme_provider import (
     ButtonThemeMixin,
     FrameThemeMixin,
     ScrolableFrameThemeMixin,
+    SwitcherThemeMixin,
 )
 from simple_to_pdf.core.config import ICONS_PATH
 from PIL import Image
@@ -24,7 +26,7 @@ class PrimaryButton(ctk.CTkButton, ButtonThemeMixin):
     """
 
     def __init__(self, parent, **kwargs):
-        params = self.set_button_params()
+        params = self.set_params()
         params.update(kwargs)
         super().__init__(parent, **params)
 
@@ -59,7 +61,7 @@ class BaseFrame(ctk.CTkFrame, FrameThemeMixin, LocalizationMixin):
             If 'bg' is not explicitly passed in **kwargs, it will be
             automatically assigned based on the provided frame_type.
         """
-        params = self.set_frame_params(frame_type=frame_type)
+        params = self.set_params(frame_type=frame_type)
         params.update(kwargs)
         # Call the super constructor with prepared kwargs
         super().__init__(parent, **params)
@@ -162,7 +164,7 @@ class BaseScrollableFrame(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
         ] = "button_list",
         **kwargs,
     ):
-        params = self.set_scrollable_frame_params(scr_frame_type=scr_frame_type)
+        params = self.set_params(scr_frame_type=scr_frame_type)
         params.update(kwargs)
         super().__init__(parent, **params)
 
@@ -180,14 +182,14 @@ class BaseLabel(ctk.CTkLabel, LabelThemeMixit):
         label_type: Literal["badge", "title", "content", "subtitle"] = "badge",
         **kwargs,
     ):
-        params = self.set_label_params(label_type=label_type)
+        params = self.set_params(label_type=label_type)
         params.update(kwargs)
         super().__init__(parent, **params)
 
 
 class BaseProgress(ctk.CTkProgressBar, ProgressThemeMixin):
     def __init__(self, parent, *, progress_type: Literal["merge_progress"], **kwargs):
-        params = self.set_progress_params(progress_type=progress_type)
+        params = self.set_params(progress_type=progress_type)
         params.update(kwargs)
         super().__init__(parent, **params)
 
@@ -196,7 +198,7 @@ class BaseTextBox(ctk.CTkTextbox, TextboxThemeMixin):
     def __init__(
         self, parent, *, textbox_type: Literal["status_text", "info"] = "info", **kwargs
     ):
-        params = self.set_textbox_params(textbox_type=textbox_type)
+        params = self.set_params(textbox_type=textbox_type)
         params.update(kwargs)
         super().__init__(parent, **params)
 
@@ -209,7 +211,17 @@ class BaseOptionMenu(ctk.CTkOptionMenu, OptionMenuThemeMixin):
         values: List[str] | None = None,
         **kwargs,
     ):
-        params = self.set_option_menu_params(menu_type=menu_type)
+        params = self.set_params(menu_type=menu_type)
         params["values"] = values or ["None"]
         params.update(kwargs)
         super().__init__(parent, **params)
+
+
+class BaseSwitcher(ctk.CTkSwitch, SwitcherThemeMixin):
+    def __init__(self, parent,*,value:bool,**kwargs):
+        self.var = ctk.BooleanVar(value=value)
+        theme_params = self.set_params(variable=self.var, text="")
+        super().__init__(parent, **theme_params,**kwargs)
+
+    def is_on(self) -> bool:
+        return self.var.get()

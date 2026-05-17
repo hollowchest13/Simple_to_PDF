@@ -81,7 +81,6 @@ class PDFMergerGUI(BaseWindow):
     def init_connections(self) -> None:
         self.callback = GUICallback(main_frame=self.main_panel)
 
-    # TODO Add a separate toggle_ui function for each panel.
     def toggle_ui(self, *, active: bool) -> None:
         """Enable or disable the entire UI."""
 
@@ -276,6 +275,7 @@ class PDFMergerGUI(BaseWindow):
         try:
             # Reset progress bar
             self.main_panel.progress_bar_reset()
+            need_compress:bool=self.settings_panel.compress_switcher.is_on()
 
             # Give this safe wrapper to the engine
             self.merger.merge_to_pdf(
@@ -283,11 +283,14 @@ class PDFMergerGUI(BaseWindow):
                 output_path=output_path,
                 callback=self.callback.safe_callback,  # Use the wrapper
             )
+            if need_compress==True:
+                pass
 
         except Exception as e:
             err_msg = f"❌ Error: Could not merge files: \n{e}"
             logger.error(err_msg, exc_info=True)
             self.main_panel.progress_bar_reset()
+   
 
     def prompt_pages_to_remove(self):
         """Select a PDF file and show the page extraction dialog."""

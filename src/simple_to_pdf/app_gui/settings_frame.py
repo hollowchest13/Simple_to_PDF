@@ -1,8 +1,8 @@
 import customtkinter as ctk
 from simple_to_pdf.widgets import BaseLabel, SlidingFrame
-from typing import Callable, Dict, Any, Type
+from typing import Callable, Dict, Any
 
-from simple_to_pdf.widgets.base_widgets import BaseOptionMenu
+from simple_to_pdf.widgets.base_widgets import BaseOptionMenu, BaseSwitcher
 
 
 class SettingsFrame(SlidingFrame):
@@ -19,6 +19,7 @@ class SettingsFrame(SlidingFrame):
             parent, open_width=open_width, closed_width=closed_width, **kwargs
         )
         self.language_selector: BaseOptionMenu
+        self.compress_switcher: BaseSwitcher
 
         # Path to settings section in translation JSON
         self.loc_section = "ui.settings_panel"
@@ -59,7 +60,7 @@ class SettingsFrame(SlidingFrame):
 
         # Language Selection Row
         # Returns both the label and the option menu to be stored in self.ui
-        row_widgets = self._create_setting_row(
+        lang_widgets = self._create_setting_row(
             parent=self,
             row_id="language",  # Used to generate keys: 'language_label' and 'language_selector'
             label_text=self.get_text("settings_panel.language_label", section="ui"),
@@ -68,8 +69,14 @@ class SettingsFrame(SlidingFrame):
             width=120,
             command=self._trigger("change_language"),
         )
-        widgets.update(row_widgets)
-
+        compress_widgets: Any = self._create_setting_row(
+            parent=self,
+            row_id="compress",
+            label_text=self.get_text("settings_panel.compress_label", section="ui"),
+            widget_class=BaseSwitcher,  # Передаємо клас світча
+            value=False
+        )
+        widgets.update(**lang_widgets,**compress_widgets)
         return widgets
 
     def _create_setting_row(
@@ -94,7 +101,7 @@ class SettingsFrame(SlidingFrame):
 
         # Create the control widget (OptionMenu, Entry, etc.)
         widget = widget_class(container, **widget_kwargs)
-        widget.pack(side="right", expand=True, fill="x", padx=5)
+        widget.pack(side="right", padx=5)
 
         # Return both so they can be added to self.ui for translation
         return {f"{row_id}_label": label, f"{row_id}_selector": widget}

@@ -3,6 +3,7 @@ import platform
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 import sys
+# TODO Зробити так щоб лог відразу вказував характер повідомлення ERROR,INFO...
 
 
 def get_log_dir() -> Path:
