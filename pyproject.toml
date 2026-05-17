@@ -23,6 +23,7 @@ dependencies = [
     "tendo==0.3.0",
     "customtkinter>=5.2.2",
     "pywin32>=306; sys_platform == 'win32'",
+    "pymupdf>=1.24.0",
 ]
 [project.urls]
 # External links for the project

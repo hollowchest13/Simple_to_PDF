@@ -1,7 +1,8 @@
-import customtkinter as ctk
-from simple_to_pdf.widgets import BaseLabel, SlidingFrame
-from typing import Callable, Dict, Any
+from typing import Any, Callable, Dict
 
+import customtkinter as ctk
+
+from simple_to_pdf.widgets import BaseLabel, SlidingFrame
 from simple_to_pdf.widgets.base_widgets import BaseOptionMenu, BaseSwitcher
 
 
@@ -74,9 +75,9 @@ class SettingsFrame(SlidingFrame):
             row_id="compress",
             label_text=self.get_text("settings_panel.compress_label", section="ui"),
             widget_class=BaseSwitcher,  # Передаємо клас світча
-            value=False
+            value=False,
         )
-        widgets.update(**lang_widgets,**compress_widgets)
+        widgets.update(**lang_widgets, **compress_widgets)
         return widgets
 
     def _create_setting_row(

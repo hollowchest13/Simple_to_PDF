@@ -2,34 +2,35 @@ import logging
 import os
 import subprocess
 import sys
-import customtkinter as ctk
 import webbrowser
 from datetime import datetime
 from pathlib import Path
 from tkinter import filedialog
-from typing import Callable
-from simple_to_pdf.localization.localization_mixin import LocalizationMixin
+from typing import Callable, Dict
+
+import customtkinter as ctk
+
+from simple_to_pdf.app_dialog import (
+    AboutDialog,
+    PageSelectionDialog,
+    UpdateDialog,
+)
+from simple_to_pdf.app_gui.base_window import BaseWindow
 from simple_to_pdf.app_gui.gui_callback import GUICallback
 from simple_to_pdf.app_gui.help_frame import HelpFrame
 from simple_to_pdf.app_gui.list_controls_frame import ListControlsFrame
 from simple_to_pdf.app_gui.main_frame import MainFrame
 from simple_to_pdf.app_gui.settings_frame import SettingsFrame
 from simple_to_pdf.cli.logger import get_log_dir
+from simple_to_pdf.core import config
 from simple_to_pdf.core.version import VersionController
+from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.pdf import PageExtractor, PdfMerger
 from simple_to_pdf.settings.settings_manager import SettingsManager
 from simple_to_pdf.utils.file_tools import get_files
 from simple_to_pdf.utils.logic import get_selected_pages
-from simple_to_pdf.utils.ui_tools import change_state, ui_locker
 from simple_to_pdf.utils.notification_manager import NotificationManager
-from simple_to_pdf.app_dialog import (
-    AboutDialog,
-    UpdateDialog,
-    PageSelectionDialog,
-)
-from simple_to_pdf.core import config
-from simple_to_pdf.app_gui.base_window import BaseWindow
-from typing import Dict
+from simple_to_pdf.utils.ui_tools import change_state, ui_locker
 
 logger = logging.getLogger(__name__)
 
@@ -275,7 +276,7 @@ class PDFMergerGUI(BaseWindow):
         try:
             # Reset progress bar
             self.main_panel.progress_bar_reset()
-            need_compress:bool=self.settings_panel.compress_switcher.is_on()
+            need_compress: bool = self.settings_panel.compress_switcher.is_on()
 
             # Give this safe wrapper to the engine
             self.merger.merge_to_pdf(
@@ -283,14 +284,11 @@ class PDFMergerGUI(BaseWindow):
                 output_path=output_path,
                 callback=self.callback.safe_callback,  # Use the wrapper
             )
-            if need_compress==True:
-                pass
 
         except Exception as e:
             err_msg = f"❌ Error: Could not merge files: \n{e}"
             logger.error(err_msg, exc_info=True)
             self.main_panel.progress_bar_reset()
-   
 
     def prompt_pages_to_remove(self):
         """Select a PDF file and show the page extraction dialog."""
