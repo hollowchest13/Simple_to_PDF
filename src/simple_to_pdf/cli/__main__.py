@@ -4,7 +4,7 @@ import customtkinter as ctk
 from simple_to_pdf.app_gui.main_window import PDFMergerGUI
 from simple_to_pdf.cli.logger import setup_logger
 from simple_to_pdf.core.version import VersionController
-from simple_to_pdf.pdf import PageExtractor, PdfMerger
+from simple_to_pdf.pdf import PageExtractor, PdfMerger,PDFCompressor
 from simple_to_pdf.core import config
 from simple_to_pdf.settings.settings_manager import SettingsManager
 from tendo import singleton
@@ -29,12 +29,14 @@ def main():
     version_controller = VersionController(
         git_repo=config.GITHUB_REPO, git_user=config.GITHUB_USER
     )
+    compressor=PDFCompressor()
     ctk.set_appearance_mode("light")
     _run_gui(
         merger=merger,
         page_extractor=page_extractor,
         version_controller=version_controller,
         settings_manager=settings_manager,
+        compressor=compressor
     )
 
 
@@ -44,6 +46,7 @@ def _run_gui(
     page_extractor: PageExtractor,
     version_controller: VersionController,
     settings_manager: SettingsManager,
+    compressor:PDFCompressor
 ) -> None:
     try:
         app = PDFMergerGUI(
@@ -51,6 +54,7 @@ def _run_gui(
             page_extractor=page_extractor,
             version_controller=version_controller,
             settings_manager=settings_manager,
+            compressor=compressor
         )
         app.mainloop()
     except Exception as e:

@@ -29,12 +29,12 @@ class MainFrame(BaseFrame):
         master: tk.Frame,
         merger: PdfMerger,
         notifier: NotificationManager,
-        callbacks: Dict[str, Callable],
+        handlers: Dict[str, Callable],
     ):
         super().__init__(master)
         self.merger = merger
         self.notifier = notifier
-        self.callbacks = callbacks
+        self.handlers = handlers
         self.loc_section = "ui.main_panel"
 
         # Explicit type hints for IDE autocomplete

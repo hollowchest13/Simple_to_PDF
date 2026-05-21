@@ -14,12 +14,12 @@ class ListControlsFrame(BaseFrame):
         parent: ctk.CTkFrame,
         *,
         width: int = 150,
-        callbacks: Dict[str, Callable],
+        handlers: Dict[str, Callable],
         **kwargs,
     ):
         super().__init__(parent, width=width, **kwargs)
         self.loc_section: str = "ui.list_controls_panel"
-        self.callbacks = callbacks
+        self.handlers = handlers
         self.init_btns()
 
     def init_btns(

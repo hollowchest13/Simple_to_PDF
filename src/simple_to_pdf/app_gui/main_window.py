@@ -6,7 +6,7 @@ import webbrowser
 from datetime import datetime
 from pathlib import Path
 from tkinter import filedialog
-from typing import Callable, Dict
+from typing import Callable, Dict, List
 
 import customtkinter as ctk
 
@@ -25,9 +25,9 @@ from simple_to_pdf.cli.logger import get_log_dir
 from simple_to_pdf.core import config
 from simple_to_pdf.core.version import VersionController
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
-from simple_to_pdf.pdf import PageExtractor, PdfMerger
+from simple_to_pdf.pdf import PageExtractor, PdfMerger, PDFCompressor
 from simple_to_pdf.settings.settings_manager import SettingsManager
-from simple_to_pdf.utils.file_tools import get_files
+from simple_to_pdf.utils.file_tools import get_files, FileToolKit
 from simple_to_pdf.utils.logic import get_selected_pages
 from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.utils.ui_tools import change_state, ui_locker
@@ -43,44 +43,49 @@ class PDFMergerGUI(BaseWindow):
         page_extractor: PageExtractor,
         version_controller: VersionController,
         settings_manager: SettingsManager,
+        compressor: PDFCompressor,
     ):
 
         # Initialize BaseWindow
         super().__init__(title=f"{config.APP_NAME}-PDF Merger", size="1000x700")
         self.protocol("WM_DELETE_WINDOW", self._on_closing)
         self.thread_running: bool = False
-        self.merger: PdfMerger = merger
-        self.page_extractor: PageExtractor = page_extractor
-        self.version_controller: VersionController = version_controller
-        self.notifier: NotificationManager = NotificationManager(self)
+        self.merger = merger
+        self.page_extractor = page_extractor
+        self.version_controller = version_controller
+        self.compressor = compressor
+        self.notifier = NotificationManager(self)
         self.settings_manager = settings_manager
         # build UI inside root_container inherited from BaseWindow
 
         handlers = self._setup_handlers()
-        self.init_panels(callback=handlers)
+        self.init_panels(handlers=handlers)
         self.init_connections()
-        self.build_gui(callbacks=handlers)
+        self.build_gui()
         self.setup_language()
 
-    def init_panels(self, callback: dict[str, Callable]) -> None:
+    def init_panels(self, handlers: dict[str, Callable]) -> None:
         self.main_panel: MainFrame = MainFrame(
             master=self.root_container,
             merger=self.merger,
             notifier=self.notifier,
-            callbacks=callback,
+            handlers=handlers,
         )
         self.btns_panel: ListControlsFrame = ListControlsFrame(
-            self.root_container, callbacks=callback
+            self.root_container, handlers=handlers
         )
         self.settings_panel: SettingsFrame = SettingsFrame(
-            parent=self.root_container, callbacks=callback
+            parent=self.root_container, handlers=handlers
         )
         self.help_panel: HelpFrame = HelpFrame(
-            parent=self.root_container, callbacks=callback
+            parent=self.root_container, handlers=handlers
         )
 
     def init_connections(self) -> None:
         self.callback = GUICallback(main_frame=self.main_panel)
+        self.merger.callback = self.callback.safe_callback
+        self.page_extractor.callback = self.callback.safe_callback
+        self.compressor.callback = self.callback.safe_callback
 
     def toggle_ui(self, *, active: bool) -> None:
         """Enable or disable the entire UI."""
@@ -93,7 +98,7 @@ class PDFMergerGUI(BaseWindow):
         # Disable all buttons and menu items
         change_state(widgets_dict=self.btns_panel.ui, state=btns_state)
 
-    def build_gui(self, *, callbacks: dict[str, Callable]) -> None:
+    def build_gui(self) -> None:
         """Builds the main GUI layout"""
 
         # Side-by-side layout with padding
@@ -240,7 +245,7 @@ class PDFMergerGUI(BaseWindow):
             )
 
         except Exception as e:
-            logger.error(f"❌ Error reading license file: {e}")
+            logger.error(f"Error reading license file: {e}")
             self.notifier.error(
                 scenario_key="file_read_error",
                 file_name=license_path,
@@ -253,7 +258,9 @@ class PDFMergerGUI(BaseWindow):
         """Handler for Merge button click"""
 
         # Preparing data (quick operation, doing in main thread)
-        files = [[i, path] for i, path in enumerate(self.main_panel.filebox.all_rows)]
+        files: list[tuple[int, Path]] = [
+            (i, path) for i, path in enumerate(self.main_panel.filebox.all_rows)
+        ]
         if not files:
             self.notifier.warning(
                 scenario_key="no_file_to_merge",
@@ -272,23 +279,66 @@ class PDFMergerGUI(BaseWindow):
         self._run_merge_worker(files=files, output_path=out)
 
     @ui_locker
-    def _run_merge_worker(self, files, output_path):
+    def _run_merge_worker(self, files: List[tuple[int, Path]], output_path: str):
+        self.main_panel.progress_bar_reset()
         try:
-            # Reset progress bar
-            self.main_panel.progress_bar_reset()
-            need_compress: bool = self.settings_panel.compress_switcher.is_on()
+            self.callback.safe_callback(
+                "progress",
+                **{
+                    "stage": "merging",
+                    "mode": "indeterminate",
+                },
+            )
+            merge_res = self.merger.merge_to_pdf(files=files)
+            self.callback.safe_callback(
+                "status",
+                **{
+                    "key": "merge.done",
+                    "status": "info" if merge_res.failed == 0 else "warning",
+                    "success": merge_res.success,
+                    "failed": merge_res.failed,
+                },
+            )
+            data = merge_res.data
+        except Exception as e:
+            logger.error(f"Merge stage failed: {e}", exc_info=True)
+            self.callback.safe_callback(
+                "status", **{"key": "merge.error", "status": "error"}
+            )
+            return
+        need_compress: bool = self.settings_panel.compress_selector.is_on()
+        if need_compress:
+            self.callback.safe_callback(
+                "progress",
+                **{
+                    "stage": "compressing",
+                    "mode": "indeterminate",
+                },
+            )
+            data = self.compressor.compress(pdf_bytes=data)
+        try:
+            FileToolKit.write_bytes(bytes_data=data, file_path=Path(output_path))
+            self.callback.safe_callback(
+                "status",
+                **{"key": "save.done", "status": "info", "path": output_path},
+            )
 
-            # Give this safe wrapper to the engine
-            self.merger.merge_to_pdf(
-                files=files,
-                output_path=output_path,
-                callback=self.callback.safe_callback,  # Use the wrapper
+        except OSError as e:
+            logger.error(f"Saving stage failed (OS Error): {e}", exc_info=True)
+            self.callback.safe_callback(
+                "status",
+                **{
+                    "key": "save.error.permission",
+                    "status": "error",
+                    "path": "output_path",
+                },
             )
 
         except Exception as e:
-            err_msg = f"❌ Error: Could not merge files: \n{e}"
-            logger.error(err_msg, exc_info=True)
-            self.main_panel.progress_bar_reset()
+            logger.error(f"Saving stage failed (Unknown Error): {e}", exc_info=True)
+            self.callback.safe_callback(
+                "status", **{"key": "save.error.unknown", "status": "error"}
+            )
 
     def prompt_pages_to_remove(self):
         """Select a PDF file and show the page extraction dialog."""

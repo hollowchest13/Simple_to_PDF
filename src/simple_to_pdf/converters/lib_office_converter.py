@@ -44,9 +44,9 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
         docs_res = self._convert_docs_to_pdf(files=docs)
         img_res = self._convert_images_to_pdf(files=imgs)
 
-        final_result.successful.extend(docs_res.successful)
+        final_result.success.extend(docs_res.success)
         final_result.failed.extend(docs_res.failed)
-        final_result.successful.extend(img_res.successful)
+        final_result.success.extend(img_res.success)
         final_result.failed.extend(img_res.failed)
 
         return final_result
@@ -58,7 +58,7 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
         for chunk in self.make_chunks(files, self.chunk_size):
             # Call the new method that handles one chunk
             chunk_res = self._convert_chunk(chunk=chunk)
-            all_results.successful.extend(chunk_res.successful)
+            all_results.success.extend(chunk_res.success)
             all_results.failed.extend(chunk_res.failed)
         return all_results
 
@@ -87,16 +87,16 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
                     p.unlink()
         except subprocess.TimeoutExpired:
             logger.error(
-                f"❌ LibreOffice timed out after {timeout} seconds for {num_files} files: {[p.name for p in input_paths]}"
+                f"LibreOffice timed out after {timeout} seconds for {num_files} files: {[p.name for p in input_paths]}"
             )
         except subprocess.CalledProcessError as e:
             logger.error(
-                f"❌ LibreOffice conversion error for {[p.name for p in input_paths]}: {e.stderr.decode()}",
+                f"LibreOffice conversion error for {[p.name for p in input_paths]}: {e.stderr.decode()}",
                 exc_info=True,
             )
         except Exception as e:
             logger.error(
-                f"❌ Unexpected error during table conversion: {e}", exc_info=True
+                f" Unexpected error during table conversion: {e}", exc_info=True
             )
 
     def _prepare_temp_files(
@@ -189,15 +189,15 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
             return True
         except subprocess.TimeoutExpired:
             logger.error(
-                f"❌ LibreOffice timed out after {timeout} seconds for {num_files} files"
+                f"LibreOffice timed out after {timeout} seconds for {num_files} files"
             )
             return False
         except subprocess.CalledProcessError as e:
-            logger.error(f"❌ LibreOffice error: {e}", exc_info=True)
+            logger.error(f"LibreOffice error: {e}", exc_info=True)
             return False
         except Exception as e:
             logger.error(
-                f"❌ Unexpected error during table conversion: {e}", exc_info=True
+                f"Unexpected error during table conversion: {e}", exc_info=True
             )
             return False
 
@@ -209,9 +209,9 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
         for idx, original_path in chunk:
             expected_pdf = tmp_path / f"{idx}_{original_path.stem}.pdf"
             if expected_pdf.exists():
-                res.successful.append((idx, expected_pdf.read_bytes()))
+                res.success.append((idx, expected_pdf.read_bytes()))
             else:
-                logger.warning(f"⚠️ Failed conversion to pdf: {expected_pdf.name}")
+                logger.warning(f"Failed conversion to pdf: {expected_pdf.name}")
                 res.failed.append((idx, original_path))
         return res
 

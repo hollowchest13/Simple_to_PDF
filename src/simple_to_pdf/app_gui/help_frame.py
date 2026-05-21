@@ -10,7 +10,7 @@ class HelpFrame(SlidingFrame):
         *,
         open_width=210,
         closed_width=0,
-        callbacks: Dict[str, Callable],
+        handlers: Dict[str, Callable],
         **kwargs,
     ):
         super().__init__(
@@ -19,7 +19,7 @@ class HelpFrame(SlidingFrame):
 
         # Localization section path in JSON
         self.loc_section = "ui.help_panel"
-        self.callbacks: Dict[str, Callable] = callbacks
+        self.handlers: Dict[str, Callable] = handlers
 
         # Centralized UI storage for localization updates
         self.ui: Dict[str, ctk.CTkBaseClass] = {}

@@ -155,8 +155,8 @@
 
   "status": {
     "merge": {
-      "done": "Об'єднано: {success}; Помилок: {failed}.\nФайл збережено за шляхом:\n{path}",
-      "error": "Помилка: Не вдалося об'єднати файл:\n{path}\n\nПричина: {error}"
+      "done": "Об'єднано: {success}; Помилок: {failed}",
+      "error": "Помилка: Не вдалося об'єднати файл.\n\nПричина: {error}"
     },
     "extract": {
       "done": "Витягування завершено.\nФайли збережено тут:\n{path}",
@@ -166,6 +166,14 @@
       "done": "Конвертовано: {success}; Помилок: {failed}",
       "error": "Помилка: Не вдалося конвертувати файл \n{path}\n\nПричина: {error}"
     },
+    "compress":{
+      "done": "Cтиснення завершено успішно",
+      "error": "Не вдалося стиснути файл"
+    },
+    "save":{
+      "done": "Файл збережено із шляхом : {path}",
+      "error": "Помилка: Не вдалося зберегти файл за шляхом:\n{path}\n\nПричина: {error}"
+    },
     "common": {
       "ready": "Готово"
     },
@@ -173,12 +181,13 @@
   },
   "progress": {
     "stage": {
-      "processing": "Обробка",
+      "compressing": "Стиснення",
       "extracting": "Витягування",
       "converting": "Конвертування",
-      "merging": "Об'єднання"
+      "merging": "Об'єднання",
+      "saving": "Збереження"
     },
-    "indeterminate": "{stage} документів...",
+    "indeterminate": "{stage} розпочинається..",
     "detailed": "{stage}: {filename} ({current}/{total}) — {percent:.1f}%"
   }
 }

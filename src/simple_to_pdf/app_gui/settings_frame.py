@@ -13,18 +13,18 @@ class SettingsFrame(SlidingFrame):
         *,
         open_width: int = 200,
         closed_width: int = 0,
-        callbacks: Dict[str, Callable],
+        handlers: Dict[str, Callable],
         **kwargs: Any,
     ) -> None:
         super().__init__(
             parent, open_width=open_width, closed_width=closed_width, **kwargs
         )
         self.language_selector: BaseOptionMenu
-        self.compress_switcher: BaseSwitcher
+        self.compress_selector: BaseSwitcher
 
         # Path to settings section in translation JSON
         self.loc_section = "ui.settings_panel"
-        self.callbacks = callbacks
+        self.handlers = handlers
 
         # Centralized storage for all translatable widgets
         self.ui: Dict[str, Any] = {}

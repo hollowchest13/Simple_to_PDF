@@ -65,7 +65,7 @@ class BaseFrame(ctk.CTkFrame, FrameThemeMixin, LocalizationMixin):
         params.update(kwargs)
         # Call the super constructor with prepared kwargs
         super().__init__(parent, **params)
-        self.callbacks: Dict[str, Callable] = {}
+        self.handlers: Dict[str, Callable] = {}
         self.ui: dict[str, Any] = {}
         self.loc_section: str = ""
         self.init_localization()
@@ -137,9 +137,9 @@ class BaseFrame(ctk.CTkFrame, FrameThemeMixin, LocalizationMixin):
             # Case 1: Command is a string key (Look up in callbacks dictionary)
             if isinstance(command, str):
                 # The dictionary self.callbacks will be populated later by the MainWindow
-                callback = self.callbacks.get(command)
-                if callback:
-                    return callback(*args, **kwargs)
+                handler = self.handlers.get(command)
+                if handler:
+                    return handler(*args, **kwargs)
 
                 # Debug warning if the button is pressed but the handler isn't linked yet
                 print(

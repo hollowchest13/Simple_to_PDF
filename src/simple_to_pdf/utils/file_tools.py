@@ -1,12 +1,27 @@
 import logging
 import os
 from tkinter import filedialog, messagebox
-from typing import overload, Literal, Sequence, Union
+from typing import overload, Literal, Union
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+class FileToolKit():
+    @staticmethod
+    def write_bytes(*, file_path: Path, bytes_data: bytes) -> Path:
+        """
+        Safely writes bytes to a file. 
+        Automatically resolves the path and creates parent directories if needed.
+        """
+        clean_path = file_path.resolve()
+        clean_path.parent.mkdir(parents=True, exist_ok=True)
+        clean_path.write_bytes(bytes_data)
+        return clean_path
+
+
+
 FileCategory = Literal["pdf", "table", "image", "document", "presentation"]
+    
 
 GLOBAL_EXTENSIONS: dict[FileCategory, set[str]] = {
     "pdf": {".pdf"},
@@ -89,3 +104,4 @@ def get_files(*, filetypes: list | tuple = (".pdf",), multiple=True)-> Union[tup
 
     # For single selection, it's better to use dynamic filters instead of hardcoded PDF
     return filedialog.askopenfilename(filetypes=filters)
+

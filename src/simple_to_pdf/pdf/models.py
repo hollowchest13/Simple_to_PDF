@@ -1,4 +1,5 @@
 from enum import Enum
+from dataclasses import dataclass
 
 class PageFormat(Enum):
     A4 = (595.0, 842.0)
@@ -18,3 +19,17 @@ class PageFormat(Enum):
     @property
     def size(self) -> tuple[float, float]:
         return self.value
+    
+@dataclass
+class PixInfo():
+    width:int
+    height:int
+    samples:bytes
+
+@dataclass
+class ProcessingResult():
+    success:int
+    failed:int
+    data:bytes
+
+

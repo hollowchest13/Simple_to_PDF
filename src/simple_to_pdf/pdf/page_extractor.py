@@ -8,6 +8,17 @@ logger = logging.getLogger(__name__)
 
 
 class PageExtractor:
+    def __init__(self):
+        self._callback=lambda *args,**kwargs:None
+    
+    @property
+    def callback(self):
+        return self._callback
+    
+    @callback.setter
+    def callback(self,value):
+        self._callback=value if not value is None else lambda *args,**kwargs:None
+
     def extract_pages(
         self,
         *,

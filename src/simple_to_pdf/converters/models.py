@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 @dataclass
 class ConversionResult:
-    successful: list[tuple[int, bytes]] = field(default_factory=list)
+    success: list[tuple[int, bytes]] = field(default_factory=list)
     failed: list[tuple[int, Path]] = field(default_factory=list)
 
 
@@ -12,4 +12,4 @@ class ConversionResult:
 class ExtractionResult:
     successful: list[int] = field(default_factory=list)
     failed: list[int] = field(default_factory=list)
-    filename:str=""
+    filename: str = ""

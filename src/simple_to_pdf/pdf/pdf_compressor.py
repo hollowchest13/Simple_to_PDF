@@ -1,6 +1,5 @@
 import io
 import logging
-from typing import Any, Callable, Optional
 from .models import PixInfo
 
 import pymupdf
@@ -32,40 +31,75 @@ class PDFCompressor:
         self.garbage_level = garbage_level
         self.deflate = deflate
         self.clean = clean
+        self._callback = lambda *args, **kwargs: None
+
+    @property
+    def callback(self):
+        return self._callback
+
+    @callback.setter
+    def callback(self, value):
+        self._callback = value if value is not None else lambda *args, **kwargs: None
 
     def _get_pix_info(self, pix: pymupdf.Pixmap) -> PixInfo:
         if pix.n != 3 or pix.alpha != 0:
             pix_rgb = pymupdf.Pixmap(pymupdf.csRGB, pix)
             samples = pix_rgb.samples
             width, height = pix_rgb.width, pix_rgb.height
+            del pix_rgb
         else:
             samples = pix.samples
             width, height = pix.width, pix.height
+
         return PixInfo(samples=samples, width=width, height=height)
 
     def _compress_single_image(
         self, *, page: pymupdf.Page, doc: pymupdf.Document, xref: int, quality: int
     ) -> None:
         pix = None
-        pix_rgb = None
         try:
+            img_info = doc.extract_image(xref)
+            if not img_info:
+                return
+            orig_bytes = img_info["image"]
             pix = pymupdf.Pixmap(doc, xref)
+
+            if pix.colorspace and pix.colorspace.name in ("DeviceCMYK", "Indexed"):
+                logger.debug(
+                    f"Skipped image {xref} due to colorspace: {pix.colorspace.name}"
+                )
+                return
+
             pix_info = self._get_pix_info(pix)
+
             with Image.frombytes(
                 "RGB", (pix_info.width, pix_info.height), pix_info.samples
             ) as pil_img:
                 with io.BytesIO() as buffer:
-                    pil_img.save(buffer, format="JPEG", quality=quality)
+                    pil_img.save(
+                        buffer,
+                        format="JPEG",
+                        quality=quality,
+                        optimize=True,
+                        progressive=True,
+                    )
                     compressed_jpeg_bytes = buffer.getvalue()
-            page.replace_image(xref, stream=compressed_jpeg_bytes)
+
+            if len(compressed_jpeg_bytes) < len(orig_bytes):
+                page.replace_image(xref, stream=compressed_jpeg_bytes)
+                logger.debug(
+                    f"Image {xref} compressed: {len(orig_bytes)} -> {len(compressed_jpeg_bytes)} bytes"
+                )
+            else:
+                logger.debug(
+                    f"Skipped image {xref}: compressed size is larger than original"
+                )
 
         except Exception as e:
             logger.debug(f"Image compressing failed {xref}: {e}")
         finally:
-            if pix:
+            if pix is not None:
                 del pix
-            if pix_rgb:
-                del pix_rgb
 
     def _set_page_images_quality(
         self,
@@ -73,7 +107,7 @@ class PDFCompressor:
         *,
         doc: pymupdf.Document,
         quality: int,
-        processed_xrefs: set,
+        processed_xrefs: set[int],
     ) -> None:
         """Finds and compresses all images on a specific PDF page.
 
@@ -103,69 +137,88 @@ class PDFCompressor:
     def compress(
         self,
         *,
-        pdf_bytes: io.BytesIO,
-        callback: Optional[Callable[..., Any]],
-        quality: int = 75,
-    ) -> io.BytesIO:
+        pdf_bytes: bytes,
+        quality: int = 20,
+    ) -> bytes:
         """Main method that accepts PDF bytes, compresses the PDF, and returns new bytes.
 
         Args:
-            pdf_bytes (io.BytesIO): Byte stream of the original PDF file.
+            pdf_bytes (bytes): Bytes of the original PDF file.
             callback (Callable, optional): Callback function to update progress in the
                 CustomTkinter GUI. Accepts message type and keyword arguments.
             quality (int): Desired image quality after compression (1 to 100). Default: 75.
 
         Returns:
-            io.BytesIO: Byte stream of the compressed PDF (or original stream if failed).
+            bytes: Bytes of the compressed PDF (or original bytes if failed).
         """
+        if not pdf_bytes:
+            logger.warning("Received empty bytes for compression")
+            return pdf_bytes
+
         try:
-            pdf_bytes.seek(0)
-            doc = pymupdf.open(stream=pdf_bytes.read(), filetype="pdf")
-            total_pages = len(doc)
+            with pymupdf.open(stream=pdf_bytes, filetype="pdf") as doc:
+                total_pages = len(doc)
 
-            if total_pages == 0:
-                pdf_bytes.seek(0)
-                return pdf_bytes
+                if total_pages == 0:
+                    return pdf_bytes
 
-            processed_xrefs = set()
+                processed_xrefs = set()
 
-            for idx in range(total_pages):
-                page = doc[idx]
-                self._set_page_images_quality(
-                    page, doc=doc, quality=quality, processed_xrefs=processed_xrefs
-                )
-
-                if callback:
-                    callback(
+                for idx in range(total_pages):
+                    page = doc[idx]
+                    self._set_page_images_quality(
+                        page, doc=doc, quality=quality, processed_xrefs=processed_xrefs
+                    )
+                    self.callback(
                         "progress",
                         **{
                             "stage": "compressing",
                             "mode": "determinate",
-                            "current": idx,
+                            "current": idx + 1,
                             "total": total_pages,
                         },
                     )
 
-            compressed_stream = io.BytesIO()
-            doc.save(
-                compressed_stream,
-                garbage=self.garbage_level,
-                deflate=self.deflate,
-                clean=self.clean,
-            )
-            doc.close()
-            compressed_stream.seek(0)
-            if callback:
-                callback(
+                self.callback(
+                    "progress",
+                    **{
+                        "stage": "saving",
+                        "mode": "indeterminate",
+                    },
+                )
+
+                compressed_stream = io.BytesIO()
+                doc.save(
+                    compressed_stream,
+                    garbage=self.garbage_level,
+                    deflate=self.deflate,
+                    clean=self.clean,
+                )
+                self.callback(
+                    "progress",
+                    **{
+                        "stage": "saving",
+                        "mode": "determinate",
+                        "current": total_pages,
+                        "total": total_pages,
+                    },
+                )
+                self.callback(
                     "status",
                     **{
                         "key": "compress.done",
                         "status": "info",
                     },
                 )
-            return compressed_stream
+                return compressed_stream.getvalue()
 
         except Exception as e:
             logger.error(f"Compressing error: {e}", exc_info=True)
-            pdf_bytes.seek(0)
+            self.callback(
+                "status",
+                **{
+                    "key": "compress.error",
+                    "status": "error",
+                },
+            )
             return pdf_bytes

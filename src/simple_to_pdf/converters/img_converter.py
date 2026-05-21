@@ -45,7 +45,7 @@ class ImageConverter(BaseConverter):
         for chunk in self.make_chunks(files, self.chunk_size):
             # Call the new method that handles one chunk
             chunk_res: ConversionResult = self._convert_images_chunk(chunk=chunk)
-            all_results.successful.extend(chunk_res.successful)
+            all_results.success.extend(chunk_res.success)
             all_results.failed.extend(chunk_res.failed)
         return all_results
 
@@ -72,20 +72,18 @@ class ImageConverter(BaseConverter):
             if not frames:
                 return None
 
-            buffer = io.BytesIO()
-            try:
-                # Зберігаємо всі кадри в один PDF-потік
-                frames[0].save(
-                    buffer,
-                    format="PDF",
-                    save_all=True,
-                    append_images=frames[1:] if len(frames) > 1 else [],
-                )
-                return buffer.getvalue()
-            finally:
-                buffer.close()
-                for f in frames:
-                    f.close()
+            with io.BytesIO() as buffer:
+                try:
+                    frames[0].save(
+                        buffer,
+                        format="PDF",
+                        save_all=True,
+                        append_images=frames[1:] if len(frames) > 1 else [],
+                    )
+                    return buffer.getvalue()
+                finally:
+                    for f in frames:
+                        f.close()
 
     def _convert_images_chunk(
         self, *, chunk: list[tuple[int, Path]]
@@ -99,13 +97,13 @@ class ImageConverter(BaseConverter):
                 pdf_data = self._convert_single_image(path)
 
                 if pdf_data:
-                    res.successful.append((idx, pdf_data))
+                    res.success.append((idx, pdf_data))
                 else:
                     logger.warning(f"⚠️ [{idx}] File not found or empty: {path}")
                     res.failed.append((idx, path))
 
             except Exception as e:
-                logger.error(f"❌ [{idx}] Error converting {path.name}: {e}")
+                logger.error(f"[{idx}] Error converting {path.name}: {e}")
                 res.failed.append((idx, path))
 
         return res

@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, Dict
+from typing import Callable, List
 from simple_to_pdf.utils.file_tools import get_file_category
 from simple_to_pdf.utils.theme_provider import ScrolableFrameThemeMixin
 from simple_to_pdf.core.config import ThemeKeys, ICONS_PATH
@@ -21,7 +21,7 @@ class CTkListbox(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
         self._is_scrolling = False
 
         # self.all_rows stores the order of file paths (Path objects)
-        self.all_rows = []
+        self.all_rows: List[Path] = []
         # self.selected_data stores only selected items: {Path: {"frame": ..., "label": ...}}
         self.selected_data = {}
         # self.all_widgets stores ALL created widgets: {Path: {"frame": ..., "label": ...}}
