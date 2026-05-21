@@ -1,3 +1,4 @@
+import io
 import logging
 from pathlib import Path
 from typing import Callable
@@ -9,15 +10,15 @@ logger = logging.getLogger(__name__)
 
 class PageExtractor:
     def __init__(self):
-        self._callback=lambda *args,**kwargs:None
-    
+        self._callback = lambda *args, **kwargs: None
+
     @property
     def callback(self):
         return self._callback
-    
+
     @callback.setter
-    def callback(self,value):
-        self._callback=value if not value is None else lambda *args,**kwargs:None
+    def callback(self, value):
+        self._callback = value if not value is None else lambda *args, **kwargs: None
 
     def extract_pages(
         self,
@@ -25,7 +26,6 @@ class PageExtractor:
         input_path: str,
         pages_to_extract: list[int],
         output_path: str | Path,
-        callback: Callable | None = None,
     ) -> Path:
         """
         Extracts specific pages from a PDF file and saves them to a new file.
@@ -40,40 +40,12 @@ class PageExtractor:
         with input_file.open("rb") as f:
             reader = PdfReader(f)
             total = len(pages_to_extract)
-
-            # Initial callback to set up progress bar
-            if callback:
-                callback(
-                    "progress",
-                    **{
-                        "stage": "extracting",
-                        "mode": "determinate",
-                        "current": 0,
-                        "total": total,
-                    },
-                )
-
             for i, p_num in enumerate(pages_to_extract, 1):
                 p_idx = p_num - 1
                 try:
                     writer.add_page(reader.pages[p_idx])
-                except IndexError as e:
-                    logger.error(f"Page {p_num} is out of range for {input_path}")
-                    if callback:
-                        callback(
-                            "status",
-                            **{
-                                "key": "extract.error",
-                                "status": "error",
-                                "page_number": p_num,
-                                "error": e,
-                            },  # Display 1-based index for user
-                        )
-                    continue
-
-                # Update progress for every page processed
-                if callback:
-                    callback(
+                    # Update progress for every page processed
+                    self.callback(
                         "progress",
                         **{
                             "stage": "extracting",
@@ -83,23 +55,34 @@ class PageExtractor:
                             "filename": f"page {p_num}",
                         },  # Display 1-based index for user
                     )
+                except IndexError as e:
+                    logger.error(f"Page {p_num} is out of range for {input_path}")
+                    self.callback(
+                        "status",
+                        **{
+                            "key": "extract.error",
+                            "status": "error",
+                            "page_number": p_num,
+                            "error": e,
+                        },  # Display 1-based index for user
+                    )
+                continue
 
-        # Step 2: Ensure output directory exists and write the file
         output_file.parent.mkdir(parents=True, exist_ok=True)
+        buffer: io.BytesIO
 
         with output_file.open("wb") as f:
             writer.write(f)
 
-        # Step 3: Final status update
-        if callback:
-            callback(
-                "status",
-                **{
-                    "key": "extract.done",
-                    "status": "info",
-                    "path": str(output_file),
-                },
-            )
+        # Final status update
+        self.callback(
+            "status",
+            **{
+                "key": "extract.done",
+                "status": "info",
+                "path": str(output_file),
+            },
+        )
 
         return output_file
 

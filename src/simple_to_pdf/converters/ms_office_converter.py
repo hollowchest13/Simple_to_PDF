@@ -1,15 +1,19 @@
 import gc
 import logging
+import shutil
+import sys
 import tempfile
+from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
 import pythoncom  # pyright: ignore[reportMissingModuleSource]
+import win32com
 import win32com.client as win32  # pyright: ignore[reportMissingModuleSource]
-from simple_to_pdf.converters.ms_mixin import MSSetupMixin
+
 from simple_to_pdf.converters.img_converter import ImageConverter
 from simple_to_pdf.converters.models import ConversionResult
-from enum import StrEnum
+from simple_to_pdf.converters.ms_mixin import MSSetupMixin
 
 logger = logging.getLogger(__name__)
 
@@ -108,41 +112,16 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
 
     def _get_app_instance(self, *, app_type: str):
         """
-        Creates a robust COM application instance using a fallback mechanism.
-        If the early-bound (gencache) version fails due to corrupted cache,
-        it falls back to a dynamic late-bound instance.
+        Creates isolated COM application instance using late binding.
         """
-        app = None
-        w32_any: Any = win32
         try:
-            # Primary Attempt: Standard DispatchEx (isolated process)
-            # May fail here if the win32com cache (gen_py) is corrupted
-            app = win32.DispatchEx(app_type)
-
-            try:
-                # Try to upgrade to an early-bound instance for better performance/constants
-                return w32_any.gencache.EnsureDispatch(app)
-            except Exception as e:
-                logger.warning(
-                    f"⚠️ Gencache failed for {app_type}, using raw DispatchEx: {e}",
-                    exc_info=True,
-                )
-                return app
-
+            return win32.DispatchEx(app_type)
         except Exception as e:
-            logger.warning(
-                f"⚠️ Standard DispatchEx failed for {app_type}, trying dynamic fallback: {e}",
+            logger.error(
+                f"Failed to create COM instance for {app_type}: {e}",
                 exc_info=True,
             )
-            try:
-                # Final Fallback: Dynamic Dispatch (completely ignores gen_py cache)
-                return w32_any.dynamic.DispatchEx(app_type)
-            except Exception as e_crit:
-                logger.error(
-                    f"Critical Error: All launch methods failed for {app_type}: {e_crit}",
-                    exc_info=True,
-                )
-                return None
+            return None
 
     def _process_presentation_chunk(
         self, *, chunk: list[tuple[int, Path]]

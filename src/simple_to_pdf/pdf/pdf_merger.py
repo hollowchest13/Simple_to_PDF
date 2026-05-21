@@ -1,10 +1,13 @@
 import io
 import logging
 from pathlib import Path
-from pypdf import PageObject, PdfReader, PdfWriter, Transformation
-from simple_to_pdf.converters import ConverterFactory
-from .models import PageFormat, ProcessingResult
 from typing import List
+
+from pypdf import PageObject, PdfReader, PdfWriter, Transformation
+
+from simple_to_pdf.converters import ConverterFactory
+
+from .models import PageFormat, ProcessingResult
 
 logger = logging.getLogger(__name__)
 
@@ -170,7 +173,7 @@ class PdfMerger:
                     **{
                         "stage": "merging",
                         "mode": "determinate",
-                        "current": i,
+                        "current": total,
                         "filename": filename,
                         "total": total,
                     },

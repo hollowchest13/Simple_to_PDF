@@ -25,9 +25,9 @@ from simple_to_pdf.cli.logger import get_log_dir
 from simple_to_pdf.core import config
 from simple_to_pdf.core.version import VersionController
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
-from simple_to_pdf.pdf import PageExtractor, PdfMerger, PDFCompressor
+from simple_to_pdf.pdf import PageExtractor, PDFCompressor, PdfMerger
 from simple_to_pdf.settings.settings_manager import SettingsManager
-from simple_to_pdf.utils.file_tools import get_files, FileToolKit
+from simple_to_pdf.utils.file_tools import FileToolKit, get_files
 from simple_to_pdf.utils.logic import get_selected_pages
 from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.utils.ui_tools import change_state, ui_locker
@@ -412,7 +412,6 @@ class PDFMergerGUI(BaseWindow):
                 input_path=input_path,
                 pages_to_extract=pages,
                 output_path=output_path,
-                callback=self.callback.safe_callback,
             )
         except Exception as e:
             error_msg = f"❌ Error during page extraction: {e}"

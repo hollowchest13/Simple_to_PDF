@@ -1,9 +1,10 @@
 import io
 import logging
-from .models import PixInfo
 
 import pymupdf
 from PIL import Image
+
+from .models import PixInfo
 
 logger = logging.getLogger(__name__)
 
@@ -151,6 +152,8 @@ class PDFCompressor:
         Returns:
             bytes: Bytes of the compressed PDF (or original bytes if failed).
         """
+        total_pages: int = 0
+        current_stage: str = "compressing"
         if not pdf_bytes:
             logger.warning("Received empty bytes for compression")
             return pdf_bytes
@@ -172,17 +175,18 @@ class PDFCompressor:
                     self.callback(
                         "progress",
                         **{
-                            "stage": "compressing",
+                            "stage": current_stage,
                             "mode": "determinate",
                             "current": idx + 1,
                             "total": total_pages,
                         },
                     )
+                current_stage = "saving"
 
                 self.callback(
                     "progress",
                     **{
-                        "stage": "saving",
+                        "stage": current_stage,
                         "mode": "indeterminate",
                     },
                 )
@@ -197,7 +201,7 @@ class PDFCompressor:
                 self.callback(
                     "progress",
                     **{
-                        "stage": "saving",
+                        "stage": current_stage,
                         "mode": "determinate",
                         "current": total_pages,
                         "total": total_pages,
@@ -219,6 +223,20 @@ class PDFCompressor:
                 **{
                     "key": "compress.error",
                     "status": "error",
+                },
+            )
+        finally:
+            if current_stage == "saving":
+                total = 1
+            else:
+                total = total_pages
+            self.callback(
+                "progress",
+                **{
+                    "stage": current_stage,
+                    "mode": "determinate",
+                    "current": total,
+                    "total": total,
                 },
             )
             return pdf_bytes
