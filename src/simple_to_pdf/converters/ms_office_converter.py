@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Any
 
 import pythoncom  # pyright: ignore[reportMissingModuleSource]
-import win32com
 import win32com.client as win32  # pyright: ignore[reportMissingModuleSource]
 from win32com.client import gencache
 

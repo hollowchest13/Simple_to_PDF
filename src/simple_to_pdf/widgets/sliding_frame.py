@@ -1,4 +1,4 @@
-from simple_to_pdf.widgets import BaseFrame, BaseScrollableFrame
+from simple_to_pdf.widgets import BaseFrame
 
 
 class SlidingFrame(BaseFrame):
@@ -21,20 +21,5 @@ class SlidingFrame(BaseFrame):
     def toggle(self) -> None:
         """Toggle the panel visibility with a sliding animation."""
         target = self.closed_width if self.is_open else self.open_width
-        self._animate_width(target=target)
+        self.configure(width=target)
         self.is_open = not self.is_open
-
-    def _animate_width(self, *, target: int) -> None:
-        """Incrementally adjust frame width to create a smooth transition."""
-        current_width = int(self.cget("width"))
-        step = 100
-
-        if abs(current_width - target) > step:
-            # Using ternary for concise textbook examples
-            new_width = (
-                current_width + step if current_width < target else current_width - step
-            )
-            self.configure(width=new_width)
-            self.after(10, lambda: self._animate_width(target=target))
-        else:
-            self.configure(width=target)

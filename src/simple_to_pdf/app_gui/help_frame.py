@@ -1,6 +1,8 @@
-import customtkinter as ctk
-from simple_to_pdf.widgets import BaseLabel, SlidingFrame
 from typing import Callable, Dict
+
+import customtkinter as ctk
+
+from simple_to_pdf.widgets import BaseLabel, SlidingFrame
 
 
 class HelpFrame(SlidingFrame):
@@ -8,7 +10,7 @@ class HelpFrame(SlidingFrame):
         self,
         parent,
         *,
-        open_width=210,
+        open_width=200,
         closed_width=0,
         handlers: Dict[str, Callable],
         **kwargs,

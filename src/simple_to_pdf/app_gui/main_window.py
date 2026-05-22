@@ -31,6 +31,7 @@ from simple_to_pdf.utils.file_tools import FileToolKit, get_files
 from simple_to_pdf.utils.logic import get_selected_pages
 from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.utils.ui_tools import change_state, ui_locker
+from simple_to_pdf.widgets import SlidingFrame
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +81,7 @@ class PDFMergerGUI(BaseWindow):
         self.help_panel: HelpFrame = HelpFrame(
             parent=self.root_container, handlers=handlers
         )
+        self.slide_tabs: List[SlidingFrame] = [self.settings_panel, self.help_panel]
 
     def init_connections(self) -> None:
         self.callback = GUICallback(main_frame=self.main_panel)
@@ -166,10 +168,25 @@ class PDFMergerGUI(BaseWindow):
             "move": lambda direction: self.main_panel.move_on_listbox(
                 direction=direction
             ),
-            "settings": lambda: self.settings_panel.toggle(),
-            "help": lambda: self.help_panel.toggle(),
+            "settings": lambda: self.toogle_tab(
+                target_panel=self.settings_panel, panel_list=self.slide_tabs
+            ),
+            "help": lambda: self.toogle_tab(
+                target_panel=self.help_panel, panel_list=self.slide_tabs
+            ),
             "change_language": lambda lang: self.on_change_language(lang),
         }
+
+    def toogle_tab(self, *, target_panel: SlidingFrame, panel_list: list[SlidingFrame]):
+        """
+        target_panel: та, яку хочемо перемкнути.
+        panel_list: список панелей, у межах якого діє логіка 'один відкритий'.
+        """
+        for panel in panel_list:
+            if panel == target_panel:
+                panel.toggle()
+            elif panel.is_open:
+                panel.toggle()
 
     def setup_language(self):
         settings = self.settings_manager.get_settings()
