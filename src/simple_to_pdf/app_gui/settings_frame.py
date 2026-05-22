@@ -2,11 +2,11 @@ from typing import Any, Callable, Dict
 
 import customtkinter as ctk
 
-from simple_to_pdf.widgets import BaseLabel, SlidingFrame
+from simple_to_pdf.widgets import BaseLabel, ToogleFrame
 from simple_to_pdf.widgets.base_widgets import BaseOptionMenu, BaseSwitcher
 
 
-class SettingsFrame(SlidingFrame):
+class SettingsFrame(ToogleFrame):
     def __init__(
         self,
         parent: Any,

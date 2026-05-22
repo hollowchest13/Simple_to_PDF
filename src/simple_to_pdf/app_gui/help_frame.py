@@ -2,15 +2,15 @@ from typing import Callable, Dict
 
 import customtkinter as ctk
 
-from simple_to_pdf.widgets import BaseLabel, SlidingFrame
+from simple_to_pdf.widgets import BaseLabel, ToogleFrame
 
 
-class HelpFrame(SlidingFrame):
+class HelpFrame(ToogleFrame):
     def __init__(
         self,
         parent,
         *,
-        open_width=200,
+        open_width: int = 200,
         closed_width=0,
         handlers: Dict[str, Callable],
         **kwargs,

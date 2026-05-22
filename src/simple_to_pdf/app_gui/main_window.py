@@ -31,7 +31,7 @@ from simple_to_pdf.utils.file_tools import FileToolKit, get_files
 from simple_to_pdf.utils.logic import get_selected_pages
 from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.utils.ui_tools import change_state, ui_locker
-from simple_to_pdf.widgets import SlidingFrame
+from simple_to_pdf.widgets import ToogleFrame
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +81,7 @@ class PDFMergerGUI(BaseWindow):
         self.help_panel: HelpFrame = HelpFrame(
             parent=self.root_container, handlers=handlers
         )
-        self.slide_tabs: List[SlidingFrame] = [self.settings_panel, self.help_panel]
+        self.slide_tabs: List[ToogleFrame] = [self.settings_panel, self.help_panel]
 
     def init_connections(self) -> None:
         self.callback = GUICallback(main_frame=self.main_panel)
@@ -104,9 +104,8 @@ class PDFMergerGUI(BaseWindow):
         """Builds the main GUI layout"""
 
         # Side-by-side layout with padding
-
-        self.help_panel.pack(side="right", fill="y", padx=(0, 10), pady=20)
-        self.settings_panel.pack(side="right", fill="y", padx=(0, 10), pady=20)
+        self.help_panel.pack(side="right", fill="y", padx=(0, 5), pady=20)
+        self.settings_panel.pack(side="right", fill="y", padx=(0, 0), pady=20)
         self.btns_panel.pack(side="right", fill="y", padx=(10, 10), pady=20)
         self.main_panel.pack(
             side="left", fill="both", expand=True, padx=(20, 10), pady=20
@@ -177,7 +176,7 @@ class PDFMergerGUI(BaseWindow):
             "change_language": lambda lang: self.on_change_language(lang),
         }
 
-    def toogle_tab(self, *, target_panel: SlidingFrame, panel_list: list[SlidingFrame]):
+    def toogle_tab(self, *, target_panel: ToogleFrame, panel_list: list[ToogleFrame]):
         """
         target_panel: та, яку хочемо перемкнути.
         panel_list: список панелей, у межах якого діє логіка 'один відкритий'.

@@ -1,10 +1,10 @@
 from .base_widgets import (
-    PrimaryButton,
     BaseFrame,
-    BaseScrollableFrame,
     BaseLabel,
-    BaseTextBox,
     BaseProgress,
+    BaseScrollableFrame,
+    BaseTextBox,
+    PrimaryButton,
 )
-from .sliding_frame import SlidingFrame
 from .listbox import CTkListbox
+from .toogle_frame import ToogleFrame

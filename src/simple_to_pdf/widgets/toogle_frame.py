@@ -1,7 +1,7 @@
 from simple_to_pdf.widgets import BaseFrame
 
 
-class SlidingFrame(BaseFrame):
+class ToogleFrame(BaseFrame):
     def __init__(
         self, parent, *, open_width: int = 150, closed_width: int = 0, **kwargs
     ) -> None:
