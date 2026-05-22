@@ -1,12 +1,14 @@
 import logging
+from pathlib import Path
 from typing import Callable, List
+
+import customtkinter as ctk
+from PIL import Image
+
+from simple_to_pdf.core.config import ICONS_PATH, ThemeKeys
 from simple_to_pdf.utils.file_tools import get_file_category
 from simple_to_pdf.utils.theme_provider import ScrolableFrameThemeMixin
-from simple_to_pdf.core.config import ThemeKeys, ICONS_PATH
 from simple_to_pdf.widgets import BaseFrame, BaseLabel
-from pathlib import Path
-from PIL import Image
-import customtkinter as ctk
 
 logger = logging.getLogger(__name__)
 
@@ -33,12 +35,15 @@ class CTkListbox(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
         self.selected_row_color = self.get_color(ThemeKeys.TEXT_PRIMARY)
         self.selected_text_color = self.get_color(ThemeKeys.TEXT_ON_ACCENT)
 
-    def add_new_files(self, file_list: list[str]):
-
+    def add_new_files(self, file_list: list[str]) -> None:
         new_paths = [Path(p) for p in file_list]
 
-        # Update the main path list
-        self.all_rows.extend(new_paths)
+        existing = set(self.all_rows)
+
+        for path in new_paths:
+            if path not in existing:
+                self.all_rows.append(path)
+                existing.add(path)
         self._update_listbox()
 
     def _update_listbox(self):
