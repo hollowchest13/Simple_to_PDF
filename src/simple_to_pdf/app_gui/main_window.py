@@ -303,7 +303,7 @@ class PDFMergerGUI(BaseWindow):
         except Exception as e:
             logger.error(f"Merge stage failed: {e}", exc_info=True)
             self.callback.safe_callback(
-                "status", **{"key": "merge.error", "status": "error"}
+                "status", **{"key": "merge.error", "status": "error", "error": e}
             )
             return
         need_compress: bool = self.settings_panel.compress_selector.is_on()

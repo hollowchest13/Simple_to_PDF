@@ -10,6 +10,7 @@ from typing import Any
 import pythoncom  # pyright: ignore[reportMissingModuleSource]
 import win32com
 import win32com.client as win32  # pyright: ignore[reportMissingModuleSource]
+from win32com.client import gencache
 
 from simple_to_pdf.converters.img_converter import ImageConverter
 from simple_to_pdf.converters.models import ConversionResult
@@ -105,23 +106,67 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                 case _:
                     logger.error(f"Unknown app_type: {app_type}")
                     continue
-        all_results.success.extend(chunk_results.success)
-        all_results.failed.extend(chunk_results.failed)
+            all_results.success.extend(chunk_results.success)
+            all_results.failed.extend(chunk_results.failed)
 
         return all_results
 
     def _get_app_instance(self, *, app_type: str):
         """
         Creates isolated COM application instance using late binding.
+
+        If COM launch fails due to possible corrupted win32com cache,
+        attempts emergency cache cleanup and retries once.
         """
+
         try:
             return win32.DispatchEx(app_type)
+
         except Exception as e:
-            logger.error(
-                f"Failed to create COM instance for {app_type}: {e}",
+            logger.warning(
+                f"DispatchEx failed for {app_type}: {e}",
                 exc_info=True,
             )
-            return None
+
+            try:
+                logger.info("Attempting win32com cache cleanup")
+                self._clear_cache()
+                return win32.DispatchEx(app_type)
+
+            except Exception as e_crit:
+                logger.error(
+                    f"Critical Error: Failed to create COM instance "
+                    f"for {app_type}: {e_crit}",
+                    exc_info=True,
+                )
+
+                return None
+
+    def _clear_cache(self) -> None:
+        """
+        Clears win32com gen_py cache from memory and disk.
+        Used only as emergency recovery fallback.
+        """
+
+        try:
+            # Remove loaded gen_py modules from memory
+            for module_name in list(sys.modules):
+                if module_name.startswith("win32com.gen_py"):
+                    sys.modules.pop(module_name, None)
+
+            # Remove cache folder from disk
+            cache_dir = Path(gencache.GetGeneratePath())
+
+            if cache_dir.exists():
+                shutil.rmtree(cache_dir, ignore_errors=True)
+
+            logger.info("win32com cache cleared")
+
+        except Exception as e:
+            logger.warning(
+                f"Failed to clear cache: {e}",
+                exc_info=True,
+            )
 
     def _process_presentation_chunk(
         self, *, chunk: list[tuple[int, Path]]
@@ -151,8 +196,9 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
 
         except Exception as e:
             logger.error(f"Presentations chunk error: {e}", exc_info=True)
-            already_done = {item[0] for item in chunk_res.success}
-            already_done = {item[0] for item in chunk_res.failed}
+            already_done = {item[0] for item in chunk_res.success} | {
+                item[0] for item in chunk_res.failed
+            }
             for idx, pf in chunk:
                 if idx not in already_done:
                     chunk_res.failed.append((idx, pf))
@@ -188,8 +234,9 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                     chunk_res.failed.append((idx, f))
         except Exception as e:
             logger.error(f"Tables chunk error: {e}", exc_info=True)
-            already_done = {item[0] for item in chunk_res.success}
-            already_done = {item[0] for item in chunk_res.failed}
+            already_done = {item[0] for item in chunk_res.success} | {
+                item[0] for item in chunk_res.failed
+            }
             for idx, f in chunk:
                 if idx not in already_done:
                     chunk_res.failed.append((idx, f))
@@ -222,8 +269,9 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                     chunk_res.failed.append((idx, wf))
         except Exception as e:
             logger.error(f"Documents chunk error: {e}", exc_info=True)
-            already_done = {item[0] for item in chunk_res.success}
-            already_done = {item[0] for item in chunk_res.failed}
+            already_done = {item[0] for item in chunk_res.success} | {
+                item[0] for item in chunk_res.failed
+            }
             for idx, wf in chunk:
                 if idx not in already_done:
                     chunk_res.failed.append((idx, wf))
@@ -250,12 +298,12 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
             pres = ppt_app.Presentations.Open(
                 str(input_file), ReadOnly=True, WithWindow=0
             )
-            pres.SaveAs(str(temp_pdf_path), win32.constants.ppSaveAsPDF)
+            pres.SaveAs(str(temp_pdf_path), 32)
             pdf_bytes = temp_pdf_path.read_bytes()
 
         except Exception as e:
             logger.error(
-                f"❌ PowerPoint file error in {file_path.name}: {e}", exc_info=True
+                f"PowerPoint file error in {file_path.name}: {e}", exc_info=True
             )
             raise
         finally:

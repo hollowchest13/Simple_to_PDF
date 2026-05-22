@@ -51,7 +51,6 @@ class PdfMerger:
                     "mode": "indeterminate",
                 },
             )
-
             # Bulk conversion
             conversion_res = self.converter.convert_to_pdf(files=to_conversion)
             pdf_bytes.extend(conversion_res.success)
@@ -74,7 +73,16 @@ class PdfMerger:
                     "failed": len(conversion_res.failed),
                 },
             )
-
+            for failed_path in conversion_res.failed:
+                self.callback(
+                    "status",
+                    **{
+                        "key": "convert.error",
+                        "status": "error",
+                        "path": str(failed_path[1]),
+                        "error": "Office application failed to process this document",
+                    },
+                )
         return pdf_bytes
 
     def _scale_and_append(
@@ -125,28 +133,27 @@ class PdfMerger:
         """Merges multiple files into a single PDF."""
 
         files_sorted = sorted(files, key=lambda x: x[0])
-        names_lookup = {idx: name for idx, name in files_sorted}
 
         pdfs_bytes_list = self._get_pdfs_bytes(files_sorted)
-        pdfs_dict = dict(pdfs_bytes_list)
+        if not pdfs_bytes_list:
+            raise ValueError("No valid PDF data to merge")
 
         writer = PdfWriter()
-        failed = 0
-        total = len(files_sorted)
+        active_streams = []
 
-        for i, (idx, path_str) in enumerate(files_sorted, 1):
-            full_path = Path(path_str).resolve()
-            filename = full_path.name
+        failed = len(files_sorted) - len(pdfs_bytes_list)
+        total_to_merge = len(files_sorted)
+        try:
+            for i, (idx, pdf_data) in enumerate(pdfs_bytes_list, 1):
+                orig_path = next(
+                    path for file_idx, path in files_sorted if file_idx == idx
+                )
+                full_path = Path(orig_path).resolve()
+                filename = full_path.name
 
-            pdf_data = pdfs_dict.get(idx)
-
-            try:
-                if pdf_data is None:
-                    raise FileNotFoundError(
-                        "File missed or failed during conversion/read stage."
-                    )
-
-                with io.BytesIO(pdf_data) as pdf_stream:
+                try:
+                    pdf_stream = io.BytesIO(pdf_data)
+                    active_streams.append(pdf_stream)
                     reader = PdfReader(pdf_stream)
                     self._scale_and_append(
                         reader=reader,
@@ -154,37 +161,45 @@ class PdfMerger:
                         target_page_format=target_page_format,
                     )
 
-                self.callback(
-                    "progress",
-                    **{
-                        "stage": "merging",
-                        "mode": "determinate",
-                        "current": i,
-                        "filename": str(filename),
-                        "total": total,
-                    },
+                    self.callback(
+                        "progress",
+                        **{
+                            "stage": "merging",
+                            "mode": "determinate",
+                            "current": i,
+                            "filename": filename,
+                            "total": total_to_merge,
+                        },
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"ERROR: Failed to process {filename}: {e}", exc_info=True
+                    )
+                    failed += 1
+
+                    self.callback(
+                        "progress",
+                        **{
+                            "stage": "merging",
+                            "mode": "determinate",
+                            "current": i,
+                            "filename": filename,
+                            "total": total_to_merge,
+                        },
+                    )
+
+            if len(writer.pages) == 0:
+                raise ValueError(
+                    "Unable to process the document. The file might be corrupted, or the system conversion service is temporarily unavailable. Please try again or contact support"
                 )
-            except Exception as e:
-                logger.error(f"ERROR: Failed to process {filename}: {e}", exc_info=True)
-                failed += 1
 
-                self.callback(
-                    "progress",
-                    **{
-                        "stage": "merging",
-                        "mode": "determinate",
-                        "current": total,
-                        "filename": filename,
-                        "total": total,
-                    },
-                )
-
-        if len(writer.pages) == 0:
-            raise RuntimeError("No pages were added. Check input files.")
-
-        with io.BytesIO() as pdf_buffer:
-            writer.write(pdf_buffer)
-            pdf_bytes = pdf_buffer.getvalue()
-
-        success = total - failed
-        return ProcessingResult(success, failed, pdf_bytes)
+            with io.BytesIO() as pdf_buffer:
+                writer.write(pdf_buffer)
+                pdf_bytes = pdf_buffer.getvalue()
+            success = total_to_merge - failed
+            return ProcessingResult(success, failed, pdf_bytes)
+        finally:
+            for stream in active_streams:
+                stream.close()
+            active_streams.clear()
+            writer.close()

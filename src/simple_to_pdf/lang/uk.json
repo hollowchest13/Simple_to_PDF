@@ -29,10 +29,9 @@
     "settings_panel": {
       "language_label": "Мова",
       "title_label": "Налаштування",
-      "compress_label":"Стиснути PDF"
+      "compress_label": "Стиснути PDF"
     }
   },
-
   "dialogs": {
     "about_dialog": {
       "window_title": "Про Simple to PDF",
@@ -42,7 +41,6 @@
       "description_label": "Професійна утиліта для пакетної обробки PDF.\nСтворено для ефективності та швидкості.",
       "github_btn": "Вихідний код на GitHub"
     },
-
     "update_dialog": {
       "window_title": "Доступне оновлення",
       "header_title": "Нове оновлення!",
@@ -52,7 +50,6 @@
       "btn_download": "Завантажити зараз",
       "btn_later": "Пізніше"
     },
-
     "page_selection_dialog": {
       "window_title": "Витягти сторінки",
       "header_title": "Вибір сторінок",
@@ -63,7 +60,6 @@
       "btn_ok": "Підтвердити"
     }
   },
-
   "notifications": {
     "confirmation": {
       "__title__": "Підтвердження",
@@ -74,7 +70,6 @@
         "btn_no": "Ні"
       }
     },
-
     "info": {
       "__title__": "Інформація",
       "license_info": {
@@ -94,7 +89,6 @@
         "btn": "ОК"
       }
     },
-
     "success": {
       "__title__": "Успішно",
       "update_success": {
@@ -103,7 +97,6 @@
         "btn": "Чудово!"
       }
     },
-
     "warning": {
       "__title__": "Увага!",
       "no_file_to_merge": {
@@ -127,7 +120,6 @@
         "btn": "Зрозуміло"
       }
     },
-
     "error": {
       "__title__": "Помилка файлу",
       "file_read_error": {
@@ -152,27 +144,26 @@
       }
     }
   },
-
   "status": {
     "merge": {
       "done": "Об'єднано: {success}; Помилок: {failed}",
-      "error": "Помилка: Не вдалося об'єднати файл.\n\nПричина: {error}"
+      "error": "Помилка: Не вдалося об'єднати файл.\nПричина: {error}"
     },
     "extract": {
       "done": "Витягування завершено.\nФайли збережено тут:\n{path}",
-      "error": "Помилка: Не вдалося витягти сторінку {page_number}.\n\nПричина: {error}"
+      "error": "Помилка: Не вдалося витягти сторінку {page_number}.\nПричина: {error}"
     },
     "convert": {
       "done": "Конвертовано: {success}; Помилок: {failed}",
-      "error": "Помилка: Не вдалося конвертувати файл \n{path}\n\nПричина: {error}"
+      "error": "Помилка конвертації файлу: {path}\nПричина: {error}"
     },
-    "compress":{
+    "compress": {
       "done": "Cтиснення завершено успішно",
       "error": "Не вдалося стиснути файл"
     },
-    "save":{
+    "save": {
       "done": "Файл збережено із шляхом : {path}",
-      "error": "Помилка: Не вдалося зберегти файл за шляхом:\n{path}\n\nПричина: {error}"
+      "error": "Помилка: Не вдалося зберегти файл за шляхом:\n{path}\nПричина: {error}"
     },
     "common": {
       "ready": "Готово"
@@ -187,7 +178,7 @@
       "merging": "Об'єднання",
       "saving": "Збереження"
     },
-    "indeterminate": "{stage} розпочинається..",
+    "indeterminate": "{stage}...",
     "detailed": "{stage}: {filename} ({current}/{total}) — {percent:.1f}%"
   }
 }
