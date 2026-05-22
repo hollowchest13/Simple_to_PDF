@@ -1,18 +1,18 @@
 import logging
+from pathlib import Path
+from typing import Dict, Optional
+
 import customtkinter as ctk
-from pathlib import Path
-from PIL import Image
 from customtkinter import CTkImage
-from typing import Optional
-from pathlib import Path
-from simple_to_pdf.core.config import ThemeKeys
+from PIL import Image
+
+from simple_to_pdf.core.config import BASE_PATH, ThemeKeys
+from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
 from simple_to_pdf.widgets import BaseFrame
-from simple_to_pdf.localization.localization_mixin import LocalizationMixin
-from simple_to_pdf.core.config import BASE_PATH
-from typing import Dict
 
 logger = logging.getLogger(__name__)
+
 
 class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
     """
@@ -28,6 +28,9 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         self.ui = {}
 
         # Modal behavior: focus remains on this window until closed
+        self.grab_set()
+        self.focus_set()
+        self.resizable(False, False)
         self.transient(parent)
         self.after(10, self.grab_set)
 
@@ -87,7 +90,7 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
             "warning": str(base_path / "warning.png"),
             "confirmation": str(base_path / "confirmation.png"),
         }
-    
+
     def _load_icon(
         self, *, with_icon: bool = False, window_type: str
     ) -> Optional[CTkImage]:
@@ -108,4 +111,3 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
             except (IOError, SyntaxError) as e:
                 logger.error(f"Failed to load icon for '{window_type}' window: {e}")
         return None
-

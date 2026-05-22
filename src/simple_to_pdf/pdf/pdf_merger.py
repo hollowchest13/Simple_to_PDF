@@ -172,9 +172,7 @@ class PdfMerger:
                     )
 
             if len(writer.pages) == 0:
-                raise ValueError(
-                    "Unable to process the document. The file might be corrupted, or the system conversion service is temporarily unavailable. Please try again or contact support"
-                )
+                raise ValueError("No PDF data")
 
             with io.BytesIO() as pdf_buffer:
                 writer.write(pdf_buffer)

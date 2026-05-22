@@ -1,7 +1,7 @@
-import logging
 import json
+import logging
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class LocalizationMixin:
                 logger.error(f"Failed to load {file_path.name}: {e}")
 
     @classmethod
-    def switch_language(cls, *,lang_name: str) -> None:
+    def switch_language(cls, *, lang_name: str) -> None:
         """Sets the current language and notifies all registered observers."""
         target_lang = cls._LANG_MAP.get(lang_name, lang_name)
         # Add logging
@@ -115,7 +115,7 @@ class LocalizationMixin:
         Main entry point for updating UI localization.
         Iterates through widgets and applies translation.
         """
-        EXCLUDED_KEYS = {"language_selector","compress_selector"}
+        EXCLUDED_KEYS = {"language_selector", "compress_selector"}
 
         for key, widget in widgets_dict.items():
             if (
@@ -161,7 +161,7 @@ class LocalizationMixin:
         """Returns True if the widget is a button-like component."""
         return "button" in widget.__class__.__name__.lower()
 
-    def _try_configure(self, widget: Any, **kwargs:Any) -> bool:
+    def _try_configure(self, widget: Any, **kwargs: Any) -> bool:
         """Safe wrapper for widget.configure(). Returns True if successful."""
         try:
             widget.configure(**kwargs)
@@ -195,7 +195,7 @@ class LocalizationMixin:
             # 2. Safely get the font object
             current_font = None
             if hasattr(widget, "cget"):
-                current_font:Any = widget.cget("font")
+                current_font: Any = widget.cget("font")
 
             # 3. Handle the case where current_font is None
             if current_font is None:

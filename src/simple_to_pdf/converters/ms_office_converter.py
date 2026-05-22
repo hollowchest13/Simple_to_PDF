@@ -5,7 +5,6 @@ import sys
 import tempfile
 from enum import StrEnum
 from pathlib import Path
-from typing import Any
 
 import pythoncom  # pyright: ignore[reportMissingModuleSource]
 import win32com.client as win32  # pyright: ignore[reportMissingModuleSource]
@@ -333,7 +332,7 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
             pdf_bytes = temp_pdf_path.read_bytes()
         except Exception as e:
             logger.error(
-                f"❌  Table file error in {file_path.name}: {e}", exc_info=True
+                f"Table file error in {file_path.name}: {e}", exc_info=True
             )
             raise
         finally:
@@ -366,7 +365,7 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
 
         except Exception as e:
             logger.error(
-                f"❌  Document file error in {input_file.name}: {e}", exc_info=True
+                f"Document file error in {input_file.name}: {e}", exc_info=True
             )
             raise
         finally:
@@ -385,6 +384,6 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                 # Check for specific close methods
                 if hasattr(obj, "Quit"):
                     obj.Quit()
-                logger.info(f"✅ {app_type} closed successfully.")
+                logger.info(f"{app_type} closed successfully.")
             except Exception as e:
-                logger.warning(f"⚠️ Could not close {app_type} gracefully: {e}")
+                logger.warning(f"Could not close {app_type} gracefully: {e}")

@@ -1,8 +1,9 @@
 import logging
 from typing import Any, Optional
-from simple_to_pdf.widgets import PrimaryButton, BaseLabel
-from .base_dialog import BaseDialog
 
+from simple_to_pdf.widgets import BaseLabel, PrimaryButton
+
+from .base_dialog import BaseDialog
 
 logger = logging.getLogger(__name__)
 
@@ -54,11 +55,20 @@ class ConfirmDialog(BaseDialog):
         # Header with optional icon
         if self.current_icon:
             self.icon_label = BaseLabel(self.header, text="", image=self.current_icon)
-            self.icon_label.pack(side="left", padx=(20, 10), pady=(20, 10))
+            self.icon_label.grid(
+                row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="w"
+            )
 
-        # Header title
-        self.ui["header_title"] = BaseLabel(self.header, text="", label_type="title")
-        self.ui["header_title"].pack(expand=True, pady=(20, 10))
+            self.ui["header_title"] = BaseLabel(
+                self.header, text="", label_type="title"
+            )
+            self.ui["header_title"].grid(row=0, column=1, sticky="w", pady=(20, 10))
+            # grid автоматично вирівнює без необхідності ручного обчислення ширини
+        else:
+            self.ui["header_title"] = BaseLabel(
+                self.header, text="", label_type="title"
+            )
+            self.ui["header_title"].pack(expand=True, pady=(20, 10), padx=(10, 20))
 
         # Message label (no TextBox needed for short text)
         self.ui["message"] = BaseLabel(
@@ -67,7 +77,7 @@ class ConfirmDialog(BaseDialog):
         self.ui["message"].pack(expand=True, fill="both", padx=20, pady=10)
         self.ui["message"].bind(
             "<Configure>",
-            lambda e: self.ui["message"].configure(wraplength=e.width - 10),
+            lambda e: self.ui["message"].configure(wraplength=300),
         )
         btns_height = 50
         btns_width = 110
