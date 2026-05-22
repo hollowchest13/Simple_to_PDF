@@ -133,24 +133,20 @@ class PdfMerger:
         """Merges multiple files into a single PDF."""
 
         files_sorted = sorted(files, key=lambda x: x[0])
+        paths_by_idx = {file_idx: path for file_idx, path in files_sorted}
 
         pdfs_bytes_list = self._get_pdfs_bytes(files_sorted)
         if not pdfs_bytes_list:
             raise ValueError("No valid PDF data to merge")
 
         writer = PdfWriter()
-        active_streams = []
+        active_streams: list[io.BytesIO] = []
 
         failed = len(files_sorted) - len(pdfs_bytes_list)
         total_to_merge = len(files_sorted)
         try:
-            for i, (idx, pdf_data) in enumerate(pdfs_bytes_list, 1):
-                orig_path = next(
-                    path for file_idx, path in files_sorted if file_idx == idx
-                )
-                full_path = Path(orig_path).resolve()
-                filename = full_path.name
-
+            for i, (idx, pdf_data) in enumerate(pdfs_bytes_list, start=1):
+                filename = paths_by_idx[idx].name
                 try:
                     pdf_stream = io.BytesIO(pdf_data)
                     active_streams.append(pdf_stream)
@@ -160,23 +156,10 @@ class PdfMerger:
                         writer=writer,
                         target_page_format=target_page_format,
                     )
-
-                    self.callback(
-                        "progress",
-                        **{
-                            "stage": "merging",
-                            "mode": "determinate",
-                            "current": i,
-                            "filename": filename,
-                            "total": total_to_merge,
-                        },
-                    )
                 except Exception as e:
-                    logger.error(
-                        f"ERROR: Failed to process {filename}: {e}", exc_info=True
-                    )
+                    logger.error(f"Failed to process {filename}: {e}", exc_info=True)
                     failed += 1
-
+                finally:
                     self.callback(
                         "progress",
                         **{
