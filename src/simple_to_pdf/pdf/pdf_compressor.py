@@ -66,9 +66,6 @@ class PDFCompressor:
             pix = pymupdf.Pixmap(doc, xref)
 
             if pix.colorspace and pix.colorspace.name in ("DeviceCMYK", "Indexed"):
-                logger.debug(
-                    f"Skipped image {xref} due to colorspace: {pix.colorspace.name}"
-                )
                 return
 
             pix_info = self._get_pix_info(pix)
@@ -225,6 +222,7 @@ class PDFCompressor:
                     "status": "error",
                 },
             )
+            return pdf_bytes
         finally:
             if current_stage == "saving":
                 total = 1
@@ -239,4 +237,3 @@ class PDFCompressor:
                     "total": total,
                 },
             )
-            return pdf_bytes

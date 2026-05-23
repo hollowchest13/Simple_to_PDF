@@ -158,12 +158,14 @@ class PdfMerger:
                     pdf_stream = io.BytesIO(pdf_data)
                     active_streams.append(pdf_stream)
                     reader = PdfReader(pdf_stream)
-                    # writer.append(reader)
-                    self._scale_and_append(
-                        reader=reader,
-                        writer=writer,
-                        target_page_format=target_page_format,
-                    )
+                    if target_page_format is None:
+                        writer.append(reader)
+                    else:
+                        self._scale_and_append(
+                            reader=reader,
+                            writer=writer,
+                            target_page_format=target_page_format,
+                        )
                 except Exception as e:
                     logger.error(f"Failed to process {filename}: {e}", exc_info=True)
                     failed += 1
