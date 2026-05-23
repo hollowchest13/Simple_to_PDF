@@ -64,7 +64,12 @@ class PDFMergerGUI(BaseWindow):
         self.init_panels(handlers=handlers)
         self.init_connections()
         self.build_gui()
-        self.setup_language()
+        self.apply_settings()
+
+    def apply_settings(self) -> None:
+        self.settings_panel.setup()
+        lang = self.settings_panel.lang
+        self.on_change_language(lang)
 
     def init_panels(self, handlers: dict[str, Callable]) -> None:
         """Create the window panels."""
@@ -81,7 +86,10 @@ class PDFMergerGUI(BaseWindow):
             self.root_container, frame_type="scr_frame_container"
         )
         self.settings_panel: SettingsFrame = SettingsFrame(
-            self.dynamic_side_panel, handlers=handlers, is_open=True
+            self.dynamic_side_panel,
+            handlers=handlers,
+            is_open=True,
+            settings_manager=self.settings_manager,
         )
         self.help_panel: HelpFrame = HelpFrame(
             self.dynamic_side_panel, handlers=handlers
@@ -102,8 +110,9 @@ class PDFMergerGUI(BaseWindow):
         else:
             state = ctk.DISABLED
 
-        change_state(widgets_dict=self.btns_panel.ui, state=state)
-        change_state(widgets_dict=self.settings_panel.ui, state=state)
+        widgets_to_toggle = self.btns_panel.ui | self.settings_panel.ui
+
+        change_state(widgets_dict=widgets_to_toggle, state=state)
 
     def build_gui(self) -> None:
         """Lay out the main panels."""
@@ -176,15 +185,6 @@ class PDFMergerGUI(BaseWindow):
             if panel != target_panel and panel.is_open:
                 panel.toggle()
         target_panel.toggle()
-
-    def setup_language(self) -> None:
-        """Load and apply the saved language."""
-        settings = self.settings_manager.get_settings()
-        self.lang = settings.get("language", "Українська")
-        if "language_selector" in self.settings_panel.ui:
-            lang_selector = self.settings_panel.ui["language_selector"]
-            lang_selector.set(self.lang)
-            self.on_change_language(self.lang)
 
     def on_change_language(self, new_lang_name: str) -> None:
         """Apply a selected UI language across the application."""
@@ -298,7 +298,7 @@ class PDFMergerGUI(BaseWindow):
             )
             return
 
-        need_compress: bool = self.settings_panel.compress_selector.is_on()
+        need_compress: bool = self.settings_panel.compress_selector.get()
         if need_compress:
             self.callback.safe_callback(
                 "progress",

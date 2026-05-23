@@ -2,6 +2,7 @@ from typing import Any, Callable, Dict
 
 import customtkinter as ctk
 
+from simple_to_pdf.settings.settings_manager import SettingsManager
 from simple_to_pdf.widgets import BaseLabel, ToogleFrame
 from simple_to_pdf.widgets.base_widgets import BaseOptionMenu, BaseSwitcher
 
@@ -14,15 +15,18 @@ class SettingsFrame(ToogleFrame):
         is_open: bool = False,
         width: int = 200,
         handlers: Dict[str, Callable],
+        settings_manager: SettingsManager,
         **kwargs: Any,
     ) -> None:
         super().__init__(parent, width=width, is_open=is_open, **kwargs)
         self.language_selector: BaseOptionMenu
         self.compress_selector: BaseSwitcher
+        self.settings_manager: SettingsManager = settings_manager
 
         # Path to settings section in translation JSON
         self.loc_section = "ui.settings_panel"
         self.handlers = handlers
+        self.lang = "Українська"
 
         # Centralized storage for all translatable widgets
         self.ui: Dict[str, Any] = {}
@@ -107,7 +111,19 @@ class SettingsFrame(ToogleFrame):
 
     def collect_data(self) -> Dict[str, str]:
         data = {}
-        # Check for language selector
-        if hasattr(self, "language_selector"):
-            data["language"] = self.language_selector.get()
+        for key, widget in self.ui.items():
+            if "_selector" in key and hasattr(widget, "get"):
+                clean_key = key.replace("_selector", "")
+                data[clean_key] = str(widget.get())
         return data
+
+    def setup(self) -> None:
+        """Load and apply all settings dynamically."""
+        settings = self.settings_manager.get_settings()
+
+        for ui_key, widget in self.ui.items():
+            if ui_key.endswith("_selector") and hasattr(widget, "set"):
+                setting_key = ui_key.replace("_selector", "")
+                if setting_key in settings:
+                    value = settings[setting_key]
+                    widget.set(value)

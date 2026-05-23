@@ -1,19 +1,21 @@
+import logging
+from typing import Any, Callable, Dict, List, Literal
+
 import customtkinter as ctk
-from typing import Literal, Any, Callable, Dict, List
+from PIL import Image
+
+from simple_to_pdf.core.config import ICONS_PATH
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.utils.theme_provider import (
-    LabelThemeMixit,
-    ProgressThemeMixin,
-    TextboxThemeMixin,
-    OptionMenuThemeMixin,
     ButtonThemeMixin,
     FrameThemeMixin,
+    LabelThemeMixit,
+    OptionMenuThemeMixin,
+    ProgressThemeMixin,
     ScrolableFrameThemeMixin,
     SwitcherThemeMixin,
+    TextboxThemeMixin,
 )
-from simple_to_pdf.core.config import ICONS_PATH
-from PIL import Image
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -217,10 +219,19 @@ class BaseOptionMenu(ctk.CTkOptionMenu, OptionMenuThemeMixin):
 
 
 class BaseSwitcher(ctk.CTkSwitch, SwitcherThemeMixin):
-    def __init__(self, parent,*,value:bool,**kwargs):
+    def __init__(self, parent, *, value: bool, **kwargs):
         self.var = ctk.BooleanVar(value=value)
         theme_params = self.set_params(variable=self.var, text="")
-        super().__init__(parent, **theme_params,**kwargs)
+        super().__init__(parent, **theme_params, **kwargs)
 
-    def is_on(self) -> bool:
+    def get(self) -> bool:
         return self.var.get()
+
+    def set(self, value: str | bool) -> None:
+        """Set the switch state, supporting both strings and boolean values."""
+        str_value = str(value).lower().strip()
+
+        if str_value == "true":
+            self.select()
+        else:
+            self.deselect()
