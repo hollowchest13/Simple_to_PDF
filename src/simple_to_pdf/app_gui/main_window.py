@@ -31,7 +31,7 @@ from simple_to_pdf.utils.file_tools import FileToolKit, get_files
 from simple_to_pdf.utils.logic import get_selected_pages
 from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.utils.ui_tools import change_state, ui_locker
-from simple_to_pdf.widgets import ToogleFrame
+from simple_to_pdf.widgets import BaseFrame, ToogleFrame
 
 logger = logging.getLogger(__name__)
 
@@ -77,11 +77,14 @@ class PDFMergerGUI(BaseWindow):
         self.btns_panel: ListControlsFrame = ListControlsFrame(
             self.root_container, handlers=handlers
         )
+        self.dynamic_side_panel: BaseFrame = BaseFrame(
+            self.root_container, frame_type="scr_frame_container"
+        )
         self.settings_panel: SettingsFrame = SettingsFrame(
-            parent=self.root_container, handlers=handlers
+            self.dynamic_side_panel, handlers=handlers
         )
         self.help_panel: HelpFrame = HelpFrame(
-            parent=self.root_container, handlers=handlers
+            self.dynamic_side_panel, handlers=handlers
         )
         self.slide_tabs: List[ToogleFrame] = [self.settings_panel, self.help_panel]
 
@@ -103,12 +106,12 @@ class PDFMergerGUI(BaseWindow):
 
     def build_gui(self) -> None:
         """Lay out the main panels."""
-        self.help_panel.pack(side="right", fill="y", padx=(0, 5), pady=20)
-        self.settings_panel.pack(side="right", fill="y", pady=20)
+        self.dynamic_side_panel.pack(side="right", fill="y", padx=(0, 10), pady=20)
         self.btns_panel.pack(side="right", fill="y", padx=(10, 10), pady=20)
         self.main_panel.pack(
             side="left", fill="both", expand=True, padx=(20, 10), pady=20
         )
+        self.settings_panel.pack(side="right", fill="y", pady=10, padx=10)
 
     def open_log_folder(self) -> None:
         """Open the log directory in the system file explorer."""
@@ -166,11 +169,12 @@ class PDFMergerGUI(BaseWindow):
         self, *, target_panel: ToogleFrame, panel_list: list[ToogleFrame]
     ) -> None:
         """Toggle one side panel and close the others."""
+        if target_panel.is_open:
+            return
         for panel in panel_list:
-            if panel == target_panel:
+            if panel != target_panel and panel.is_open:
                 panel.toggle()
-            elif panel.is_open:
-                panel.toggle()
+        target_panel.toggle()
 
     def setup_language(self) -> None:
         """Load and apply the saved language."""

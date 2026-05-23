@@ -28,7 +28,7 @@ class PageSelectionDialog(BaseDialog):
 
     def _setup_dialog_ui(self) -> None:
         """Creates widgets and maps them to self.ui for the LocalizationMixin."""
-
+        
         # --- Header Section ---
         # Explicitly creating header labels instead of using deleted helper methods
         self.ui["header_title"] = BaseLabel(

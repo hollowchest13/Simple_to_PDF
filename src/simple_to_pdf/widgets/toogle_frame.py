@@ -2,24 +2,24 @@ from simple_to_pdf.widgets import BaseFrame
 
 
 class ToogleFrame(BaseFrame):
-    def __init__(
-        self, parent, *, open_width: int = 150, closed_width: int = 0, **kwargs
-    ) -> None:
+    def __init__(self, parent, *, width: int = 150, **kwargs) -> None:
         """
         Initialize the sliding panel.
         :param open_width: Width in pixels when expanded.
         :param closed_width: Width in pixels when collapsed.
         """
-        super().__init__(
-            parent, frame_type="scr_frame_container", width=closed_width, **kwargs
-        )
-        self.open_width = open_width
-        self.closed_width = closed_width
-        self.is_open = False
+        super().__init__(parent, frame_type="btns_container", width=width, **kwargs)
+        self.width = width
+        self.is_open: bool = False
+        if self.winfo_viewable():
+            self.is_open: bool = True
         self.pack_propagate(False)
 
     def toggle(self) -> None:
-        """Toggle the panel visibility with a sliding animation."""
-        target = self.closed_width if self.is_open else self.open_width
-        self.configure(width=target)
-        self.is_open = not self.is_open
+        """Toggle the panel visibility using pack_forget."""
+        if self.is_open:
+            self.pack_forget()
+            self.is_open = False
+        else:
+            self.pack(side="right", fill="y", pady=10, padx=10)
+            self.is_open = True

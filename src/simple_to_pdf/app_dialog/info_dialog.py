@@ -1,8 +1,10 @@
 import logging
 from typing import Any, Optional
+
+from simple_to_pdf.widgets import BaseLabel, PrimaryButton
 from simple_to_pdf.widgets.base_widgets import BaseTextBox
+
 from .base_dialog import BaseDialog
-from simple_to_pdf.widgets import PrimaryButton, BaseLabel
 
 logger = logging.getLogger(__name__)
 
@@ -53,13 +55,21 @@ class InfoDialog(BaseDialog):
     def _setup_dialog_ui(self, font_name: str, font_size: int) -> None:
         """Constructs the UI layout and registers widgets for the localization engine."""
 
+        self.header.grid_columnconfigure(0, weight=0)
+        self.header.grid_columnconfigure(1, weight=2)
+        self.header.grid_columnconfigure(2, weight=0)
+
         # Header: Icon and Scenario-based Title
         if self.current_icon:
             self.icon_label = BaseLabel(self.header, text="", image=self.current_icon)
-            self.icon_label.pack(side="left", padx=(25, 0), pady=(25, 10))
+            self.icon_label.grid(
+                row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="w"
+            )
 
         self.ui["header_title"] = BaseLabel(self.header, text="", label_type="title")
-        self.ui["header_title"].pack(expand=True, pady=(25, 10))
+        self.ui["header_title"].grid(
+            row=0, column=1, sticky="ew", padx=(0, 50), pady=(20, 10)
+        )
 
         # Content: Scrollable text area
         self.txt = BaseTextBox(

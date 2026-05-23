@@ -51,24 +51,18 @@ class ConfirmDialog(BaseDialog):
 
     def _setup_dialog_ui(self):
         """Creates dialog layout (header, message, buttons)."""
+        self.header.grid_columnconfigure(0, weight=0)
+        self.header.grid_columnconfigure(1, weight=2)
+        self.header.grid_columnconfigure(2, weight=0)
 
         # Header with optional icon
-        if self.current_icon:
-            self.icon_label = BaseLabel(self.header, text="", image=self.current_icon)
-            self.icon_label.grid(
-                row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="w"
-            )
+        self.icon_label = BaseLabel(self.header, text="", image=self.current_icon)
+        self.icon_label.grid(row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="w")
 
-            self.ui["header_title"] = BaseLabel(
-                self.header, text="", label_type="title"
-            )
-            self.ui["header_title"].grid(row=0, column=1, sticky="w", pady=(20, 10))
-            # grid автоматично вирівнює без необхідності ручного обчислення ширини
-        else:
-            self.ui["header_title"] = BaseLabel(
-                self.header, text="", label_type="title"
-            )
-            self.ui["header_title"].pack(expand=True, pady=(20, 10), padx=(10, 20))
+        self.ui["header_title"] = BaseLabel(self.header, text="", label_type="title")
+        self.ui["header_title"].grid(
+            row=0, column=1, sticky="ew", padx=(0, 50), pady=(20, 10)
+        )
 
         # Message label (no TextBox needed for short text)
         self.ui["message"] = BaseLabel(

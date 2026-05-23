@@ -1,6 +1,4 @@
 import webbrowser
-from typing import Dict
-import customtkinter as ctk
 
 from simple_to_pdf.core import config
 from .base_dialog import BaseDialog

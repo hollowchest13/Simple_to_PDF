@@ -1,4 +1,3 @@
-from tkinter import BooleanVar
 import customtkinter as ctk
 from typing import Literal, Any, Callable, Dict, List
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin

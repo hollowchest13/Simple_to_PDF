@@ -1,4 +1,3 @@
-# TODO Написати коментарі англійською
 import io
 import logging
 from pathlib import Path
@@ -43,14 +42,13 @@ class ImageConverter(BaseConverter):
     ) -> ConversionResult:
         all_results: ConversionResult = ConversionResult()
         for chunk in self.make_chunks(files, self.chunk_size):
-            # Call the new method that handles one chunk
             chunk_res: ConversionResult = self._convert_images_chunk(chunk=chunk)
             all_results.success.extend(chunk_res.success)
             all_results.failed.extend(chunk_res.failed)
         return all_results
 
     def _convert_single_image(self, path: Path) -> bytes | None:
-        """Конвертує один файл (навіть багатосторінковий) у PDF-дані."""
+        """Convert a single image file (including multi-page images) to PDF data."""
         MAX_SIZE = 2500
         if not path.exists():
             return None
@@ -65,7 +63,6 @@ class ImageConverter(BaseConverter):
 
             for i in range(n_frames):
                 img.seek(i)
-                # Конвертація в RGB обов'язкова для формату PDF
                 frame_rgb = img.convert("RGB")
                 frames.append(frame_rgb)
 
@@ -88,7 +85,7 @@ class ImageConverter(BaseConverter):
     def _convert_images_chunk(
         self, *, chunk: list[tuple[int, Path]]
     ) -> ConversionResult:
-        """Обробляє чанк, використовуючи метод для одиночної конвертації."""
+        """Process a chunk using the single-image conversion method."""
         res = ConversionResult()
 
         for idx, path in chunk:

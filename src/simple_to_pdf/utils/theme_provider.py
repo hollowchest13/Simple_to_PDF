@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Literal, Dict, Any
-from simple_to_pdf.core.config import ThemeKeys, DEFAULT_COLORS
+from typing import Any, Dict, Literal
+
+from simple_to_pdf.core.config import DEFAULT_COLORS, ThemeKeys
 
 
 class ThemeProviderMixin:
