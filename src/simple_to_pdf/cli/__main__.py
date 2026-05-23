@@ -1,22 +1,23 @@
 import logging
 import sys
+
 import customtkinter as ctk
+from tendo import singleton
+
 from simple_to_pdf.app_gui.main_window import PDFMergerGUI
 from simple_to_pdf.cli.logger import setup_logger
-from simple_to_pdf.core.version import VersionController
-from simple_to_pdf.pdf import PageExtractor, PdfMerger,PDFCompressor
 from simple_to_pdf.core import config
-from simple_to_pdf.settings.settings_manager import SettingsManager
-from tendo import singleton
+from simple_to_pdf.core.version import VersionController
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
-
+from simple_to_pdf.pdf import PageExtractor, PDFCompressor, PdfMerger
+from simple_to_pdf.settings.settings_manager import SettingsManager
 
 logger = logging.getLogger(__name__)
 
 
 def main():
     try:
-        me = singleton.SingleInstance(flavor_id="simple_to_pdf_unique_lock")
+        me = singleton.SingleInstance(flavor_id="simple_to_pdf_unique_lock")  # noqa: F841
     except singleton.SingleInstanceException:
         sys.exit(0)
     settings_manager = SettingsManager(
@@ -29,14 +30,14 @@ def main():
     version_controller = VersionController(
         git_repo=config.GITHUB_REPO, git_user=config.GITHUB_USER
     )
-    compressor=PDFCompressor()
+    compressor = PDFCompressor()
     ctk.set_appearance_mode("light")
     _run_gui(
         merger=merger,
         page_extractor=page_extractor,
         version_controller=version_controller,
         settings_manager=settings_manager,
-        compressor=compressor
+        compressor=compressor,
     )
 
 
@@ -46,7 +47,7 @@ def _run_gui(
     page_extractor: PageExtractor,
     version_controller: VersionController,
     settings_manager: SettingsManager,
-    compressor:PDFCompressor
+    compressor: PDFCompressor,
 ) -> None:
     try:
         app = PDFMergerGUI(
@@ -54,7 +55,7 @@ def _run_gui(
             page_extractor=page_extractor,
             version_controller=version_controller,
             settings_manager=settings_manager,
-            compressor=compressor
+            compressor=compressor,
         )
         app.mainloop()
     except Exception as e:

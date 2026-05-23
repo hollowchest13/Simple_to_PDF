@@ -158,6 +158,7 @@ class PdfMerger:
                     pdf_stream = io.BytesIO(pdf_data)
                     active_streams.append(pdf_stream)
                     reader = PdfReader(pdf_stream)
+                    # writer.append(reader)
                     self._scale_and_append(
                         reader=reader,
                         writer=writer,

@@ -1,21 +1,21 @@
 import logging
 import tkinter as tk
-import customtkinter as ctk
-from typing import Callable, Dict, Any, Tuple
+from typing import Any, Callable, Dict, Tuple
 
+import customtkinter as ctk
+
+from simple_to_pdf.app_dialog import ConfirmDialog
 from simple_to_pdf.pdf.pdf_merger import PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
 from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.utils.ui_tools import (
     clear_text_widget,
 )
-from simple_to_pdf.app_dialog import ConfirmDialog
-from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.widgets import (
     BaseFrame,
     BaseLabel,
-    BaseTextBox,
     BaseProgress,
+    BaseTextBox,
     CTkListbox,
 )
 
@@ -184,7 +184,7 @@ class MainFrame(BaseFrame):
                 parent=self.master, scenario_key="confirmation.confirm_delete"
             )
 
-            if confirmed == True:
+            if confirmed:
                 self.filebox.clear(callback=self.reset_progress_widgets)
                 return
 

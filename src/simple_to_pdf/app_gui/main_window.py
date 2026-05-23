@@ -293,6 +293,7 @@ class PDFMergerGUI(BaseWindow):
             data = merge_res.data
         except Exception as e:
             logger.error(f"Merge stage failed: {e}", exc_info=True)
+            self.main_panel.progress_bar_reset()
             self.callback.safe_callback(
                 "status", **{"key": "merge.error", "status": "error", "error": e}
             )
