@@ -81,7 +81,7 @@ class PDFMergerGUI(BaseWindow):
             self.root_container, frame_type="scr_frame_container"
         )
         self.settings_panel: SettingsFrame = SettingsFrame(
-            self.dynamic_side_panel, handlers=handlers
+            self.dynamic_side_panel, handlers=handlers, is_open=True
         )
         self.help_panel: HelpFrame = HelpFrame(
             self.dynamic_side_panel, handlers=handlers
@@ -98,11 +98,12 @@ class PDFMergerGUI(BaseWindow):
     def toggle_ui(self, *, active: bool) -> None:
         """Enable or disable the window controls."""
         if active:
-            btns_state = ctk.NORMAL
+            state = ctk.NORMAL
         else:
-            btns_state = ctk.DISABLED
+            state = ctk.DISABLED
 
-        change_state(widgets_dict=self.btns_panel.ui, state=btns_state)
+        change_state(widgets_dict=self.btns_panel.ui, state=state)
+        change_state(widgets_dict=self.settings_panel.ui, state=state)
 
     def build_gui(self) -> None:
         """Lay out the main panels."""

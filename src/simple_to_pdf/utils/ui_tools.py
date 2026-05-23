@@ -2,7 +2,8 @@ import functools
 import logging
 import threading
 import tkinter as tk
-from typing import Literal,Any
+from typing import Literal
+
 import customtkinter as ctk
 
 from simple_to_pdf.widgets.base_widgets import BaseTextBox
@@ -14,6 +15,7 @@ def clear_text_widget(widget: BaseTextBox) -> None:
     widget.configure(state="normal")
     widget.delete("1.0", "end")
     widget.configure(state="disabled")
+
 
 def get_selected_values(*, listbox: tk.Listbox) -> list[str]:
     selection = listbox.curselection()

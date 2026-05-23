@@ -2,7 +2,7 @@ from simple_to_pdf.widgets import BaseFrame
 
 
 class ToogleFrame(BaseFrame):
-    def __init__(self, parent, *, width: int = 150, **kwargs) -> None:
+    def __init__(self, parent, *,is_open:bool, width: int = 150, **kwargs) -> None:
         """
         Initialize the sliding panel.
         :param open_width: Width in pixels when expanded.
@@ -10,7 +10,7 @@ class ToogleFrame(BaseFrame):
         """
         super().__init__(parent, frame_type="btns_container", width=width, **kwargs)
         self.width = width
-        self.is_open: bool = False
+        self.is_open: bool = is_open
         if self.winfo_viewable():
             self.is_open: bool = True
         self.pack_propagate(False)

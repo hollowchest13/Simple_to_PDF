@@ -10,11 +10,12 @@ class HelpFrame(ToogleFrame):
         self,
         parent,
         *,
+        is_open: bool = False,
         width: int = 200,
         handlers: Dict[str, Callable],
         **kwargs,
     ):
-        super().__init__(parent, width=width, **kwargs)
+        super().__init__(parent, width=width, is_open=is_open, **kwargs)
 
         # Localization section path in JSON
         self.loc_section = "ui.help_panel"

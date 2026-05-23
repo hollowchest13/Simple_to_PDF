@@ -11,11 +11,12 @@ class SettingsFrame(ToogleFrame):
         self,
         parent: Any,
         *,
+        is_open: bool = False,
         width: int = 200,
         handlers: Dict[str, Callable],
         **kwargs: Any,
     ) -> None:
-        super().__init__(parent, width=width, **kwargs)
+        super().__init__(parent, width=width, is_open=is_open, **kwargs)
         self.language_selector: BaseOptionMenu
         self.compress_selector: BaseSwitcher
 
