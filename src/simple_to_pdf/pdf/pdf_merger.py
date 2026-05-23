@@ -96,7 +96,7 @@ class PdfMerger:
         Scales all pages from reader and adds them to writer.
         Correctly compensates for non-zero MediaBox origins to prevent left-side clipping.
         """
-        target_w, target_h = target_page_format.size
+        base_w, base_h = target_page_format.size
         TOLERANCE = 1.0
 
         for source_page in reader.pages:
@@ -106,6 +106,13 @@ class PdfMerger:
 
             orig_x = float(box.left)
             orig_y = float(box.bottom)
+
+            is_landscape = scr_w > scr_h
+
+            if is_landscape:
+                target_w, target_h = max(base_w, base_h), min(base_w, base_h)
+            else:
+                target_w, target_h = min(base_h, base_w), max(base_h, base_w)
 
             is_correct_width = abs(scr_w - target_w) < TOLERANCE
             is_correct_height = abs(scr_h - target_h) < TOLERANCE
