@@ -281,6 +281,49 @@ class PDFMergerGUI(BaseWindow):
         else:
             func(*args, **kwargs)
 
+    def save_result(
+        self,
+        *,
+        data: bytes,
+        output_path: str,
+        stage: str = "saving",
+        reset_ui_on_error: bool = True,
+    ):
+        try:
+            self.callback.safe_callback("progress", stage=stage, mode="indeterminate")
+
+            FileToolKit.write_bytes(bytes_data=data, file_path=Path(output_path))
+
+            self.callback.safe_callback(
+                "progress", stage="common", mode="determinate", current=1, total=1
+            )
+            self.callback.safe_callback(
+                "status", key=f"{stage}.done", status="info", path=output_path
+            )
+
+        except OSError as e:
+            logger.error(
+                f"Saving stage ({stage}) failed (OS Error): {e}", exc_info=True
+            )
+            if reset_ui_on_error:
+                self.schedule_ui_task(self.main_panel.progress_bar_reset)
+            self.callback.safe_callback(
+                "status",
+                key=f"{stage}.error.permission",
+                status="error",
+                path=Path(output_path).name,
+            )
+
+        except Exception as e:
+            logger.error(
+                f"Saving stage ({stage}) failed (Unknown Error): {e}", exc_info=True
+            )
+            if reset_ui_on_error:
+                self.schedule_ui_task(self.main_panel.progress_bar_reset)
+            self.callback.safe_callback(
+                "status", key=f"{stage}.error.unknown", status="error"
+            )
+
     @ui_locker
     def _run_merge_worker(
         self, files: List[tuple[int, Path]], output_path: str
@@ -305,46 +348,7 @@ class PDFMergerGUI(BaseWindow):
         need_compress: bool = self.settings_panel.compress_selector.get()
         if need_compress:
             data = self.compressor.compress(pdf_bytes=data)
-        try:
-            self.callback.safe_callback(
-                "progress",
-                **{
-                    "stage": "saving",
-                    "mode": "indeterminate",
-                },
-            )
-            FileToolKit.write_bytes(bytes_data=data, file_path=Path(output_path))
-            self.callback.safe_callback(
-                "progress",
-                **{
-                    "stage": "common",
-                    "mode": "determinate",
-                    "current": 1,
-                    "total": 1,
-                },
-            )
-            self.callback.safe_callback(
-                "status",
-                **{"key": "saving.done", "status": "info", "path": output_path},
-            )
-        except OSError as e:
-            logger.error(f"Saving stage failed (OS Error): {e}", exc_info=True)
-            self.schedule_ui_task(self.main_panel.progress_bar_reset)
-            folder_path = Path(output_path).name
-            self.callback.safe_callback(
-                "status",
-                **{
-                    "key": "saving.error.permission",
-                    "status": "error",
-                    "path": folder_path,
-                },
-            )
-        except Exception as e:
-            logger.error(f"Saving stage failed (Unknown Error): {e}", exc_info=True)
-            self.schedule_ui_task(self.main_panel.progress_bar_reset)
-            self.callback.safe_callback(
-                "status", **{"key": "save.error.unknown", "status": "error"}
-            )
+        self.save_result(data=data, output_path=output_path)
 
     def prompt_pages_to_remove(self) -> None:
         """Prompt the user to select a PDF and choose pages for extraction."""
@@ -404,17 +408,19 @@ class PDFMergerGUI(BaseWindow):
         )
 
     @ui_locker
-    def _run_page_extractor_worker(self, input_path, pages, output_path) -> None:
+    def _run_page_extractor_worker(
+        self, *, input_path: str, pages: List[int], output_path: str
+    ) -> None:
         """Run the page-extraction worker and report progress or errors."""
         try:
-            self.main_panel.progress_bar_reset()
-            self.page_extractor.extract_pages(
+            self.schedule_ui_task(self.main_panel.progress_bar_reset)
+            data = self.page_extractor.extract_pages(
                 input_path=input_path,
                 pages_to_extract=pages,
                 output_path=output_path,
             )
         except Exception as e:
-            error_msg = f"❌ Error during page extraction: {e}"
+            error_msg = f"Error during page extraction: {e}"
             if isinstance(e, ValueError):
                 self.schedule_ui_task(
                     lambda: self.notifier.error(
@@ -427,6 +433,11 @@ class PDFMergerGUI(BaseWindow):
                 self.callback.set_status(key="extract.error", status="error", error=e)
                 logger.error(error_msg, exc_info=True)
                 self.schedule_ui_task(self.main_panel.progress_bar_reset, delay=10)
+            return
+        need_compress: bool = self.settings_panel.compress_selector.get()
+        if need_compress:
+            data = self.compressor.compress(pdf_bytes=data)
+        self.save_result(data=data, output_path=output_path)
 
     def _on_closing(self) -> None:
         """Handle window close requests and wait for background work if needed."""

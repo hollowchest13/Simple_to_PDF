@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class PageExtractor:
     def __init__(self):
-        self._callback = lambda *args, **kwargs: None
+        self._callback: Callable = lambda *args, **kwargs: None
 
     @property
     def callback(self):
@@ -18,7 +18,7 @@ class PageExtractor:
 
     @callback.setter
     def callback(self, value):
-        self._callback = value if not value is None else lambda *args, **kwargs: None
+        self._callback = value if value is not None else lambda *args, **kwargs: None
 
     def extract_pages(
         self,
@@ -26,13 +26,14 @@ class PageExtractor:
         input_path: str,
         pages_to_extract: list[int],
         output_path: str | Path,
-    ) -> Path:
+    ) -> bytes:
         """
         Extracts specific pages from a PDF file and saves them to a new file.
         Provides progress updates via the callback.
         """
         input_file = Path(input_path)
         output_file = Path(output_path).resolve()
+        stage = "extracting"
 
         writer = PdfWriter()
 
@@ -48,7 +49,7 @@ class PageExtractor:
                     self.callback(
                         "progress",
                         **{
-                            "stage": "extracting",
+                            "stage": stage,
                             "mode": "determinate",
                             "current": i,
                             "total": total,
@@ -60,7 +61,7 @@ class PageExtractor:
                     self.callback(
                         "status",
                         **{
-                            "key": "extract.error",
+                            "key": f"{stage}.error",
                             "status": "error",
                             "page_number": p_num,
                             "error": e,
@@ -68,23 +69,19 @@ class PageExtractor:
                     )
                 continue
 
-        output_file.parent.mkdir(parents=True, exist_ok=True)
-        buffer: io.BytesIO
+        with io.BytesIO() as buffer:
+            writer.write(buffer)
+            data = buffer.getvalue()
+            self.callback(
+                "status",
+                **{
+                    "key": f"{stage}.done",
+                    "status": "info",
+                    "path": str(output_file),
+                },
+            )
 
-        with output_file.open("wb") as f:
-            writer.write(f)
-
-        # Final status update
-        self.callback(
-            "status",
-            **{
-                "key": "extract.done",
-                "status": "info",
-                "path": str(output_file),
-            },
-        )
-
-        return output_file
+            return data
 
     def validate_pages(
         self,
