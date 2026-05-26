@@ -9,7 +9,7 @@ from simple_to_pdf.cli.logger import setup_logger
 from simple_to_pdf.core import config
 from simple_to_pdf.core.version import VersionController
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
-from simple_to_pdf.pdf import PageExtractor, PDFCompressor, PdfMerger
+from simple_to_pdf.pdf import PageExtractor, PDFCompressor, PdfMerger, ConversionService
 from simple_to_pdf.settings.settings_manager import SettingsManager
 
 logger = logging.getLogger(__name__)
@@ -27,12 +27,14 @@ def main():
     setup_logger()
     merger = PdfMerger()
     page_extractor = PageExtractor()
+    conversion_service = ConversionService()
     version_controller = VersionController(
         git_repo=config.GITHUB_REPO, git_user=config.GITHUB_USER
     )
     compressor = PDFCompressor()
     ctk.set_appearance_mode("light")
     _run_gui(
+        conversion_service=conversion_service,
         merger=merger,
         page_extractor=page_extractor,
         version_controller=version_controller,
@@ -43,6 +45,7 @@ def main():
 
 def _run_gui(
     *,
+    conversion_service: ConversionService,
     merger: PdfMerger,
     page_extractor: PageExtractor,
     version_controller: VersionController,
@@ -51,6 +54,7 @@ def _run_gui(
 ) -> None:
     try:
         app = PDFMergerGUI(
+            conversion_service=conversion_service,
             merger=merger,
             page_extractor=page_extractor,
             version_controller=version_controller,

@@ -5,7 +5,6 @@ from typing import Any, Callable, Dict, Tuple
 import customtkinter as ctk
 
 from simple_to_pdf.app_dialog import ConfirmDialog
-from simple_to_pdf.pdf.pdf_merger import PdfMerger
 from simple_to_pdf.utils.file_tools import get_files
 from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.utils.ui_tools import (
@@ -27,12 +26,12 @@ class MainFrame(BaseFrame):
         self,
         *,
         master: tk.Frame,
-        merger: PdfMerger,
+        get_supported_formats_func: Callable[[], dict[str, str]],
         notifier: NotificationManager,
         handlers: Dict[str, Callable],
     ):
         super().__init__(master)
-        self.merger = merger
+        self.get_supported_formats = get_supported_formats_func
         self.notifier = notifier
         self.handlers = handlers
         self.loc_section = "ui.main_panel"
@@ -143,7 +142,7 @@ class MainFrame(BaseFrame):
 
     def _get_formatted_filetypes(self) -> list[tuple[str, str]]:
         """Prepares file extension filters for the dialog window."""
-        supported_dict = self.merger.converter.get_supported_formats()
+        supported_dict = self.get_supported_formats()
         formatted_types = []
 
         all_exts = []

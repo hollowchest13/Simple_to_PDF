@@ -28,7 +28,7 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
                 "filename": params.get("filename", ""),
             }
             self.main_frame.after(
-                0, lambda p=progress_params: self.progress_bar_update(**p)
+                20, lambda p=progress_params: self.progress_bar_update(**p)
             )
 
         elif event_type == "status":
@@ -37,7 +37,7 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
             status_type = status_params.pop("status", "info")
 
             self.main_frame.after(
-                0,
+                20,
                 lambda k=status_key, s=status_type, sp=status_params: self.set_status(
                     key=k, status=s, **sp
                 ),
@@ -63,14 +63,16 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
         stage_text = self.get_text(f"stage.{stage}", section=LOC_SECTION)
 
         if mode == "indeterminate":
-            pb.configure(mode="indeterminate", progress_color=active_color)
-            pb.start()
+            if pb.cget("mode") != "indeterminate":
+                pb.configure(mode="indeterminate", progress_color=active_color)
+                pb.start()
             progress_text = self.get_text(
                 "indeterminate", section=LOC_SECTION, stage=stage_text
             )
         else:
-            pb.stop()
-            pb.configure(mode="determinate")
+            if pb.cget("mode") == "indeterminate":
+                pb.stop()
+                pb.configure(mode="determinate")
 
             progress_float = (current / total) if total > 0 else 0
             pb.configure(
@@ -92,7 +94,6 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
             )
 
         pl.configure(text=progress_text)
-        self.main_frame.update_idletasks()
 
     def set_status(self, key: str, status: str = "info", **kwargs) -> None:
         """Appends a status message with an icon to the text console."""

@@ -2,6 +2,7 @@ import logging
 import os
 import subprocess
 import sys
+import threading
 import webbrowser
 from datetime import datetime
 from pathlib import Path
@@ -26,6 +27,7 @@ from simple_to_pdf.core import config
 from simple_to_pdf.core.version import VersionController
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.pdf import PageExtractor, PDFCompressor, PdfMerger
+from simple_to_pdf.pdf.conversion_service import ConversionService
 from simple_to_pdf.settings.settings_manager import SettingsManager
 from simple_to_pdf.utils.file_tools import FileToolKit, get_files
 from simple_to_pdf.utils.logic import get_selected_pages
@@ -42,6 +44,7 @@ class PDFMergerGUI(BaseWindow):
     def __init__(
         self,
         *,
+        conversion_service: ConversionService,
         merger: PdfMerger,
         page_extractor: PageExtractor,
         version_controller: VersionController,
@@ -53,6 +56,7 @@ class PDFMergerGUI(BaseWindow):
         super().__init__(title=f"{config.APP_NAME}-PDF Merger", size="1000x700")
         self.protocol("WM_DELETE_WINDOW", self._on_closing)
         self.thread_running: bool = False
+        self.conversion_service = conversion_service
         self.merger = merger
         self.page_extractor = page_extractor
         self.version_controller = version_controller
@@ -73,9 +77,13 @@ class PDFMergerGUI(BaseWindow):
 
     def init_panels(self, handlers: dict[str, Callable]) -> None:
         """Create the window panels."""
+
+        def get_formats():
+            return self.conversion_service.converter.get_supported_formats()
+
         self.main_panel: MainFrame = MainFrame(
             master=self.root_container,
-            merger=self.merger,
+            get_supported_formats_func=get_formats,
             notifier=self.notifier,
             handlers=handlers,
         )
@@ -99,6 +107,7 @@ class PDFMergerGUI(BaseWindow):
     def init_connections(self) -> None:
         """Attach callbacks to processing components."""
         self.callback = GUICallback(main_frame=self.main_panel)
+        self.conversion_service.callback = self.callback.safe_callback
         self.merger.callback = self.callback.safe_callback
         self.page_extractor.callback = self.callback.safe_callback
         self.compressor.callback = self.callback.safe_callback
@@ -209,7 +218,7 @@ class PDFMergerGUI(BaseWindow):
     def show_about(self) -> None:
         """Gather application metadata and display the About dialog."""
         current_version = self.version_controller._get_current_version()
-        engine_class = getattr(self.merger.converter, "__class__", None)
+        engine_class = getattr(self.conversion_service.converter, "__class__", None)
         engine_name = engine_class.__name__ if engine_class else "Unknown"
         AboutDialog(self, current_version, engine_name)
 
@@ -266,68 +275,73 @@ class PDFMergerGUI(BaseWindow):
 
         self._run_merge_worker(files=files, output_path=out)
 
+    def schedule_ui_task(self, func, *args, delay: int = 10, **kwargs):
+        if threading.current_thread() != threading.main_thread():
+            self.after(delay, lambda: func(*args, **kwargs))
+        else:
+            func(*args, **kwargs)
+
     @ui_locker
     def _run_merge_worker(
         self, files: List[tuple[int, Path]], output_path: str
     ) -> None:
         """Merge the selected files, optionally compress the result, and save it."""
-        self.main_panel.progress_bar_reset()
+
+        self.schedule_ui_task(self.main_panel.progress_bar_reset)
+        self.callback.safe_callback(
+            "progress",
+            **{
+                "stage": "analyzing",
+                "mode": "indeterminate",
+            },
+        )
         try:
-            self.callback.safe_callback(
-                "progress",
-                **{
-                    "stage": "merging",
-                    "mode": "indeterminate",
-                },
-            )
-            merge_res = self.merger.merge_to_pdf(files=files)
-            self.callback.safe_callback(
-                "status",
-                **{
-                    "key": "merge.done",
-                    "status": "info" if merge_res.failed == 0 else "warning",
-                    "success": merge_res.success,
-                    "failed": merge_res.failed,
-                },
-            )
-            data = merge_res.data
+            conversion_res = self.conversion_service.get_pdfs_data(files=files)
+            data = self.merger.merge_to_pdf(conversion_rep=conversion_res)
         except Exception as e:
             logger.error(f"Merge stage failed: {e}", exc_info=True)
-            self.main_panel.progress_bar_reset()
-            self.callback.safe_callback(
-                "status", **{"key": "merge.error", "status": "error", "error": e}
-            )
+            self.schedule_ui_task(self.main_panel.progress_bar_reset)
             return
-
         need_compress: bool = self.settings_panel.compress_selector.get()
         if need_compress:
+            data = self.compressor.compress(pdf_bytes=data)
+        try:
             self.callback.safe_callback(
                 "progress",
                 **{
-                    "stage": "compressing",
+                    "stage": "saving",
                     "mode": "indeterminate",
                 },
             )
-            data = self.compressor.compress(pdf_bytes=data)
-
-        try:
             FileToolKit.write_bytes(bytes_data=data, file_path=Path(output_path))
             self.callback.safe_callback(
+                "progress",
+                **{
+                    "stage": "common",
+                    "mode": "determinate",
+                    "current": 1,
+                    "total": 1,
+                },
+            )
+            self.callback.safe_callback(
                 "status",
-                **{"key": "save.done", "status": "info", "path": output_path},
+                **{"key": "saving.done", "status": "info", "path": output_path},
             )
         except OSError as e:
             logger.error(f"Saving stage failed (OS Error): {e}", exc_info=True)
+            self.schedule_ui_task(self.main_panel.progress_bar_reset)
+            folder_path = Path(output_path).name
             self.callback.safe_callback(
                 "status",
                 **{
-                    "key": "save.error.permission",
+                    "key": "saving.error.permission",
                     "status": "error",
-                    "path": "output_path",
+                    "path": folder_path,
                 },
             )
         except Exception as e:
             logger.error(f"Saving stage failed (Unknown Error): {e}", exc_info=True)
+            self.schedule_ui_task(self.main_panel.progress_bar_reset)
             self.callback.safe_callback(
                 "status", **{"key": "save.error.unknown", "status": "error"}
             )
@@ -402,17 +416,17 @@ class PDFMergerGUI(BaseWindow):
         except Exception as e:
             error_msg = f"❌ Error during page extraction: {e}"
             if isinstance(e, ValueError):
-                self.after(
-                    0,
+                self.schedule_ui_task(
                     lambda: self.notifier.error(
                         scenario_key="page_extraction_error",
                         file_name=input_path,
                     ),
+                    delay=10,
                 )
             else:
                 self.callback.set_status(key="extract.error", status="error", error=e)
                 logger.error(error_msg, exc_info=True)
-                self.after(0, lambda: self.main_panel.progress_bar_reset())
+                self.schedule_ui_task(self.main_panel.progress_bar_reset, delay=10)
 
     def _on_closing(self) -> None:
         """Handle window close requests and wait for background work if needed."""

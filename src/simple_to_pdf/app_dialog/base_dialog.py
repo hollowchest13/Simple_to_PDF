@@ -27,23 +27,24 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         self._title_key = title_key
         self.ui = {}
 
-        # Modal behavior: focus remains on this window until closed
-        self.grab_set()
-        self.focus_set()
         self.resizable(False, False)
         self.transient(parent)
-        self.after(10, self.grab_set)
 
         # Initialize UI structure
         self._init_layout()
         self.icons = self._init_icons()
         self.configure(fg_color=self.get_color(ThemeKeys.BG_MAIN))
-
-        # Center the window relative to the parent
-        self._center_window(parent)
         self.init_localization()
         self.loc_section = loc_section
         self.protocol("WM_DELETE_WINDOW", self._on_close)
+
+        # Center the window relative to the parent
+        self._center_window(parent)
+
+        # Set modal and focus
+        self.wait_visibility()
+        self.grab_set()
+        self.focus_set()
 
     def _init_layout(self):
         """Creates the structural frames: Header, Content, and Footer."""

@@ -1,21 +1,16 @@
 import io
 import logging
-from pathlib import Path
 from typing import List
 
 from pypdf import PageObject, PdfReader, PdfWriter, Transformation
 
-from simple_to_pdf.converters import ConverterFactory
-
-from .models import PageFormat, ProcessingResult
+from .models import BytePdfDocument, PageFormat, ProcessingReport
 
 logger = logging.getLogger(__name__)
 
 
 class PdfMerger:
     def __init__(self):
-        factory = ConverterFactory()
-        self.converter = factory.get_converter()
         self._callback = lambda *args, **kwargs: None
 
     @property
@@ -25,65 +20,6 @@ class PdfMerger:
     @callback.setter
     def callback(self, value):
         self._callback = value if value is not None else lambda *args, **kwargs: None
-
-    def _get_pdfs_bytes(self, files: list[tuple[int, Path]]) -> list[tuple[int, bytes]]:
-        """Prepares PDF bytes, converting non-PDF files if necessary."""
-
-        pdf_bytes = []
-        to_conversion = []
-
-        for idx, path in files:
-            path = path
-            if not path.exists():
-                continue
-            if self.converter.is_pdf_file(file_path=path):
-                pdf_bytes.append((idx, path.read_bytes()))
-            elif self.converter.needs_conversion(file_path=path):
-                to_conversion.append((idx, path))
-
-        if to_conversion:
-            # Start indeterminate progress for conversion stage
-
-            self.callback(
-                "progress",
-                **{
-                    "stage": "converting",
-                    "mode": "indeterminate",
-                },
-            )
-            # Bulk conversion
-            conversion_res = self.converter.convert_to_pdf(files=to_conversion)
-            pdf_bytes.extend(conversion_res.success)
-            pdf_bytes.sort(key=lambda x: x[0])
-            self.callback(
-                "progress",
-                **{
-                    "stage": "converting",
-                    "mode": "determinate",
-                    "current": len(to_conversion),
-                    "total": len(to_conversion),
-                },
-            )
-            self.callback(
-                "status",
-                **{
-                    "key": "convert.done",
-                    "status": "info" if len(conversion_res.failed) == 0 else "warning",
-                    "success": len(conversion_res.success),
-                    "failed": len(conversion_res.failed),
-                },
-            )
-            for failed_path in conversion_res.failed:
-                self.callback(
-                    "status",
-                    **{
-                        "key": "convert.error",
-                        "status": "error",
-                        "path": str(failed_path[1]),
-                        "error": "Office application failed to process this document",
-                    },
-                )
-        return pdf_bytes
 
     def _scale_and_append(
         self,
@@ -134,28 +70,41 @@ class PdfMerger:
     def merge_to_pdf(
         self,
         *,
-        files: List[tuple[int, Path]],
+        conversion_rep: ProcessingReport,
         target_page_format: PageFormat = PageFormat.A4,
-    ) -> ProcessingResult:
-        """Merges multiple files into a single PDF."""
+    ) -> bytes:
+        """Merges multiple files into a single PDF and returns original bytes if it is single PDF."""
 
-        files_sorted = sorted(files, key=lambda x: x[0])
-        paths_by_idx = {file_idx: path for file_idx, path in files_sorted}
+        pdf_data_list: List[BytePdfDocument] = conversion_rep.documents
+        self._files_count = len(pdf_data_list)
 
-        pdfs_bytes_list = self._get_pdfs_bytes(files_sorted)
-        if not pdfs_bytes_list:
+        stage_name = "merging"
+
+        self._show_callback(
+            "progress",
+            {
+                "stage": stage_name,
+                "mode": "indeterminate",
+            },
+        )
+
+        if not pdf_data_list:
             raise ValueError("No valid PDF data to merge")
+
+        pdf_data_list.sort(key=lambda doc: doc.index)
 
         writer = PdfWriter()
         active_streams: list[io.BytesIO] = []
-
-        failed = len(files_sorted) - len(pdfs_bytes_list)
-        total_to_merge = len(files_sorted)
+        success = 0
+        failed = conversion_rep.failed
+        total_to_merge = len(pdf_data_list)
         try:
-            for i, (idx, pdf_data) in enumerate(pdfs_bytes_list, start=1):
-                filename = paths_by_idx[idx].name
+            for i, pdf_data in enumerate(pdf_data_list, start=1):
+                file_path = pdf_data.original_path
+                filename = file_path.name
+
                 try:
-                    pdf_stream = io.BytesIO(pdf_data)
+                    pdf_stream = io.BytesIO(pdf_data.data)
                     active_streams.append(pdf_stream)
                     reader = PdfReader(pdf_stream)
                     if target_page_format is None:
@@ -169,11 +118,19 @@ class PdfMerger:
                 except Exception as e:
                     logger.error(f"Failed to process {filename}: {e}", exc_info=True)
                     failed += 1
+                    self._show_callback(
+                        "status",
+                        {
+                            "key": f"{stage_name}.error.unknown",
+                            "status": "warning",
+                            "path": file_path,
+                        },
+                    )
                 finally:
-                    self.callback(
+                    self._show_callback(
                         "progress",
-                        **{
-                            "stage": "merging",
+                        {
+                            "stage": stage_name,
                             "mode": "determinate",
                             "current": i,
                             "filename": filename,
@@ -188,9 +145,25 @@ class PdfMerger:
                 writer.write(pdf_buffer)
                 pdf_bytes = pdf_buffer.getvalue()
             success = total_to_merge - failed
-            return ProcessingResult(success, failed, pdf_bytes)
+            return pdf_bytes
         finally:
+            self._show_callback(
+                "status",
+                {
+                    "key": f"{stage_name}.done",
+                    "status": "info",
+                    "success": success,
+                    "failed": failed,
+                },
+            )
             for stream in active_streams:
                 stream.close()
             active_streams.clear()
             writer.close()
+
+    def _show_callback(self, event_type: str, data: dict, force: bool = False):
+        if force or self.should_show_callback():
+            self.callback(event_type, **data)
+
+    def should_show_callback(self) -> bool:
+        return self._files_count > 1

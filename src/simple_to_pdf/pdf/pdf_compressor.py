@@ -150,11 +150,20 @@ class PDFCompressor:
             bytes: Bytes of the compressed PDF (or original bytes if failed).
         """
         total_pages: int = 0
-        current_stage: str = "compressing"
+        stage_name: str = "compressing"
+        current_stage: str = stage_name
+
         if not pdf_bytes:
             logger.warning("Received empty bytes for compression")
             return pdf_bytes
 
+        self.callback(
+            "progress",
+            **{
+                "stage": current_stage,
+                "mode": "indeterminate",
+            },
+        )
         try:
             with pymupdf.open(stream=pdf_bytes, filetype="pdf") as doc:
                 total_pages = len(doc)
@@ -178,8 +187,9 @@ class PDFCompressor:
                             "total": total_pages,
                         },
                     )
-                current_stage = "saving"
 
+                current_stage = "processing"
+                compressed_stream = io.BytesIO()
                 self.callback(
                     "progress",
                     **{
@@ -187,27 +197,17 @@ class PDFCompressor:
                         "mode": "indeterminate",
                     },
                 )
-
-                compressed_stream = io.BytesIO()
                 doc.save(
                     compressed_stream,
                     garbage=self.garbage_level,
                     deflate=self.deflate,
                     clean=self.clean,
                 )
-                self.callback(
-                    "progress",
-                    **{
-                        "stage": current_stage,
-                        "mode": "determinate",
-                        "current": total_pages,
-                        "total": total_pages,
-                    },
-                )
+
                 self.callback(
                     "status",
                     **{
-                        "key": "compress.done",
+                        "key": f"{stage_name}.done",
                         "status": "info",
                     },
                 )
@@ -218,22 +218,8 @@ class PDFCompressor:
             self.callback(
                 "status",
                 **{
-                    "key": "compress.error",
+                    "key": "compressing.error.crirical",
                     "status": "error",
                 },
             )
             return pdf_bytes
-        finally:
-            if current_stage == "saving":
-                total = 1
-            else:
-                total = total_pages
-            self.callback(
-                "progress",
-                **{
-                    "stage": current_stage,
-                    "mode": "determinate",
-                    "current": total,
-                    "total": total,
-                },
-            )

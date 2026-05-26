@@ -1,5 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 
 
 class PageFormat(Enum):
@@ -30,7 +31,14 @@ class PixInfo:
 
 
 @dataclass
-class ProcessingResult:
-    success: int
-    failed: int
+class BytePdfDocument:
+    index: int
     data: bytes
+    original_path: Path
+
+
+@dataclass
+class ProcessingReport:
+    documents: list[BytePdfDocument] = field(default_factory=list)
+    success: int = 0
+    failed: int = 0
