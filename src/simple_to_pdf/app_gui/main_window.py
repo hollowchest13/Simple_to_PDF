@@ -169,6 +169,7 @@ class PDFMergerGUI(BaseWindow):
             "update": self.on_check_updates_click,
             "logs": self.open_log_folder,
             "documentation": self.show_documentation,
+            "dependencies": self.show_dependencies,
             "add": lambda: self.main_panel.add_files(),
             "remove": lambda: self.main_panel.remove_files(),
             "clear_status": lambda: self.main_panel.clear_status_text(),
@@ -222,34 +223,58 @@ class PDFMergerGUI(BaseWindow):
         engine_name = engine_class.__name__ if engine_class else "Unknown"
         AboutDialog(self, current_version, engine_name)
 
-    def show_license(self) -> None:
-        """Display the license text in the notification dialog."""
-        license_path = config.LICENCE_PATH
-        cur_year = datetime.now().year
-
-        if not license_path.exists():
-            logger.warning(f"⚠️ License file not found at path: {license_path}")
-            self.notifier.warning(scenario_key="file_not_found")
-            return
-
+    def get_text_from_file(self, *, file_path: Path) -> str | None:
         try:
-            text = license_path.read_text(encoding="utf-8")
-            formatted_text = text.format(year=cur_year)
-            self.notifier.info(
-                text=formatted_text,
-                scenario_key="license_info",
-                font_size=14,
-                size="750x600",
-                year=cur_year,
-                app_name=config.APP_NAME,
-                with_footer=True,
+            raw_text = FileToolKit.read_text_file(file_path=file_path)
+            return raw_text
+        except FileNotFoundError:
+            logger.error(f"File not found by {file_path}")
+            self.notifier.error(
+                scenario_key="file_not_found_error",
+                file_name=file_path,
             )
         except Exception as e:
             logger.error(f"Error reading license file: {e}")
             self.notifier.error(
                 scenario_key="file_read_error",
-                file_name=license_path,
+                path=file_path,
             )
+
+    def show_text_content(
+        self, *, text: str, scenario_key: str, win_size: str = "750x600"
+    ) -> None:
+        self.notifier.info(
+            text=text,
+            scenario_key=scenario_key,
+            font_size=14,
+            size=win_size,
+            app_name=config.APP_NAME,
+            with_footer=False,
+        )
+
+    def show_dependencies(self):
+        dep_path = Path(config.DEPENDENCIES_PATH)
+        dep_text = self.get_text_from_file(file_path=dep_path)
+        if dep_text:
+            self.show_text_content(
+                text=dep_text, scenario_key="dependencies_info", win_size="900x600"
+            )
+
+    def show_license(self) -> None:
+        """Display the license text in the notification dialog."""
+        license_path = Path(config.LICENCE_PATH)
+        cur_year = datetime.now().year
+        license_text = self.get_text_from_file(file_path=license_path)
+
+        self.notifier.info(
+            text=license_text,
+            scenario_key="license_info",
+            font_size=14,
+            size="750x600",
+            year=cur_year,
+            app_name=config.APP_NAME,
+            with_footer=True,
+        )
 
     def show_documentation(self) -> None:
         """Open the project documentation in the default browser."""

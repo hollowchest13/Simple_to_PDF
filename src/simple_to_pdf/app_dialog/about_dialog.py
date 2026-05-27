@@ -1,6 +1,4 @@
-from typing import Dict
 import webbrowser
-import customtkinter as ctk
 
 from .base_dialog import BaseDialog
 from simple_to_pdf.widgets import PrimaryButton, BaseLabel
@@ -53,9 +51,7 @@ class AboutDialog(BaseDialog):
 
         # Main description text from JSON
         self.ui["description_label"] = BaseLabel(
-            self.content,
-            text="",
-            label_type="subtitle",
+            self.content, text="", label_type="subtitle", wraplength=300
         )
         self.ui["description_label"].pack(pady=10)
 

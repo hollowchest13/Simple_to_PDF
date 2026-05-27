@@ -61,12 +61,10 @@ class HelpFrame(ToogleFrame):
             {
                 "id": "license_btn",
                 "cmd": self._trigger("license"),
-                "icon_name": "license_btn.png",
             },
             {
                 "id": "documentation_btn",
                 "cmd": self._trigger("documentation"),
-                "icon_name": "documentation_btn.png",
             },
             {
                 "id": "about_btn",
@@ -79,6 +77,10 @@ class HelpFrame(ToogleFrame):
             {
                 "id": "logs_btn",
                 "cmd": self._trigger("logs"),
+            },
+            {
+                "id": "dep_btn",
+                "cmd": self._trigger("dependencies"),
             },
         ]
 

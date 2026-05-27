@@ -17,6 +17,7 @@ else:
 # Path to the pyproject.toml file for version tracking
 CONFIG_PATH = BASE_PATH / "pyproject.toml"
 LICENCE_PATH = BASE_PATH / "LICENSE"
+DEPENDENCIES_PATH = BASE_PATH / "THIRD-PARTY-NOTICES.txt"
 ICONS_PATH = BASE_PATH / "src" / "simple_to_pdf" / "icons"
 SETTINGS_PATH = BASE_PATH / "settings.json"
 

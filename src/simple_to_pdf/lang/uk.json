@@ -24,7 +24,8 @@
       "documentation_btn": "Як користуватися",
       "about_btn": "Про програму",
       "check_updates_btn": "Перевірити оновлення",
-      "logs_btn": "Показати логи"
+      "logs_btn": "Показати логи",
+      "dep_btn":"Залежності"
     },
     "settings_panel": {
       "language_label": "Мова",
@@ -38,7 +39,7 @@
       "header_title": "Simple to PDF",
       "header_subtitle": "Версія {version}",
       "engine_badge": "Рушій: {engine}",
-      "description_label": "Утиліта для пакетної обробки PDF.\nСтворено для ефективності та швидкості.",
+      "description_label": "Утиліта для пакетного об'єднання різних типів файлів в PDF із функцією розділення та стистнення PDF.",
       "github_btn": "Вихідний код на GitHub"
     },
     "update_dialog": {
@@ -77,6 +78,11 @@
         "message": "Повний текст ліцензії...",
         "footer_text": "Copyright © {year} {app_name}. Усі права захищено...",
         "btn": "Я згоден(на)"
+      },
+        "dependencies_info": {
+        "header": "Список залежностей",
+        "message": "Список залежностей",
+        "btn": "ОК"
       },
       "no_updates": {
         "header": "Оновлення ПЗ",
@@ -117,6 +123,11 @@
       "file_not_found": {
         "header": "Не знайдено",
         "message": "Файл {file_name} не знайдено",
+        "btn": "Зрозуміло"
+      },
+      "file_read_error": {
+        "header": "Помилка читання файлу",
+        "message": "Перевірте цілісність та доступ до файлу за шляхом {path}",
         "btn": "Зрозуміло"
       }
     },

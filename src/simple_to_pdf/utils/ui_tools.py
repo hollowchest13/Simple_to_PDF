@@ -17,32 +17,6 @@ def clear_text_widget(widget: BaseTextBox) -> None:
     widget.configure(state="disabled")
 
 
-def get_selected_values(*, listbox: tk.Listbox) -> list[str]:
-    selection = listbox.curselection()
-    if not selection:
-        return []
-    return [(listbox.get(i)) for i in listbox.curselection()]
-
-
-# List Updating
-def list_update(*, files: list[str], listbox: tk.Listbox) -> None:
-    listbox_clear(listbox=listbox)
-    for pdf in files:
-        listbox.insert(tk.END, pdf)
-
-
-def listbox_clear(*, listbox: tk.Listbox) -> None:
-    listbox.delete(0, tk.END)
-
-
-# Reselect items after update
-def reselect_items(*, all_items: list, selected_values: list, listbox: tk.Listbox):
-    listbox.selection_clear(0, tk.END)
-    for idx, val in enumerate(all_items):
-        if val in selected_values:
-            listbox.selection_set(idx)
-
-
 def change_state(
     *, widgets_dict: dict[str, ctk.CTkBaseClass], state: Literal["normal", "disabled"]
 ) -> None:
@@ -72,6 +46,8 @@ def ui_locker(func):
 
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
+        if getattr(self, "thread_running", False):
+            return
         self.toggle_ui(active=False)  # lock in main thread
         self.thread_running = True
 
