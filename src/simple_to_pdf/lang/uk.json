@@ -38,7 +38,7 @@
       "header_title": "Simple to PDF",
       "header_subtitle": "Версія {version}",
       "engine_badge": "Рушій: {engine}",
-      "description_label": "Професійна утиліта для пакетної обробки PDF.\nСтворено для ефективності та швидкості.",
+      "description_label": "Утиліта для пакетної обробки PDF.\nСтворено для ефективності та швидкості.",
       "github_btn": "Вихідний код на GitHub"
     },
     "update_dialog": {
