@@ -1,7 +1,7 @@
 from typing import Any, Callable, Dict
 
 import customtkinter as ctk
-
+from simple_to_pdf.core import config
 from simple_to_pdf.settings.settings_manager import SettingsManager
 from simple_to_pdf.widgets import BaseLabel, ToogleFrame
 from simple_to_pdf.widgets.base_widgets import BaseOptionMenu, BaseSwitcher
@@ -13,7 +13,7 @@ class SettingsFrame(ToogleFrame):
         parent: Any,
         *,
         is_open: bool = False,
-        width: int = 200,
+        width: int = 230,
         handlers: Dict[str, Callable],
         settings_manager: SettingsManager,
         **kwargs: Any,
@@ -26,7 +26,6 @@ class SettingsFrame(ToogleFrame):
         # Path to settings section in translation JSON
         self.loc_section = "ui.settings_panel"
         self.handlers = handlers
-        self.lang = "Українська"
 
         # Centralized storage for all translatable widgets
         self.ui: Dict[str, Any] = {}
@@ -63,14 +62,23 @@ class SettingsFrame(ToogleFrame):
 
         # Language Selection Row
         # Returns both the label and the option menu to be stored in self.ui
+        option_width = 120
         lang_widgets = self._create_setting_row(
             parent=self,
             row_id="language",  # Used to generate keys: 'language_label' and 'language_selector'
             label_text=self.get_text("settings_panel.language_label", section="ui"),
             widget_class=BaseOptionMenu,
             values=sorted(self._LANG_MAP.keys()),
-            width=120,
+            width=option_width,
             command=self._trigger("change_language"),
+        )
+        format_widgets = self._create_setting_row(
+            parent=self,
+            row_id="format",  # Used to generate keys: 'language_label' and 'language_selector'
+            label_text=self.get_text("settings_panel.format_label", section="ui"),
+            widget_class=BaseOptionMenu,
+            values=list(config.PAGE_FORMATS.keys()),
+            width=option_width,
         )
         compress_widgets: Any = self._create_setting_row(
             parent=self,
@@ -79,9 +87,10 @@ class SettingsFrame(ToogleFrame):
             widget_class=BaseSwitcher,  # Передаємо клас світча
             value=False,
         )
-        widgets.update(**lang_widgets, **compress_widgets)
+        widgets.update(**lang_widgets, **compress_widgets, **format_widgets)
         return widgets
 
+    # self.get_text("settings_panel.format_label", section="ui")
     def _create_setting_row(
         self,
         *,
@@ -91,22 +100,18 @@ class SettingsFrame(ToogleFrame):
         widget_class: Any,
         **widget_kwargs: Any,
     ) -> Dict[str, Any]:
-        """
-        Creates a row with a Label on the left and a functional Widget on the right.
-        Returns a dict with both components for localization purposes.
-        """
         container = ctk.CTkFrame(parent, fg_color="transparent")
         container.pack(fill="x", padx=10, pady=8)
+        container.columnconfigure(1, weight=1)
 
         # Create label
         label = BaseLabel(container, text=label_text, label_type="content")
-        label.pack(side="left", padx=(5, 10))
+        label.grid(row=0, column=0, padx=5, sticky="w")
 
-        # Create the control widget (OptionMenu, Entry, etc.)
+        # Create the control widget
         widget = widget_class(container, **widget_kwargs)
-        widget.pack(side="right", padx=5)
+        widget.grid(row=0, column=1, padx=5, sticky="e")
 
-        # Return both so they can be added to self.ui for translation
         return {f"{row_id}_label": label, f"{row_id}_selector": widget}
 
     def collect_data(self) -> Dict[str, str]:
@@ -116,6 +121,10 @@ class SettingsFrame(ToogleFrame):
                 clean_key = key.replace("_selector", "")
                 data[clean_key] = str(widget.get())
         return data
+
+    def get_widget_value(self, *, widget_id: str) -> str:
+        value = self.ui[widget_id].get()
+        return str(value)
 
     def setup(self) -> None:
         """Load and apply all settings dynamically."""

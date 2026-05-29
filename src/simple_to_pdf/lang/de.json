@@ -5,30 +5,33 @@
   "ui": {
     "main_panel": {
       "filebox": "Ausgewählte Dateien",
-      "progress_label": "Fortschritt"
+      "progress_label": "Ausführungsstatus"
     },
     "list_controls_panel": {
       "btn_add": "Dateien hinzufügen",
       "btn_up": "Nach oben",
       "btn_down": "Nach unten",
       "btn_remove": "Datei entfernen",
-      "btn_merge": "Zu PDF zusammenfügen",
+      "btn_merge": "In PDF zusammenfügen",
       "btn_extract": "Seiten extrahieren",
-      "btn_status_clear": "Status löschen",
+      "btn_status_clear": "Konsole leeren",
       "btn_help": "Hilfe",
       "btn_settings": "Einstellungen"
     },
     "help_panel": {
       "title_label": "Hilfe",
       "license_btn": "Lizenz",
-      "documentation_btn": "Anleitung",
-      "about_btn": "Über uns",
-      "check_updates_btn": "Updates suchen",
-      "logs_btn": "Logs anzeigen"
+      "documentation_btn": "Benutzeranleitung",
+      "about_btn": "Über das Programm",
+      "check_updates_btn": "Auf Updates prüfen",
+      "logs_btn": "Logs anzeigen",
+      "dep_btn": "Abhängigkeiten"
     },
     "settings_panel": {
       "language_label": "Sprache",
-      "title_label": "Einstellungen"
+      "title_label": "Einstellungen",
+      "compress_label": "PDF komprimieren",
+      "format_label": "Format"
     }
   },
   "dialogs": {
@@ -37,8 +40,8 @@
       "header_title": "Simple to PDF",
       "header_subtitle": "Version {version}",
       "engine_badge": "Engine: {engine}",
-      "description_label": "Professionelles Dienstprogramm zur PDF-Stapelverarbeitung.\nEntwickelt für Effizienz und Geschwindigkeit.",
-      "github_btn": "Quellcode auf GitHub anzeigen"
+      "description_label": "Tool zum Zusammenfügen verschiedener Dateitypen in PDF mit Extraktions- und Komprimierungsfunktionen.",
+      "github_btn": "Quellcode auf GitHub"
     },
     "update_dialog": {
       "window_title": "Update verfügbar",
@@ -51,20 +54,20 @@
     },
     "page_selection_dialog": {
       "window_title": "Seiten extrahieren",
-      "header_title": "Seitenauswahl",
-      "header_subtitle": "Bestimmte Seiten aus PDF extrahieren",
-      "instruction_label": "Zu extrahierende Seiten eingeben:",
-      "hint_label": "Verwenden Sie Kommas für einzelne Seiten (1, 3)\nund Bindestriche für Bereiche (5-10).",
+      "header_title": "Seiten auswählen",
+      "header_subtitle": "Einzelne Seiten aus PDF extrahieren",
+      "instruction_label": "Seiten zum Extrahieren eingeben:",
+      "hint_label": "Kommas für einzelne Seiten (1, 3)\nund Bindestriche für Bereiche (5-10) verwenden.",
       "page_entry_placeholder": "z.B. 1, 2, 5-8",
-      "btn_ok": "Extraktion bestätigen"
+      "btn_ok": "Bestätigen"
     }
   },
   "notifications": {
     "confirmation": {
       "__title__": "Bestätigung",
       "confirm_delete": {
-        "header": "Alle Dateien löschen?",
-        "message": "Es sind derzeit keine Dateien ausgewählt. Möchten Sie stattdessen die gesamte Liste leeren?",
+        "header": "Alle Dateien entfernen?",
+        "message": "Es wurden keine Dateien ausgewählt. Möchten Sie stattdessen die gesamte Liste leeren?",
         "btn_yes": "Ja",
         "btn_no": "Nein"
       }
@@ -73,17 +76,22 @@
       "__title__": "Information",
       "license_info": {
         "header": "Lizenzbedingungen",
-        "message": "Der vollständige Lizenztext befindet sich hier...",
+        "message": "Vollständiger Lizenztext...",
         "footer_text": "Copyright © {year} {app_name}. Alle Rechte vorbehalten...",
         "btn": "Ich stimme zu"
       },
+      "dependencies_info": {
+        "header": "Abhängigkeiten",
+        "message": "Liste der Abhängigkeiten",
+        "btn": "OK"
+      },
       "no_updates": {
         "header": "Software-Update",
-        "message": "Alles auf dem neuesten Stand! Version {version} ist die aktuellste verfügbare Version.",
+        "message": "Sie verwenden bereits die neueste Version {version}.",
         "btn": "Verstanden"
       },
       "empty_file_list": {
-        "header": "Keine Dateien!",
+        "header": "Liste ist leer!",
         "message": "Die Dateiliste ist bereits leer.",
         "btn": "OK"
       }
@@ -93,29 +101,34 @@
       "update_success": {
         "header": "Software aktualisiert",
         "message": "Version {version} wurde erfolgreich installiert.",
-        "btn": "Super!"
+        "btn": "Großartig!"
       }
     },
     "warning": {
-      "__title__": "Warnung!",
+      "__title__": "Achtung!",
       "no_file_to_merge": {
-        "header": "Keine Dateien zum Zusammenfügen!",
-        "message": "Bitte fügen Sie Dateien zur Liste hinzu, bevor Sie fortfahren.",
+        "header": "Keine Dateien!",
+        "message": "Bitte fügen Sie der Liste Dateien hinzu, bevor Sie den Vorgang starten.",
         "btn": "OK"
       },
       "wrong_page_format": {
-        "header": "Falsches Seitenformat!",
-        "message": "Bitte verwenden Sie das richtige Format (z.B. 1-5, 8, 10-12).",
+        "header": "Ungültiges Format!",
+        "message": "Bitte verwenden Sie ein korrektes Format (z.B. 1-5, 8, 10-12).",
         "btn": "Verstanden"
       },
       "process_in_progress": {
         "header": "Vorgang läuft!",
-        "message": "Eine Hintergrundaufgabe wird derzeit ausgeführt.\n\nDie Anwendung wird nach Abschluss der Aufgabe automatisch geschlossen. Bitte warten.",
+        "message": "Eine Hintergrundaufgabe wird derzeit ausgeführt.\n\nDas Programm wird nach Abschluss automatisch geschlossen. Bitte warten.",
         "btn": "Warten"
       },
       "file_not_found": {
         "header": "Nicht gefunden",
-        "message": "Datei {file_name} nicht gefunden",
+        "message": "Datei {file_name} wurde nicht gefunden.",
+        "btn": "Verstanden"
+      },
+      "file_read_error": {
+        "header": "Lesefehler",
+        "message": "Überprüfen Sie die Integrität und den Zugriff auf die Datei unter {path}.",
         "btn": "Verstanden"
       }
     },
@@ -123,52 +136,78 @@
       "__title__": "Dateifehler",
       "file_read_error": {
         "header": "Lesefehler",
-        "message": "Dateilesefehler bei {file_name}",
+        "message": "Datei {file_name} konnte nicht gelesen werden.",
         "btn": "Verstanden"
       },
       "page_validation_error": {
-        "header": "Seitenvalidierungsfehler",
-        "message": "Kritischer Fehler, Fehlerbeschreibung: {error}",
+        "header": "Validierungsfehler",
+        "message": "Kritischer Fehler: {error}",
         "btn": "Schließen"
       },
       "page_extraction_error": {
-        "header": "Seitenextraktionsfehler",
-        "message": "Fehler beim Extrahieren der Seiten, Fehlerbeschreibung: {error}",
+        "header": "Extraktionsfehler",
+        "message": "Fehler beim Extrahieren der Seiten: {error}",
         "btn": "Schließen"
       },
       "update_error": {
         "header": "Update-Fehler",
-        "message": "Updates konnten nicht gesucht werden:\n{error}",
+        "message": "Prüfung auf Updates fehlgeschlagen:\n{error}",
         "btn": "Schließen"
       }
     }
   },
   "status": {
-    "merge": {
-      "done": "Zusammengefügt: {success}; Fehlgeschlagen: {failed}.\nZusammengefügtes PDF gespeichert unter:\n{path}",
-      "error": "Fehler: Datei konnte nicht zusammengefügt werden:\n{path}\n\nGrund: {error}"
+    "merging": {
+      "done": "Zusammengefügt: {success}; Fehler: {failed}",
+      "error": {
+        "unknown": "Fehler: Datei {path} konnte nicht zusammengefügt werden.\nGrund: {error}",
+        "critical": "Fehler beim Zusammenfügungsprozess.\nGrund: {error}"
+      }
     },
-    "extract": {
-      "done": "Seitenextraktion abgeschlossen.\nExtrahierte Seiten gespeichert unter:\n{path}",
-      "error": "Fehler: Seitennummer konnte nicht extrahiert werden:\n{page_number}\n\nGrund: {error}"
+    "processing": {
+      "done": "Verarbeitet: {success}; Fehler: {failed}",
+      "error": {
+        "unknown": "Fehler: Datei konnte nicht verarbeitet werden.\nGrund: {error}"
+      }
     },
-    "convert": {
-      "done": "Konvertiert: {success}; Fehlgeschlagen: {failed}",
-      "error": "Fehler: Datei konnte nicht konvertiert werden \n{path}\n\nGrund: {error}"
+    "extracting": {
+      "done": "Extraktion abgeschlossen",
+      "error": {
+        "unknown": "Fehler: Seite {page_number} konnte nicht extrahiert werden.\nGrund: {error}"
+      }
     },
-    "common": {
-      "ready": "Bereit"
+    "converting": {
+      "done": "Konvertiert: {success}; Fehler: {failed}",
+      "error": {
+        "unknown": "Fehler bei der Konvertierung: {path}\nGrund: {error}"
+      }
     },
-    "processing_page": "Seite wird verarbeitet ({current}/{total})..."
+    "compressing": {
+      "done": "Komprimierung erfolgreich abgeschlossen",
+      "error": {
+        "critical": "Datei konnte nicht komprimiert werden"
+      }
+    },
+    "saving": {
+      "done": "Datei gespeichert unter: {path}",
+      "error": {
+        "unknown": "Fehler: Datei konnte nicht gespeichert werden unter:\n{path}\nGrund: {error}",
+        "permission": "Zugriffsfehler auf den Ordner"
+      }
+    }
   },
   "progress": {
     "stage": {
-      "processing": "Verarbeitung",
+      "compressing": "Komprimierung",
       "extracting": "Extraktion",
       "converting": "Konvertierung",
-      "merging": "Zusammenfügen"
+      "merging": "Zusammenfügen",
+      "saving": "Speichern",
+      "processing": "Verarbeitung",
+      "analyzing": "Analyse",
+      "common": "Fertig"
     },
-    "indeterminate": "{stage} Dokumente...",
+    "indeterminate": "{stage}...",
     "detailed": "{stage}: {filename} ({current}/{total}) — {percent:.1f}%"
   }
 }

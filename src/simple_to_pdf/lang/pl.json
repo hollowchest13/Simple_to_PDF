@@ -5,7 +5,7 @@
   "ui": {
     "main_panel": {
       "filebox": "Wybrane pliki",
-      "progress_label": "Postęp"
+      "progress_label": "Status wykonania"
     },
     "list_controls_panel": {
       "btn_add": "Dodaj pliki",
@@ -14,31 +14,34 @@
       "btn_remove": "Usuń plik",
       "btn_merge": "Połącz w PDF",
       "btn_extract": "Wyodrębnij strony",
-      "btn_status_clear": "Wyczyść status",
+      "btn_status_clear": "Wyczyść konsolę",
       "btn_help": "Pomoc",
       "btn_settings": "Ustawienia"
     },
     "help_panel": {
       "title_label": "Pomoc",
       "license_btn": "Licencja",
-      "documentation_btn": "Instrukcja obsługi",
+      "documentation_btn": "Jak używać",
       "about_btn": "O programie",
       "check_updates_btn": "Sprawdź aktualizacje",
-      "logs_btn": "Pokaż logi"
+      "logs_btn": "Pokaż logi",
+      "dep_btn": "Zależności"
     },
     "settings_panel": {
       "language_label": "Język",
-      "title_label": "Ustawienia"
+      "title_label": "Ustawienia",
+      "compress_label": "Kompresuj PDF",
+      "format_label": "Format"
     }
   },
   "dialogs": {
     "about_dialog": {
-      "window_title": "O programie Simple to PDF",
+      "window_title": "O Simple to PDF",
       "header_title": "Simple to PDF",
       "header_subtitle": "Wersja {version}",
       "engine_badge": "Silnik: {engine}",
-      "description_label": "Profesjonalne narzędzie do wsadowego przetwarzania PDF.\nStworzone dla wydajności i szybkości.",
-      "github_btn": "Zobacz źródło na GitHub"
+      "description_label": "Narzędzie do wsadowego łączenia różnych typów plików w PDF z funkcją wyodrębniania i kompresji.",
+      "github_btn": "Kod źródłowy na GitHub"
     },
     "update_dialog": {
       "window_title": "Dostępna aktualizacja",
@@ -52,11 +55,11 @@
     "page_selection_dialog": {
       "window_title": "Wyodrębnij strony",
       "header_title": "Wybór stron",
-      "header_subtitle": "Wyodrębnij konkretne strony z PDF",
+      "header_subtitle": "Wyodrębnianie określonych stron z PDF",
       "instruction_label": "Wprowadź strony do wyodrębnienia:",
-      "hint_label": "Użyj przecinków dla pojedynczych stron (1, 3)\ni myślników dla zakresów (5-10).",
+      "hint_label": "Użyj przecinków dla pojedynczych stron (1, 3)\noraz myślników dla zakresów (5-10).",
       "page_entry_placeholder": "np. 1, 2, 5-8",
-      "btn_ok": "Potwierdź wyodrębnianie"
+      "btn_ok": "Potwierdź"
     }
   },
   "notifications": {
@@ -64,7 +67,7 @@
       "__title__": "Potwierdzenie",
       "confirm_delete": {
         "header": "Usunąć wszystkie pliki?",
-        "message": "Obecnie nie wybrano żadnych plików. Czy chcesz wyczyścić całą listę?",
+        "message": "Obecnie nie wybrano żadnego pliku. Czy chcesz zamiast tego wyczyścić całą listę?",
         "btn_yes": "Tak",
         "btn_no": "Nie"
       }
@@ -73,17 +76,22 @@
       "__title__": "Informacja",
       "license_info": {
         "header": "Warunki licencji",
-        "message": "Pełny tekst licencji znajduje się tutaj...",
+        "message": "Pełny tekst licencji...",
         "footer_text": "Copyright © {year} {app_name}. Wszelkie prawa zastrzeżone...",
         "btn": "Zgadzam się"
       },
+      "dependencies_info": {
+        "header": "Lista zależności",
+        "message": "Lista zależności",
+        "btn": "OK"
+      },
       "no_updates": {
         "header": "Aktualizacja oprogramowania",
-        "message": "Wszystko aktualne! Wersja {version} jest najnowszą dostępną wersją.",
+        "message": "Używasz najnowszej wersji {version}.",
         "btn": "Rozumiem"
       },
       "empty_file_list": {
-        "header": "Brak plików!",
+        "header": "Lista jest pusta!",
         "message": "Lista plików jest już pusta.",
         "btn": "OK"
       }
@@ -97,25 +105,30 @@
       }
     },
     "warning": {
-      "__title__": "Ostrzeżenie!",
+      "__title__": "Uwaga!",
       "no_file_to_merge": {
-        "header": "Brak plików do połączenia!",
-        "message": "Proszę dodać pliki do listy przed przystąpieniem do łączenia.",
+        "header": "Brak plików!",
+        "message": "Proszę dodać pliki do listy przed rozpoczęciem łączenia.",
         "btn": "OK"
       },
       "wrong_page_format": {
-        "header": "Błędny format stron!",
+        "header": "Błędny format!",
         "message": "Proszę użyć poprawnego formatu (np. 1-5, 8, 10-12).",
         "btn": "Rozumiem"
       },
       "process_in_progress": {
         "header": "Proces w toku!",
-        "message": "Zadanie w tle jest aktualnie wykonywane.\n\nAplikacja zamknie się automatycznie po zakończeniu zadania. Proszę czekać.",
+        "message": "Obecnie wykonywane jest zadanie w tle.\n\nProgram zamknie się automatycznie po zakończeniu. Proszę czekać.",
         "btn": "Czekaj"
       },
       "file_not_found": {
         "header": "Nie znaleziono",
-        "message": "Plik {file_name} nie został znaleziony",
+        "message": "Nie znaleziono pliku {file_name}.",
+        "btn": "Rozumiem"
+      },
+      "file_read_error": {
+        "header": "Błąd odczytu pliku",
+        "message": "Sprawdź integralność i dostęp do pliku w ścieżce {path}.",
         "btn": "Rozumiem"
       }
     },
@@ -123,52 +136,78 @@
       "__title__": "Błąd pliku",
       "file_read_error": {
         "header": "Błąd odczytu",
-        "message": "Błąd odczytu pliku {file_name}",
+        "message": "Nie udało się odczytać pliku {file_name}.",
         "btn": "Rozumiem"
       },
       "page_validation_error": {
-        "header": "Błąd walidacji stron",
-        "message": "Błąd krytyczny, opis błędu: {error}",
+        "header": "Błąd walidacji",
+        "message": "Błąd krytyczny: {error}",
         "btn": "Zamknij"
       },
       "page_extraction_error": {
-        "header": "Błąd wyodrębniania stron",
-        "message": "Błąd podczas wyodrębniania stron, opis błędu: {error}",
+        "header": "Błąd wyodrębniania",
+        "message": "Błąd podczas wyodrębniania stron: {error}",
         "btn": "Zamknij"
       },
       "update_error": {
         "header": "Błąd aktualizacji",
-        "message": "Nie można sprawdzić aktualizacji:\n{error}",
+        "message": "Nie udało się sprawdzić aktualizacji:\n{error}",
         "btn": "Zamknij"
       }
     }
   },
   "status": {
-    "merge": {
-      "done": "Połączono: {success}; Błąd: {failed}.\nPołączony PDF zapisano w:\n{path}",
-      "error": "Błąd: Nie można połączyć pliku:\n{path}\n\nPrzyczyna: {error}"
+    "merging": {
+      "done": "Połączono: {success}; Błędów: {failed}",
+      "error": {
+        "unknown": "Błąd: Nie udało się połączyć pliku {path}.\nPrzyczyna: {error}",
+        "critical": "Błąd procesu łączenia.\nPrzyczyna: {error}"
+      }
     },
-    "extract": {
-      "done": "Wyodrębnianie stron zakończone.\nWyodrębnione strony zapisano w:\n{path}",
-      "error": "Błąd: Nie można wyodrębnić numeru strony:\n{page_number}\n\nPrzyczyna: {error}"
+    "processing": {
+      "done": "Przetworzono: {success}; Błędów: {failed}",
+      "error": {
+        "unknown": "Błąd: Nie udało się przetworzyć pliku.\nPrzyczyna: {error}"
+      }
     },
-    "convert": {
-      "done": "Przekonwertowano: {success}; Błąd: {failed}",
-      "error": "Błąd: Nie można przekonwertować pliku \n{path}\n\nPrzyczyna: {error}"
+    "extracting": {
+      "done": "Wyodrębnianie zakończone",
+      "error": {
+        "unknown": "Błąd: Nie udało się wyodrębnić strony {page_number}.\nPrzyczyna: {error}"
+      }
     },
-    "common": {
-      "ready": "Gotowy"
+    "converting": {
+      "done": "Skonwertowano: {success}; Błędów: {failed}",
+      "error": {
+        "unknown": "Błąd konwersji pliku: {path}\nPrzyczyna: {error}"
+      }
     },
-    "processing_page": "Przetwarzanie strony ({current}/{total})..."
+    "compressing": {
+      "done": "Kompresja zakończona sukcesem",
+      "error": {
+        "critical": "Nie udało się skompresować pliku"
+      }
+    },
+    "saving": {
+      "done": "Plik zapisano w ścieżce: {path}",
+      "error": {
+        "unknown": "Błąd: Nie udało się zapisać pliku w ścieżce:\n{path}\nPrzyczyna: {error}",
+        "permission": "Błąd dostępu do folderu"
+      }
+    }
   },
   "progress": {
     "stage": {
-      "processing": "Przetwarzanie",
+      "compressing": "Kompresowanie",
       "extracting": "Wyodrębnianie",
       "converting": "Konwertowanie",
-      "merging": "Łączenie"
+      "merging": "Łączenie",
+      "saving": "Zapisywanie",
+      "processing": "Przetwarzanie",
+      "analyzing": "Analiza",
+      "common": "Gotowe"
     },
-    "indeterminate": "{stage} dokumenty...",
+    "indeterminate": "{stage}...",
     "detailed": "{stage}: {filename} ({current}/{total}) — {percent:.1f}%"
   }
 }

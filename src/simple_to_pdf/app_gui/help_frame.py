@@ -11,7 +11,7 @@ class HelpFrame(ToogleFrame):
         parent,
         *,
         is_open: bool = False,
-        width: int = 200,
+        width: int = 230,
         handlers: Dict[str, Callable],
         **kwargs,
     ):

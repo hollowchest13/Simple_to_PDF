@@ -28,6 +28,7 @@ from simple_to_pdf.core.version import VersionController
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.pdf import PageExtractor, PDFCompressor, PdfMerger
 from simple_to_pdf.pdf.conversion_service import ConversionService
+from simple_to_pdf.pdf.models import PageFormat
 from simple_to_pdf.settings.settings_manager import SettingsManager
 from simple_to_pdf.utils.file_tools import FileToolKit, get_files
 from simple_to_pdf.utils.logic import get_selected_pages
@@ -72,7 +73,7 @@ class PDFMergerGUI(BaseWindow):
 
     def apply_settings(self) -> None:
         self.settings_panel.setup()
-        lang = self.settings_panel.lang
+        lang = self.settings_panel.get_widget_value(widget_id="language_selector")
         self.on_change_language(lang)
 
     def init_panels(self, handlers: dict[str, Callable]) -> None:
@@ -348,6 +349,10 @@ class PDFMergerGUI(BaseWindow):
             self.callback.safe_callback(
                 "status", key=f"{stage}.error.unknown", status="error"
             )
+    
+    def _get_page_format(self)->PageFormat|None:
+        page_format_name=self.settings_panel.get_widget_value(widget_id="format_selector")
+        return config.PAGE_FORMATS.get(page_format_name,None)
 
     @ui_locker
     def _run_merge_worker(
@@ -365,7 +370,8 @@ class PDFMergerGUI(BaseWindow):
         )
         try:
             conversion_res = self.conversion_service.get_pdfs_data(files=files)
-            data = self.merger.merge_to_pdf(conversion_rep=conversion_res)
+            target_format=self._get_page_format()
+            data = self.merger.merge_to_pdf(conversion_rep=conversion_res,target_page_format=target_format)
         except Exception as e:
             logger.error(f"Merge stage failed: {e}", exc_info=True)
             self.schedule_ui_task(self.main_panel.progress_bar_reset)

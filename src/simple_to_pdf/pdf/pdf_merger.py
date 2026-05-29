@@ -26,12 +26,14 @@ class PdfMerger:
         *,
         reader: PdfReader,
         writer: PdfWriter,
-        target_page_format: PageFormat = PageFormat.A4,
+        target_page_format: PageFormat|None=None,
     ):
         """
         Scales all pages from reader and adds them to writer.
         Correctly compensates for non-zero MediaBox origins to prevent left-side clipping.
         """
+        if target_page_format is None:
+            return
         base_w, base_h = target_page_format.size
         TOLERANCE = 1.0
 
@@ -71,7 +73,7 @@ class PdfMerger:
         self,
         *,
         conversion_rep: ProcessingReport,
-        target_page_format: PageFormat = PageFormat.A4,
+        target_page_format: PageFormat|None=None,
     ) -> bytes:
         """Merges multiple files into a single PDF and returns original bytes if it is single PDF."""
 

@@ -1,4 +1,5 @@
 {
     "language": "Українська",
-    "compress": "True"
+    "compress": "False",
+    "format": "Original"
 }

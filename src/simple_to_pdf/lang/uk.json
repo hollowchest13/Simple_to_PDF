@@ -30,7 +30,8 @@
     "settings_panel": {
       "language_label": "Мова",
       "title_label": "Налаштування",
-      "compress_label": "Стиснути PDF"
+      "compress_label": "Стиснути PDF",
+      "format_label":"Формат"
     }
   },
   "dialogs": {

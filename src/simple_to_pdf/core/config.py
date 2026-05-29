@@ -3,6 +3,8 @@ from pathlib import Path
 from datetime import datetime
 from enum import Enum
 
+from simple_to_pdf.pdf.models import PageFormat
+
 # --- PATHS CONFIGURATION ---
 
 # Determine the base directory whether running as a script or a frozen executable.
@@ -106,12 +108,16 @@ DEFAULT_COLORS = {
 }
 
 PAGE_FORMATS = {
-    "Original Size": None,
-    "A4 (210 x 297 mm)": (595, 842),
-    "A3 (297 x 420 mm)": (842, 1191),
-    "A5 (148 x 210 mm)": (420, 595),
-    "US Letter": (612, 792),
-    "US Legal": (612, 1008),
+    "Original": None,
+    "A3": PageFormat(842.0, 1191.0),
+    "A4": PageFormat(595.0, 842.0),
+    "A5": PageFormat(420.0, 595.0),
+    "A6": PageFormat(297.0, 420.0),
+    "B4": PageFormat(709.0, 1001.0),
+    "B5": PageFormat(499.0, 709.0),
+    "US Letter": PageFormat(612.0, 792.0),
+    "US Legal": PageFormat(612.0, 1008.0),
+    "Executive": PageFormat(522.0, 756.0),
+    "Tabloid": PageFormat(792.0, 1224.0),
+    "Folio": PageFormat(612.0, 936.0),
 }
-
-DEFAULT_FORMAT = "A4 (210 x 297 mm)"

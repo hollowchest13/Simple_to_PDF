@@ -22,116 +22,121 @@
       "title_label": "Ayuda",
       "license_btn": "Licencia",
       "documentation_btn": "Cómo usar",
-      "about_btn": "Acerca de",
+      "about_btn": "Acerca del programa",
       "check_updates_btn": "Buscar actualizaciones",
-      "logs_btn": "Mostrar registros"
+      "logs_btn": "Mostrar registros",
+      "dep_btn": "Dependencias"
     },
     "settings_panel": {
       "language_label": "Idioma",
-      "title_label": "Configuración"
+      "title_label": "Configuración",
+      "compress_label": "Comprimir PDF",
+      "format_label": "Formato"
     }
   },
-
   "dialogs": {
     "about_dialog": {
       "window_title": "Acerca de Simple to PDF",
       "header_title": "Simple to PDF",
       "header_subtitle": "Versión {version}",
       "engine_badge": "Motor: {engine}",
-      "description_label": "Utilidad profesional para el procesamiento por lotes de PDF.\nCreado para la eficiencia y la velocidad.",
+      "description_label": "Utilidad para combinar por lotes varios tipos de archivos en PDF con funciones de extracción y compresión.",
       "github_btn": "Código fuente en GitHub"
     },
-
     "update_dialog": {
       "window_title": "Actualización disponible",
       "header_title": "¡Nueva actualización!",
-      "header_subtitle": "Versión {version} lista",
+      "header_subtitle": "La versión {version} está lista",
       "whats_new_title": "Qué hay de nuevo:",
       "changelog_text": "{logs}",
       "btn_download": "Descargar ahora",
       "btn_later": "Más tarde"
     },
-
     "page_selection_dialog": {
       "window_title": "Extraer páginas",
-      "header_title": "Selección de páginas",
-      "header_subtitle": "Extracción de páginas individuales de un PDF",
+      "header_title": "Seleccionar páginas",
+      "header_subtitle": "Extracción de páginas específicas de un PDF",
       "instruction_label": "Introduzca las páginas a extraer:",
       "hint_label": "Use comas para páginas individuales (1, 3)\ny guiones para rangos (5-10).",
       "page_entry_placeholder": "ej. 1, 2, 5-8",
       "btn_ok": "Confirmar"
     }
   },
-
   "notifications": {
     "confirmation": {
       "__title__": "Confirmación",
       "confirm_delete": {
         "header": "¿Eliminar todos los archivos?",
-        "message": "Actualmente no hay ningún archivo seleccionado. ¿Desea vaciar toda la lista en su lugar?",
+        "message": "No hay archivos seleccionados. ¿Desea limpiar toda la lista en su lugar?",
         "btn_yes": "Sí",
         "btn_no": "No"
       }
     },
-
     "info": {
       "__title__": "Información",
       "license_info": {
         "header": "Términos de la licencia",
         "message": "Texto completo de la licencia...",
         "footer_text": "Copyright © {year} {app_name}. Todos los derechos reservados...",
-        "btn": "Acepto"
+        "btn": "Estoy de acuerdo"
+      },
+      "dependencies_info": {
+        "header": "Lista de dependencias",
+        "message": "Lista de dependencias",
+        "btn": "OK"
       },
       "no_updates": {
         "header": "Actualización de software",
-        "message": "Ya tiene instalada la versión más reciente {version}.",
+        "message": "Está utilizando la última versión {version}.",
         "btn": "Entendido"
       },
       "empty_file_list": {
         "header": "¡La lista está vacía!",
         "message": "La lista de archivos ya está vacía.",
-        "btn": "Aceptar"
+        "btn": "OK"
       }
     },
-
     "success": {
       "__title__": "Éxito",
       "update_success": {
         "header": "Software actualizado",
         "message": "La versión {version} se ha instalado correctamente.",
-        "btn": "¡Excelente!"
+        "btn": "¡Genial!"
       }
     },
-
     "warning": {
       "__title__": "¡Atención!",
       "no_file_to_merge": {
         "header": "¡No hay archivos!",
         "message": "Por favor, añada archivos a la lista antes de comenzar la combinación.",
-        "btn": "Aceptar"
+        "btn": "OK"
       },
       "wrong_page_format": {
-        "header": "¡Formato incorrecto!",
-        "message": "Por favor, use un formato válido (ej. 1-5, 8, 10-12).",
+        "header": "¡Formato inválido!",
+        "message": "Por favor, utilice un formato correcto (ej. 1-5, 8, 10-12).",
         "btn": "Entendido"
       },
       "process_in_progress": {
         "header": "¡Proceso en curso!",
-        "message": "Actualmente se está ejecutando una tarea en segundo plano.\n\nLa aplicación se cerrará automáticamente al finalizar. Por favor, espere.",
+        "message": "Actualmente hay una tarea en segundo plano ejecutándose.\n\nEl programa se cerrará automáticamente al finalizar. Por favor, espere.",
         "btn": "Esperar"
       },
       "file_not_found": {
         "header": "No encontrado",
-        "message": "No se encontró el archivo {file_name}",
+        "message": "No se encontró el archivo {file_name}.",
+        "btn": "Entendido"
+      },
+      "file_read_error": {
+        "header": "Error de lectura",
+        "message": "Compruebe la integridad y el acceso al archivo en la ruta {path}.",
         "btn": "Entendido"
       }
     },
-
     "error": {
       "__title__": "Error de archivo",
       "file_read_error": {
         "header": "Error de lectura",
-        "message": "No se pudo leer el archivo {file_name}",
+        "message": "No se pudo leer el archivo {file_name}.",
         "btn": "Entendido"
       },
       "page_validation_error": {
@@ -141,43 +146,68 @@
       },
       "page_extraction_error": {
         "header": "Error de extracción",
-        "message": "Ocurrió un error al extraer las páginas: {error}",
+        "message": "Error durante la extracción de páginas: {error}",
         "btn": "Cerrar"
       },
       "update_error": {
         "header": "Error de actualización",
-        "message": "No se pudo comprobar la actualización:\n{error}",
+        "message": "No se pudo comprobar las actualizaciones:\n{error}",
         "btn": "Cerrar"
       }
     }
   },
-
   "status": {
-    "merge": {
-      "done": "Combinados: {success}; Errores: {failed}.\nArchivo guardado en:\n{path}",
-      "error": "Error: No se pudo combinar el archivo:\n{path}\n\nMotivo: {error}"
+    "merging": {
+      "done": "Combinado: {success}; Errores: {failed}",
+      "error": {
+        "unknown": "Error: No se pudo combinar el archivo {path}.\nMotivo: {error}",
+        "critical": "Error en el proceso de combinación.\nMotivo: {error}"
+      }
     },
-    "extract": {
-      "done": "Extracción completada.\nArchivos guardados aquí:\n{path}",
-      "error": "Error: No se pudo extraer la página {page_number}.\n\nMotivo: {error}"
+    "processing": {
+      "done": "Procesado: {success}; Errores: {failed}",
+      "error": {
+        "unknown": "Error: No se pudo procesar el archivo.\nMotivo: {error}"
+      }
     },
-    "convert": {
-      "done": "Convertidos: {success}; Errores: {failed}",
-      "error": "Error: No se pudo convertir el archivo \n{path}\n\nMotivo: {error}"
+    "extracting": {
+      "done": "Extracción completada",
+      "error": {
+        "unknown": "Error: No se pudo extraer la página {page_number}.\nMotivo: {error}"
+      }
     },
-    "common": {
-      "ready": "Listo"
+    "converting": {
+      "done": "Convertido: {success}; Errores: {failed}",
+      "error": {
+        "unknown": "Error al convertir el archivo: {path}\nMotivo: {error}"
+      }
     },
-    "processing_page": "Procesando página ({current}/{total})..."
+    "compressing": {
+      "done": "Compresión completada con éxito",
+      "error": {
+        "critical": "No se pudo comprimir el archivo"
+      }
+    },
+    "saving": {
+      "done": "Archivo guardado en la ruta: {path}",
+      "error": {
+        "unknown": "Error: No se pudo guardar el archivo en la ruta:\n{path}\nMotivo: {error}",
+        "permission": "Error de acceso a la carpeta"
+      }
+    }
   },
   "progress": {
     "stage": {
-      "processing": "Procesando",
+      "compressing": "Comprimiendo",
       "extracting": "Extrayendo",
       "converting": "Convirtiendo",
-      "merging": "Combinando"
+      "merging": "Combinando",
+      "saving": "Guardando",
+      "processing": "Procesando",
+      "analyzing": "Analizando",
+      "common": "Listo"
     },
-    "indeterminate": "{stage} documentos...",
+    "indeterminate": "{stage}...",
     "detailed": "{stage}: {filename} ({current}/{total}) — {percent:.1f}%"
   }
 }
