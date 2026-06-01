@@ -1,6 +1,7 @@
 import logging
 import customtkinter as ctk
 from typing import Callable, Dict
+from simple_to_pdf.core.models import App_Mode
 
 
 from simple_to_pdf.widgets import BaseFrame
@@ -21,6 +22,15 @@ class ListControlsFrame(BaseFrame):
         self.loc_section: str = "ui.list_controls_panel"
         self.handlers = handlers
         self.init_btns()
+        self._app_mode: App_Mode = App_Mode.MERGE
+
+    @property
+    def app_mode(self) -> App_Mode:
+        return self._app_mode
+
+    @app_mode.setter
+    def app_mode(self, value):
+        self._app_mode: App_Mode = value
 
     def init_btns(
         self,
@@ -111,3 +121,22 @@ class ListControlsFrame(BaseFrame):
         return self._buttons_pack(
             btns_config=button_configs, parent=self.settings_frame
         )
+
+    def refresh_localization(self) -> None:
+        super().refresh_localization()
+        self.update_conditional_button()
+
+    def update_conditional_button(self):
+
+        match self.app_mode:
+            case App_Mode.COMPRESS:
+                key = "btn_compress"
+            case App_Mode.MERGE:
+                key = "btn_merge"
+
+        # Використовуємо метод міксину для перекладу
+        new_text = self.get_text(key, section=self.loc_section)
+
+        # Оновлюємо кнопку
+        if "btn_merge" in self.ui:
+            self.ui["btn_merge"].configure(text=new_text)

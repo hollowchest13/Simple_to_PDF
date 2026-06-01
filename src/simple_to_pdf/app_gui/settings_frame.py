@@ -22,6 +22,7 @@ class SettingsFrame(ToogleFrame):
         self.language_selector: BaseOptionMenu
         self.compress_selector: BaseSwitcher
         self.settings_manager: SettingsManager = settings_manager
+        self._callback = lambda *args, **kwargs: None
 
         # Path to settings section in translation JSON
         self.loc_section = "ui.settings_panel"
@@ -35,6 +36,14 @@ class SettingsFrame(ToogleFrame):
 
         # Register for localization updates
         self.init_localization()
+
+    @property
+    def callback(self):
+        return self._callback
+
+    @callback.setter
+    def callback(self, value):
+        self._callback = value if value is not None else lambda *args, **kwargs: None
 
     def _setup_ui(self) -> None:
         """
@@ -86,6 +95,7 @@ class SettingsFrame(ToogleFrame):
             label_text=self.get_text("settings_panel.compress_label", section="ui"),
             widget_class=BaseSwitcher,  # Передаємо клас світча
             value=False,
+            command=lambda: self.callback(),
         )
         widgets.update(**lang_widgets, **compress_widgets, **format_widgets)
         return widgets

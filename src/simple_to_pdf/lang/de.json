@@ -13,6 +13,7 @@
       "btn_down": "Nach unten",
       "btn_remove": "Datei entfernen",
       "btn_merge": "In PDF zusammenfügen",
+      "btn_compress":"PDF komprimieren",
       "btn_extract": "Seiten extrahieren",
       "btn_status_clear": "Konsole leeren",
       "btn_help": "Hilfe",

@@ -7,7 +7,7 @@ import webbrowser
 from datetime import datetime
 from pathlib import Path
 from tkinter import filedialog
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Any
 
 import customtkinter as ctk
 
@@ -24,6 +24,7 @@ from simple_to_pdf.app_gui.main_frame import MainFrame
 from simple_to_pdf.app_gui.settings_frame import SettingsFrame
 from simple_to_pdf.cli.logger import get_log_dir
 from simple_to_pdf.core import config
+from simple_to_pdf.core.models import App_Mode
 from simple_to_pdf.core.version import VersionController
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.pdf import PageExtractor, PDFCompressor, PdfMerger
@@ -112,6 +113,7 @@ class PDFMergerGUI(BaseWindow):
         self.merger.callback = self.callback.safe_callback
         self.page_extractor.callback = self.callback.safe_callback
         self.compressor.callback = self.callback.safe_callback
+        self.settings_panel.callback = self._update_merge_button
 
     def toggle_ui(self, *, active: bool) -> None:
         """Enable or disable the window controls."""
@@ -171,8 +173,8 @@ class PDFMergerGUI(BaseWindow):
             "logs": self.open_log_folder,
             "documentation": self.show_documentation,
             "dependencies": self.show_dependencies,
-            "add": lambda: self.main_panel.add_files(),
-            "remove": lambda: self.main_panel.remove_files(),
+            "add": self.add_files,
+            "remove": self.remove_files,
             "clear_status": lambda: self.main_panel.clear_status_text(),
             "move": lambda direction: self.main_panel.move_on_listbox(
                 direction=direction
@@ -185,6 +187,40 @@ class PDFMergerGUI(BaseWindow):
             ),
             "change_language": lambda lang: self.on_change_language(lang),
         }
+
+    @staticmethod
+    def update_ui_after(method_name: str):
+        def decorator(func: Callable[..., Any]):
+            def wrapper(self, *args, **kwargs):
+                result = func(self, *args, **kwargs)
+                getattr(self, method_name)()
+                return result
+
+            return wrapper
+
+        return decorator
+
+    def _update_merge_button(self):
+
+        file_paths = self.main_panel.filebox.all_rows
+        file_num = len(file_paths)
+
+        need_compress: bool = self.settings_panel.compress_selector.get()
+
+        if file_num == 1 and file_paths[0].suffix == ".pdf" and need_compress:
+            self.btns_panel.app_mode = App_Mode.COMPRESS
+        else:
+            self.btns_panel.app_mode = App_Mode.MERGE
+
+        self.btns_panel.update_conditional_button()
+
+    @update_ui_after("_update_merge_button")
+    def add_files(self):
+        self.main_panel.add_files()
+
+    @update_ui_after("_update_merge_button")
+    def remove_files(self):
+        self.main_panel.remove_files()
 
     def toogle_tab(
         self, *, target_panel: ToogleFrame, panel_list: list[ToogleFrame]
@@ -349,10 +385,12 @@ class PDFMergerGUI(BaseWindow):
             self.callback.safe_callback(
                 "status", key=f"{stage}.error.unknown", status="error"
             )
-    
-    def _get_page_format(self)->PageFormat|None:
-        page_format_name=self.settings_panel.get_widget_value(widget_id="format_selector")
-        return config.PAGE_FORMATS.get(page_format_name,None)
+
+    def _get_page_format(self) -> PageFormat | None:
+        page_format_name = self.settings_panel.get_widget_value(
+            widget_id="format_selector"
+        )
+        return config.PAGE_FORMATS.get(page_format_name, None)
 
     @ui_locker
     def _run_merge_worker(
@@ -370,8 +408,10 @@ class PDFMergerGUI(BaseWindow):
         )
         try:
             conversion_res = self.conversion_service.get_pdfs_data(files=files)
-            target_format=self._get_page_format()
-            data = self.merger.merge_to_pdf(conversion_rep=conversion_res,target_page_format=target_format)
+            target_format = self._get_page_format()
+            data = self.merger.merge_to_pdf(
+                conversion_rep=conversion_res, target_page_format=target_format
+            )
         except Exception as e:
             logger.error(f"Merge stage failed: {e}", exc_info=True)
             self.schedule_ui_task(self.main_panel.progress_bar_reset)
