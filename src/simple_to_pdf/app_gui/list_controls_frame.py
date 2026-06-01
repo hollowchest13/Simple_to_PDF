@@ -133,10 +133,10 @@ class ListControlsFrame(BaseFrame):
                 key = "btn_compress"
             case App_Mode.MERGE:
                 key = "btn_merge"
+            case App_Mode.CONVERT:
+                key = "btn_convert"
 
-        # Використовуємо метод міксину для перекладу
         new_text = self.get_text(key, section=self.loc_section)
 
-        # Оновлюємо кнопку
         if "btn_merge" in self.ui:
             self.ui["btn_merge"].configure(text=new_text)

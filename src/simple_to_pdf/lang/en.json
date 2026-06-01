@@ -13,6 +13,7 @@
       "btn_down": "Move down",
       "btn_remove": "Remove file",
       "btn_merge": "Merge to PDF",
+      "btn_convert": "Convert to PDF",
       "btn_compress":"Compress PDF",
       "btn_extract": "Extract pages",
       "btn_status_clear": "Clear console",

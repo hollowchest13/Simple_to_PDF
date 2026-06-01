@@ -201,16 +201,32 @@ class PDFMergerGUI(BaseWindow):
         return decorator
 
     def _update_merge_button(self):
-
         file_paths = self.main_panel.filebox.all_rows
         file_num = len(file_paths)
+        need_compress = self.settings_panel.compress_selector.get()
 
-        need_compress: bool = self.settings_panel.compress_selector.get()
+        merge_btn = self.btns_panel.ui["btn_merge"]
 
-        if file_num == 1 and file_paths[0].suffix == ".pdf" and need_compress:
-            self.btns_panel.app_mode = App_Mode.COMPRESS
+        if file_num == 1:
+            suffix = file_paths[0].suffix.lower()
+
+            if suffix == ".pdf":
+                # Якщо PDF: перемикаємося між COMPRESS та MERGE
+                self.btns_panel.app_mode = (
+                    App_Mode.COMPRESS if need_compress else App_Mode.MERGE
+                )
+            else:
+                self.btns_panel.app_mode = App_Mode.CONVERT
         else:
             self.btns_panel.app_mode = App_Mode.MERGE
+
+        is_invalid_state = (
+            file_num == 1
+            and file_paths[0].suffix.lower() == ".pdf"
+            and not need_compress
+        )
+
+        merge_btn.configure(state="disabled" if is_invalid_state else "normal")
 
         self.btns_panel.update_conditional_button()
 

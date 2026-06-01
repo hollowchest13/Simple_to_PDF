@@ -13,6 +13,7 @@
       "btn_down": "Przenieś w dół",
       "btn_remove": "Usuń plik",
       "btn_merge": "Połącz w PDF",
+      "btn_convert": "Konwertuj do PDF",
       "btn_compress":"Kompresuj PDF",
       "btn_extract": "Wyodrębnij strony",
       "btn_status_clear": "Wyczyść konsolę",

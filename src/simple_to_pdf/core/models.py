@@ -20,3 +20,4 @@ class UpdateCheckResult:
 class App_Mode(Enum):
     COMPRESS = "compress"
     MERGE = "merge"
+    CONVERT = "convert"

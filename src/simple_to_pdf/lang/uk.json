@@ -13,6 +13,7 @@
       "btn_down": "Перемістити вниз",
       "btn_remove": "Видалити файл",
       "btn_merge": "Об'єднати в PDF",
+      "btn_convert":"Конвертувати в PDF",
       "btn_compress":"Стиснути PDF",
       "btn_extract": "Витягти сторінки",
       "btn_status_clear": "Очистити консоль",
