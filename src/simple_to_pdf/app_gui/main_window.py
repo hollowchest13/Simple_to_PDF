@@ -205,7 +205,9 @@ class PDFMergerGUI(BaseWindow):
         file_num = len(file_paths)
         need_compress = self.settings_panel.compress_selector.get()
 
-        merge_btn = self.btns_panel.ui["btn_merge"]
+        merge_btn = self.btns_panel.ui.get("btn_merge")
+        if not merge_btn:
+            return
 
         if file_num == 1:
             suffix = file_paths[0].suffix.lower()
