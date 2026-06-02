@@ -73,7 +73,7 @@ class FrameThemeMixin(WidgetThemeProviderMixin):
                 return {"fg_color": "transparent"}
 
 
-class LabelThemeMixit(WidgetThemeProviderMixin):
+class LabelThemeMixin(WidgetThemeProviderMixin):
     def set_params(self, label_type: str) -> Dict[str, Any]:
         bg_color = "transparent"
 

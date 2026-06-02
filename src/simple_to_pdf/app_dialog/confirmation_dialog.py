@@ -65,14 +65,10 @@ class ConfirmDialog(BaseDialog):
         )
 
         # Message label (no TextBox needed for short text)
-        self.ui["message"] = BaseLabel(
-            self.content, text="", wraplength=320, label_type="content"
-        )
+        self.ui["message"] = BaseLabel(self.content, text="", label_type="content")
         self.ui["message"].pack(expand=True, fill="both", padx=20, pady=10)
-        self.ui["message"].bind(
-            "<Configure>",
-            lambda e: self.ui["message"].configure(wraplength=300),
-        )
+
+        self.bind("<Configure>", self._adjust_wraplength)
         btns_height = 50
         btns_width = 110
 
@@ -96,6 +92,11 @@ class ConfirmDialog(BaseDialog):
             height=btns_height,
         )
         self.ui["btn_no"].pack(side="right", padx=10, pady=15)
+
+    def _adjust_wraplength(self, event=None):
+        new_width = self.content.winfo_width() - 40
+        if new_width > 0:
+            self.ui["message"].configure(wraplength=new_width)
 
     def refresh_localization(self, **kwargs):
         """Updates all UI texts based on current language."""

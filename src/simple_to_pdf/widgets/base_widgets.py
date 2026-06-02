@@ -9,7 +9,7 @@ from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.utils.theme_provider import (
     ButtonThemeMixin,
     FrameThemeMixin,
-    LabelThemeMixit,
+    LabelThemeMixin,
     OptionMenuThemeMixin,
     ProgressThemeMixin,
     ScrolableFrameThemeMixin,
@@ -170,7 +170,7 @@ class BaseScrollableFrame(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
         super().__init__(parent, **params)
 
 
-class BaseLabel(ctk.CTkLabel, LabelThemeMixit):
+class BaseLabel(ctk.CTkLabel, LabelThemeMixin):
     """
     A label styled as a 'badge' or 'chip'.
     Ideal for displaying versions, engine names, or status tags.

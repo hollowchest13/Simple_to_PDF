@@ -213,7 +213,6 @@ class PDFMergerGUI(BaseWindow):
             suffix = file_paths[0].suffix.lower()
 
             if suffix == ".pdf":
-                # Якщо PDF: перемикаємося між COMPRESS та MERGE
                 self.btns_panel.app_mode = (
                     App_Mode.COMPRESS if need_compress else App_Mode.MERGE
                 )
