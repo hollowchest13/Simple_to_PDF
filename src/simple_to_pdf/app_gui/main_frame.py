@@ -36,19 +36,15 @@ class MainFrame(BaseFrame):
         self.handlers = handlers
         self.loc_section = "ui.main_panel"
 
-        # Explicit type hints for IDE autocomplete
         self.status_text: BaseTextBox
         self.filebox: CTkListbox
         self.progress_bar: BaseProgress
         self.progress_label: BaseLabel
 
-        # Dictionary for LocalizationMixin to track translatable widgets
         self.ui: Dict[str, Any] = {}
 
-        # Build layout and register components into self and self.ui
         self._register_components(self._setup_layout())
 
-        # Initialize localization observer
         self.init_localization()
 
     def _setup_layout(self) -> Dict[str, Any]:
@@ -59,7 +55,6 @@ class MainFrame(BaseFrame):
         TOP_SIDE_PAD: int = 5
         BOTTOM_SIDE_PAD: int = 10
 
-        # 1. Status area container (Bottom)
         status_area = BaseFrame(self)
         status_area.pack(
             side="bottom",
@@ -68,7 +63,6 @@ class MainFrame(BaseFrame):
             pady=(TOP_SIDE_PAD, BOTTOM_SIDE_PAD),
         )
 
-        # 2. File list area container (Center)
         file_batch_area = BaseFrame(self, frame_type="scr_frame_container")
         file_batch_area.pack(
             fill="both",
@@ -77,7 +71,6 @@ class MainFrame(BaseFrame):
             pady=(TOP_SIDE_PAD, BOTTOM_SIDE_PAD),
         )
 
-        # 3. Progress area container (Top)
         progress_area = BaseFrame(self)
         progress_area.pack(
             side="top",
@@ -86,7 +79,6 @@ class MainFrame(BaseFrame):
             pady=(TOP_SIDE_PAD, BOTTOM_SIDE_PAD),
         )
 
-        # Create actual widgets and store in temporary dict
         raw_components["filebox"] = self._setup_file_batch_area(mid=file_batch_area)
         raw_components["status_text"] = self._setup_status_area(
             status_frame=status_area
@@ -103,8 +95,6 @@ class MainFrame(BaseFrame):
         for key, widget in components.items():
             setattr(self, key, widget)
             self.ui[key] = widget
-
-    # --- Widget creation methods ---
 
     def _setup_file_batch_area(self, mid: BaseFrame) -> CTkListbox:
         """Builds the central scrollable area for displaying files."""

@@ -64,7 +64,6 @@ class BaseFrame(ctk.CTkFrame, FrameThemeMixin, LocalizationMixin):
         """
         params = self.set_params(frame_type=frame_type)
         params.update(kwargs)
-        # Call the super constructor with prepared kwargs
         super().__init__(parent, **params)
         self.handlers: Dict[str, Callable] = {}
         self.ui: dict[str, Any] = {}
@@ -133,22 +132,15 @@ class BaseFrame(ctk.CTkFrame, FrameThemeMixin, LocalizationMixin):
         Allows creating widgets in __init__ before all dependencies are fully initialized.
         """
 
-        # TODO Add logging
         def wrapper(*args, **kwargs):
-            # Case 1: Command is a string key (Look up in callbacks dictionary)
             if isinstance(command, str):
-                # The dictionary self.callbacks will be populated later by the MainWindow
                 handler = self.handlers.get(command)
                 if handler:
                     return handler(*args, **kwargs)
-
-                # Debug warning if the button is pressed but the handler isn't linked yet
-                print(
+                logger.warning(
                     f"Warning: Command '{command}' is not registered in {self.__class__.__name__}"
                 )
                 return None
-
-            # Case 2: Command is a direct reference to a method (e.g., self.some_internal_method)
             elif callable(command):
                 return command(*args, **kwargs)
 

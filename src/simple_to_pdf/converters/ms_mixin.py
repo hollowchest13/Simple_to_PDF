@@ -31,7 +31,6 @@ class MSSetupMixin:
                     sheet.PageSetup.Zoom = False
                     width = sheet.UsedRange.Columns.Count
 
-                    # Page orientation setup
                     sheet.PageSetup.Orientation = (
                         ExcelOrientation.LANDSCAPE
                         if width > MAX_COL_WIDTH

@@ -25,11 +25,8 @@ class CTkListbox(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
         self._scroll_target = 0
         self._is_scrolling = False
 
-        # self.all_rows stores the order of file paths (Path objects)
         self.all_rows: List[Path] = []
-        # self.selected_data stores only selected items: {Path: {"frame": ..., "label": ...}}
         self.selected_data = {}
-        # self.all_widgets stores ALL created widgets: {Path: {"frame": ..., "label": ...}}
         self.all_widgets = {}
         self._icon_cache = {}
         self._icon_size = (24, 24)

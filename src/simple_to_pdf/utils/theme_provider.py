@@ -122,54 +122,43 @@ class ScrolableFrameThemeMixin(WidgetThemeProviderMixin):
         Generates configuration parameters for different types of CTkScrollableFrames.
         Ensures consistent UI across the application using the theme's color palette.
         """
-        # Base parameters shared by all scrollable frames
         params = {
             "corner_radius": 8,
-            "scrollbar_button_color": self.get_color(
-                ThemeKeys.ACCENT_DIM
-            ),  # Subtle color for the scroll thumb
-            "scrollbar_button_hover_color": self.get_color(
-                ThemeKeys.ACCENT
-            ),  # Vibrant color when interacting
+            "scrollbar_button_color": self.get_color(ThemeKeys.ACCENT_DIM),
+            "scrollbar_button_hover_color": self.get_color(ThemeKeys.ACCENT),
         }
         match scr_frame_type:
             case "file_list":
                 params.update(
                     {
-                        "fg_color": "transparent",  # Matches the main content area
+                        "fg_color": "transparent",
                         "label_font": (
                             "Segoe UI",
                             13,
                             "bold",
-                        ),  # Clear header for the file queue
-                        "label_anchor": "w",  # Left-aligned header text
+                        ),
+                        "label_anchor": "w",
                     }
                 )
             case "settings":
                 params.update(
                     {
-                        "fg_color": self.get_color(
-                            ThemeKeys.BG_HEADER
-                        ),  # Blends with the sidebar/navigation background
-                        "orientation": "vertical",  # Fixed vertical layout for configuration options
+                        "fg_color": self.get_color(ThemeKeys.BG_HEADER),
+                        "orientation": "vertical",
                     }
                 )
             case "preview":
                 params.update(
                     {
-                        "fg_color": self.get_color(
-                            ThemeKeys.BG_PREVIEW
-                        ),  # Fixed dark neutral background for document preview
+                        "fg_color": self.get_color(ThemeKeys.BG_PREVIEW),
                         "border_width": 1,
-                        "border_color": self.get_color(
-                            ThemeKeys.BORDER
-                        ),  # Visual separation from the main surface
+                        "border_color": self.get_color(ThemeKeys.BORDER),
                     }
                 )
             case "button_list":
                 params.update(
                     {
-                        "fg_color": "transparent",  # Seamless integration with the parent frame
+                        "fg_color": "transparent",
                         "corner_radius": 0,
                     }
                 )
@@ -220,7 +209,6 @@ class OptionMenuThemeMixin(WidgetThemeProviderMixin):
         accent = self.get_color(ThemeKeys.ACCENT)
         accent_hover = self.get_color(ThemeKeys.ACCENT_HOVER)
 
-        # Base parameters for CTkOptionMenu
         params = {
             "fg_color": accent,
             "button_color": accent_hover,
@@ -235,7 +223,6 @@ class OptionMenuThemeMixin(WidgetThemeProviderMixin):
             "anchor": "center",
         }
 
-        # Specific adjustments for settings rows
         if menu_type == "settings":
             params.update({"width": 140, "dynamic_resizing": False})
 
@@ -251,10 +238,10 @@ class SwitcherThemeMixin(WidgetThemeProviderMixin):
 
         params: Dict[str, Any] = {
             "variable": variable,
-            "text": text,  # Зазвичай "" (якщо підпис робимо через Label)
-            "progress_color": accent_color,  # Колір лінії, коли світчер ON
-            "button_color": button_color,  # Колір кульки у вимкненому стані
-            "button_hover_color": accent_color,  # Колір кульки при наведенні
+            "text": text,
+            "progress_color": accent_color,
+            "button_color": button_color,
+            "button_hover_color": accent_color,
             "text_color": text_color,
             "font": ("Segoe UI", 13),
             "cursor": "hand2",

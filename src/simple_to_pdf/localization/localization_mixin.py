@@ -2,6 +2,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Any, Dict, List
+from simple_to_pdf.core.config import LANG_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,7 @@ class LocalizationMixin:
 
     _translations: Dict[str, Dict[str, Any]] = {}
     _current_lang: str = "en"
-    _lang_dir: Path = Path(__file__).parent.parent / "lang"
+    _lang_dir: Path = LANG_PATH
     _observers: List[Any] = []
     _LANG_MAP: Dict[str, str] = {}
 
@@ -25,7 +26,6 @@ class LocalizationMixin:
             cls._lang_dir.mkdir(parents=True, exist_ok=True)
             return
 
-        # Clear translations
         cls._translations = {}
         cls._LANG_MAP = {}
 
@@ -35,7 +35,6 @@ class LocalizationMixin:
                     data = json.load(f)
                     lang_code = file_path.stem
 
-                    # Saving translating data
                     cls._translations[lang_code] = data
                     lang_name = data.get("info", {}).get(
                         "lang_name", lang_code.capitalize()
@@ -49,9 +48,6 @@ class LocalizationMixin:
     def switch_language(cls, *, lang_name: str) -> None:
         """Sets the current language and notifies all registered observers."""
         target_lang = cls._LANG_MAP.get(lang_name, lang_name)
-        # Add logging
-        print(f"Switching to {target_lang}. Total observers: {len(cls._observers)}")
-
         if target_lang in cls._translations:
             cls._current_lang = target_lang
             logging.info(f"Language switched to: {target_lang}")
@@ -75,25 +71,35 @@ class LocalizationMixin:
             self.__class__._observers.append(self)
 
     def get_text(self, key: str, section: str | None = None, **kwargs: Any) -> str:
+        """
+        Retrieve and format a localized string based on the provided key and section.
+
+        This method navigates the nested translation dictionary structure using a
+        dot-notation path. If the resolved value is a string, it attempts to format
+        it using provided keyword arguments.
+
+        Args:
+            key (str): The translation identifier key.
+            section (str | None): The specific section within the language file to search.
+            Defaults to 'ui' if not provided or set via 'loc_section'.
+            **kwargs (Any): Arguments used for string substitution (e.g., f-string style).
+
+        Returns:
+            str: The formatted localized string if found; otherwise, returns the original key.
+        """
         if section:
             target_section = section
         else:
             target_section = getattr(self, "loc_section", "ui")
 
         lang_data = self._translations.get(self._current_lang, {})
-
-        # 1. Склеюємо секцію і ключ в один повний шлях
         full_path = f"{target_section}.{key}"
-
-        # 2. Проходимо по всьому шляху крок за кроком
         data = lang_data
         parts = full_path.split(".")
 
-        for part in parts:  # тепер part — це чистий рядок 'settings', 'compress' тощо
+        for part in parts:
             if isinstance(data, dict) and part in data:
                 data = data[part]
-
-        # 3. Якщо результат — рядок, форматуємо його
         if isinstance(data, str):
             try:
                 return data.format(**kwargs)
@@ -133,20 +139,13 @@ class LocalizationMixin:
         Determines the correct attribute to update based on widget type and attributes.
         """
         try:
-            # 1. Handle Buttons with Adaptive Font
             if self._is_button_widget(widget):
                 if self.update_widget_with_adaptive_font(widget, text, threshold=16):
                     return
-
-            # 2. Standard 'text' attribute (Labels, Checkboxes)
             if self._try_configure(widget, text=text):
                 return
-
-            # 3. Container 'label_text' (ScrollableFrame, Listbox)
             if self._try_configure(widget, label_text=text):
                 return
-
-            # 4. Input 'placeholder_text' (Entry, Textbox)
             if self._try_configure(widget, placeholder_text=text):
                 return
 
@@ -186,32 +185,26 @@ class LocalizationMixin:
 
     def _get_or_store_base_font_size(self, widget: Any) -> int:
         """Retrieves or initializes the original font size for the widget."""
-        # 1. Check if we already cached it
         base_size = getattr(widget, "base_font_size", None)
         if base_size is not None:
             return base_size
 
         try:
-            # 2. Safely get the font object
             current_font = None
             if hasattr(widget, "cget"):
                 current_font: Any = widget.cget("font")
 
-            # 3. Handle the case where current_font is None
             if current_font is None:
-                base_size = 13  # Default fallback
+                base_size = 13
 
-            # 4. Extract size based on type (Object, Tuple, or String)
-            elif hasattr(current_font, "cget"):  # CTkFont or similar object
+            elif hasattr(current_font, "cget"):
                 base_size = int(current_font.cget("size"))
 
             elif isinstance(current_font, (list, tuple)) and len(current_font) > 1:
                 base_size = int(current_font[1])
 
             else:
-                # String parsing: e.g., "Arial 14 bold"
                 parts = str(current_font).split()
-                # Check if the second part is actually a number
                 if len(parts) > 1 and parts[1].replace("-", "").isdigit():
                     base_size = int(parts[1])
                 else:
@@ -220,8 +213,6 @@ class LocalizationMixin:
         except Exception as e:
             logger.debug(f"Could not determine font size for {widget}: {e}")
             base_size = 13
-
-        # Store it so we don't have to calculate this mess again
         widget.base_font_size = base_size
         return base_size
 

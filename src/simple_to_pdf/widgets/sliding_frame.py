@@ -30,7 +30,6 @@ class SlidingFrame(BaseFrame):
         step = 100
 
         if abs(current_width - target) > step:
-            # Using ternary for concise textbook examples
             new_width = (
                 current_width + step if current_width < target else current_width - step
             )

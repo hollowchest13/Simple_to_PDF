@@ -24,17 +24,13 @@ class SettingsFrame(ToogleFrame):
         self.settings_manager: SettingsManager = settings_manager
         self._callback = lambda *args, **kwargs: None
 
-        # Path to settings section in translation JSON
         self.loc_section = "ui.settings_panel"
         self.handlers = handlers
 
-        # Centralized storage for all translatable widgets
         self.ui: Dict[str, Any] = {}
 
-        # Build the interface
         self._setup_ui()
 
-        # Register for localization updates
         self.init_localization()
 
     @property
@@ -50,16 +46,13 @@ class SettingsFrame(ToogleFrame):
         Creates all UI components and organizes them into the self.ui dictionary.
         """
 
-        # 1. Create and pack Title
         title = BaseLabel(self, label_type="title", text="Settings")
         title.pack(side="top", fill="x", padx=10, pady=(10, 0))
         self.ui["title_label"] = title
 
-        # 2. Setup specific setting controls (Language selector, etc.)
         settings_widgets = self._setup_settings_controls()
         self.ui.update(settings_widgets)
 
-        # Map dictionary items to object attributes for easy 'self.widget_name' access
         for key, widget in self.ui.items():
             setattr(self, key, widget)
 
@@ -69,12 +62,10 @@ class SettingsFrame(ToogleFrame):
         """
         widgets: Dict[str, Any] = {}
 
-        # Language Selection Row
-        # Returns both the label and the option menu to be stored in self.ui
         option_width = 120
         lang_widgets = self._create_setting_row(
             parent=self,
-            row_id="language",  # Used to generate keys: 'language_label' and 'language_selector'
+            row_id="language",
             label_text=self.get_text("settings_panel.language_label", section="ui"),
             widget_class=BaseOptionMenu,
             values=sorted(self._LANG_MAP.keys()),
@@ -83,7 +74,7 @@ class SettingsFrame(ToogleFrame):
         )
         format_widgets = self._create_setting_row(
             parent=self,
-            row_id="format",  # Used to generate keys: 'language_label' and 'language_selector'
+            row_id="format",
             label_text=self.get_text("settings_panel.format_label", section="ui"),
             widget_class=BaseOptionMenu,
             values=list(config.PAGE_FORMATS.keys()),
@@ -93,14 +84,13 @@ class SettingsFrame(ToogleFrame):
             parent=self,
             row_id="compress",
             label_text=self.get_text("settings_panel.compress_label", section="ui"),
-            widget_class=BaseSwitcher,  # Передаємо клас світча
+            widget_class=BaseSwitcher,
             value=False,
             command=lambda: self.callback(),
         )
         widgets.update(**lang_widgets, **compress_widgets, **format_widgets)
         return widgets
 
-    # self.get_text("settings_panel.format_label", section="ui")
     def _create_setting_row(
         self,
         *,
@@ -110,21 +100,33 @@ class SettingsFrame(ToogleFrame):
         widget_class: Any,
         **widget_kwargs: Any,
     ) -> Dict[str, Any]:
+        """
+        Create a setting row with a label and a control widget.
+        Returns: Dict containing label and widget instances.
+        """
         container = ctk.CTkFrame(parent, fg_color="transparent")
         container.pack(fill="x", padx=10, pady=8)
         container.columnconfigure(1, weight=1)
 
-        # Create label
         label = BaseLabel(container, text=label_text, label_type="content")
         label.grid(row=0, column=0, padx=5, sticky="w")
 
-        # Create the control widget
         widget = widget_class(container, **widget_kwargs)
         widget.grid(row=0, column=1, padx=5, sticky="e")
 
         return {f"{row_id}_label": label, f"{row_id}_selector": widget}
 
     def collect_data(self) -> Dict[str, str]:
+        """
+        Collect configuration data from settings widgets.
+
+        Iterates through the UI dictionary, extracts values from widgets with
+        a '_selector' suffix, and returns a dictionary where the keys are
+        cleaned by removing that suffix.
+
+        Returns:
+            Dict[str, str]: A dictionary of configuration keys and their string-converted values.
+        """
         data = {}
         for key, widget in self.ui.items():
             if "_selector" in key and hasattr(widget, "get"):
@@ -133,6 +135,7 @@ class SettingsFrame(ToogleFrame):
         return data
 
     def get_widget_value(self, *, widget_id: str) -> str:
+        """Retrieve and return the string value of a specified UI widget."""
         value = self.ui[widget_id].get()
         return str(value)
 

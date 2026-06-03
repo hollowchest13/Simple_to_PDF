@@ -35,6 +35,18 @@ class ListControlsFrame(BaseFrame):
     def init_btns(
         self,
     ) -> dict[str, ctk.CTkBaseClass]:
+        """
+        Build, configure, and layout all button panels within the interface.
+
+        Constructs navigation, action, and settings panels, arranges them
+        using the grid layout manager, and registers all created UI elements
+        into the main UI dictionary and as instance attributes for easy access.
+
+        Returns:
+            dict[str, ctk.CTkBaseClass]: A dictionary mapping button identifiers
+            to their corresponding CustomTkinter widget instances.
+        """
+
         file_nav_btns: dict[str, ctk.CTkBaseClass] = self._build_file_navigation_panel()
         action_btns: dict[str, ctk.CTkBaseClass] = self._build_action_panel()
         settings_btn: dict[str, ctk.CTkBaseClass] = self._build_settings_panel()
@@ -105,11 +117,22 @@ class ListControlsFrame(BaseFrame):
         return self._buttons_pack(btns_config=button_configs, parent=self.action_frame)
 
     def _build_settings_panel(self) -> dict[str, ctk.CTkBaseClass]:
+        """
+        Construct and configure the settings panel container and its buttons.
+
+        Initializes the settings frame and defines button configurations for
+        help and settings actions. Packs these buttons into the frame using
+        the base button packing utility.
+
+        Returns:
+            dict[str, ctk.CTkBaseClass]: A dictionary containing the created
+            button widgets mapped by their identifier keys.
+        """
         self.settings_frame = BaseFrame(self, frame_type="btns_container")
         button_configs = [
             {
                 "id": "btn_help",
-                "cmd": self._trigger("help"),  # Standard trigger without arguments
+                "cmd": self._trigger("help"),
                 "icon_name": "help_btn.png",
             },
             {
@@ -127,6 +150,13 @@ class ListControlsFrame(BaseFrame):
         self.update_conditional_button()
 
     def update_conditional_button(self):
+        """
+        Update the primary action button text based on the current application mode.
+
+        Determines the appropriate translation key corresponding to the active
+        app mode (COMPRESS, MERGE, or CONVERT), retrieves the localized text,
+        and applies it to the button widget if it exists in the UI dictionary.
+        """
 
         match self.app_mode:
             case App_Mode.COMPRESS:

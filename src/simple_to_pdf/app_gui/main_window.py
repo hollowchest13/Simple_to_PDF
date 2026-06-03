@@ -201,6 +201,15 @@ class PDFMergerGUI(BaseWindow):
         return decorator
 
     def _update_merge_button(self):
+        """
+        Update the state and mode of the merge/action button based on file selection.
+
+        Analyzes the currently selected files to determine the appropriate
+        application mode (COMPRESS, MERGE, or CONVERT) and toggles the button
+        state (enabled or disabled) to prevent invalid operations (e.g.,
+        merging a single PDF without compression). Triggers a UI update
+        after the state change.
+        """
         file_paths = self.main_panel.filebox.all_rows
         file_num = len(file_paths)
         need_compress = self.settings_panel.compress_selector.get()
@@ -278,6 +287,20 @@ class PDFMergerGUI(BaseWindow):
         AboutDialog(self, current_version, engine_name)
 
     def get_text_from_file(self, *, file_path: Path) -> str | None:
+        """
+        Read and return the content of a text file, triggering a notification on failure.
+
+        Attempts to read the provided file using the FileToolKit. If the file is
+        missing or an error occurs during reading, it logs the exception and
+        notifies the user via the internal notification system using the
+        appropriate error scenario.
+
+        Args:
+            file_path (Path): The filesystem path to the text file to be read.
+
+        Returns:
+            str | None: The content of the file if successful; None if an error occurred.
+        """
         try:
             raw_text = FileToolKit.read_text_file(file_path=file_path)
             return raw_text
@@ -297,6 +320,7 @@ class PDFMergerGUI(BaseWindow):
     def show_text_content(
         self, *, text: str, scenario_key: str, win_size: str = "750x600"
     ) -> None:
+        """Build and grid UI button panels; return map of widget instances."""
         self.notifier.info(
             text=text,
             scenario_key=scenario_key,
@@ -307,6 +331,7 @@ class PDFMergerGUI(BaseWindow):
         )
 
     def show_dependencies(self):
+        """Load and display dependency information in a modal window."""
         dep_path = Path(config.DEPENDENCIES_PATH)
         dep_text = self.get_text_from_file(file_path=dep_path)
         if dep_text:
@@ -368,6 +393,7 @@ class PDFMergerGUI(BaseWindow):
         stage: str = "saving",
         reset_ui_on_error: bool = True,
     ):
+        """Save bytes to file, manage progress callbacks, and handle saving errors."""
         try:
             self.callback.safe_callback("progress", stage=stage, mode="indeterminate")
 
@@ -404,6 +430,7 @@ class PDFMergerGUI(BaseWindow):
             )
 
     def _get_page_format(self) -> PageFormat | None:
+        """Retrieve and return the selected page format configuration."""
         page_format_name = self.settings_panel.get_widget_value(
             widget_id="format_selector"
         )

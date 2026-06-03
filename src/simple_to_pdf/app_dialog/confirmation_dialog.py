@@ -22,10 +22,7 @@ class ConfirmDialog(BaseDialog):
         size: str = "400x400",
         **kwargs,
     ):
-        # Determine group (info, warning, error, etc.)
         self.group = scenario_key.split(".")[0]
-
-        # Initialize base dialog with localized title
         super().__init__(
             parent,
             title_key=f"{self.group}.__title__",
@@ -39,23 +36,21 @@ class ConfirmDialog(BaseDialog):
         if size:
             self.geometry(size)
 
-        # Build UI
         self._setup_dialog_ui()
 
-        # Apply localization
         self.refresh_localization(**kwargs)
 
-        # Block execution until window is closed
         self.grab_set()
         self.wait_window()
 
     def _setup_dialog_ui(self):
-        """Creates dialog layout (header, message, buttons)."""
+        """
+        Creates dialog layout (header, message, buttons).
+        """
         self.header.grid_columnconfigure(0, weight=0)
         self.header.grid_columnconfigure(1, weight=2)
         self.header.grid_columnconfigure(2, weight=0)
 
-        # Header with optional icon
         self.icon_label = BaseLabel(self.header, text="", image=self.current_icon)
         self.icon_label.grid(row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="w")
 
@@ -64,15 +59,12 @@ class ConfirmDialog(BaseDialog):
             row=0, column=1, sticky="ew", padx=(0, 50), pady=(20, 10)
         )
 
-        # Message label (no TextBox needed for short text)
         self.ui["message"] = BaseLabel(self.content, text="", label_type="content")
         self.ui["message"].pack(expand=True, fill="both", padx=20, pady=10)
 
         self.bind("<Configure>", self._adjust_wraplength)
         btns_height = 50
         btns_width = 110
-
-        # Yes button
 
         self.ui["btn_yes"] = PrimaryButton(
             self.footer,
@@ -83,7 +75,6 @@ class ConfirmDialog(BaseDialog):
         )
         self.ui["btn_yes"].pack(side="right", padx=(10, 20), pady=15)
 
-        # No button
         self.ui["btn_no"] = PrimaryButton(
             self.footer,
             text="",
@@ -94,6 +85,9 @@ class ConfirmDialog(BaseDialog):
         self.ui["btn_no"].pack(side="right", padx=10, pady=15)
 
     def _adjust_wraplength(self, event=None):
+        """
+        Calculate wrablengh for message label.
+        """
         new_width = self.content.winfo_width() - 40
         if new_width > 0:
             self.ui["message"].configure(wraplength=new_width)

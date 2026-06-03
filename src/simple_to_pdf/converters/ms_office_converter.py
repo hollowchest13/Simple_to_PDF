@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pythoncom  # pyright: ignore[reportMissingModuleSource]
 import win32com.client as win32  # pyright: ignore[reportMissingModuleSource]
-from win32com.client import gencache
+from win32com.client import gencache  # pyright: ignore[reportMissingModuleSource]
 
 from simple_to_pdf.converters.img_converter import ImageConverter
 from simple_to_pdf.converters.models import ConversionResult
@@ -35,6 +35,7 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
         self.SUPPORTED_FORMATS = self.get_supported_formats()
 
     def convert_to_pdf(self, *, files: list[tuple[int, Path]]) -> ConversionResult:
+        """Categorize files by type, route to specific conversion services, and aggregate the results."""
         tables: list[tuple[int, Path]] = []
         docs: list[tuple[int, Path]] = []
         imgs: list[tuple[int, Path]] = []
@@ -81,12 +82,12 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
     def _convert_files_to_pdf(
         self, *, files: list[tuple[int, Path]], app_type: str
     ) -> ConversionResult:
+        """Convert a list of files to PDF by routing to the appropriate processor based on the application type."""
         all_results: ConversionResult = ConversionResult()
         chunk_results: ConversionResult = ConversionResult()
         if not files:
             return all_results
 
-        # Splitting into chunks to avoid overloading memory
         for chunk in self.make_chunks(files, n=self.chunk_size):
             match app_type:
                 case OfficeApp.POWERPOINT:
@@ -152,7 +153,6 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                 if module_name.startswith("win32com.gen_py"):
                     sys.modules.pop(module_name, None)
 
-            # Remove cache folder from disk
             cache_dir = Path(gencache.GetGeneratePath())
 
             if cache_dir.exists():
@@ -171,12 +171,10 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
     ) -> ConversionResult:
         chunk_res: ConversionResult = ConversionResult()
 
-        # Important for workers in background threads
         pythoncom.CoInitialize()
         powerpoint = None
         app_type: str = OfficeApp.POWERPOINT
         try:
-            # Using EnsureDispatch for stability in .exe (Nuitka)
             powerpoint = self._get_app_instance(app_type=app_type)
 
             if powerpoint is None:
@@ -211,7 +209,6 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
     def _process_table_chunk(self, chunk: list[tuple[int, Path]]) -> ConversionResult:
         chunk_res: ConversionResult = ConversionResult()
 
-        # Run Excel only for this chunk
         pythoncom.CoInitialize()
         excel = None
         app_type: str = OfficeApp.EXCEL
@@ -222,7 +219,7 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                 raise RuntimeError(f"Could not initialize {app_type}.")
 
             excel.Visible = False
-            excel.DisplayAlerts = False  # Disable alerts to prevent pop-ups
+            excel.DisplayAlerts = False
             for idx, f in chunk:
                 pdf_data = None
                 try:
@@ -256,7 +253,6 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
             word = self._get_app_instance(app_type=app_type)
             if word is None:
                 raise RuntimeError(f"Could not initialize {app_type}.")
-            # Run one Word process for the entire chunk (30 files)
             word.Visible = False
             word.DisplayAlerts = 0  # 0 = wdAlertsNone (disable all pop-up windows)
             for idx, wf in chunk:
@@ -287,7 +283,6 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
         pres = None
         pdf_bytes = None
 
-        # Creating a unique temporary file for PDF
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
             temp_pdf_path = Path(tmp.name)
 
@@ -331,9 +326,7 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
             wb.ExportAsFixedFormat(0, str(temp_pdf_path))
             pdf_bytes = temp_pdf_path.read_bytes()
         except Exception as e:
-            logger.error(
-                f"Table file error in {file_path.name}: {e}", exc_info=True
-            )
+            logger.error(f"Table file error in {file_path.name}: {e}", exc_info=True)
             raise
         finally:
             if wb:
@@ -350,7 +343,6 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
         doc = None
         pdf_bytes = None
 
-        # Create a unique temporary name for PDF
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
             temp_pdf_path = Path(tmp.name)
 
@@ -381,7 +373,6 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
 
         if obj:
             try:
-                # Check for specific close methods
                 if hasattr(obj, "Quit"):
                     obj.Quit()
                 logger.info(f"{app_type} closed successfully.")

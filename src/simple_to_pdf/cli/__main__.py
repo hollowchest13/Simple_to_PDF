@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def main():
+    """Initialize application components and launch the graphical user interface."""
     try:
         me = singleton.SingleInstance(flavor_id="simple_to_pdf_unique_lock")  # noqa: F841
     except singleton.SingleInstanceException:
@@ -52,6 +53,7 @@ def _run_gui(
     settings_manager: SettingsManager,
     compressor: PDFCompressor,
 ) -> None:
+    """Initialize and run the main application GUI loop."""
     try:
         app = PDFMergerGUI(
             conversion_service=conversion_service,
@@ -63,7 +65,7 @@ def _run_gui(
         )
         app.mainloop()
     except Exception as e:
-        logger.fatal(f"❌ GUI Runtime error: {e}", exc_info=True)
+        logger.fatal(f"GUI Runtime error: {e}", exc_info=True)
 
 
 if __name__ == "__main__":

@@ -100,7 +100,6 @@ class PageExtractor:
             reader = PdfReader(f)
             actual_total = len(reader.pages)
 
-        # Check for indices that are negative or exceed the actual page count
         invalid = [
             p_num + 1 for p_num in pages_to_extract if p_num < 1 or p_num > actual_total
         ]

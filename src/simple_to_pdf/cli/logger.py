@@ -2,7 +2,8 @@ import logging
 import platform
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-import sys
+
+from simple_to_pdf.core.config import ROOT_PATH
 
 
 def get_log_dir() -> Path:
@@ -17,13 +18,7 @@ def get_log_dir() -> Path:
         log_dir.mkdir(parents=True, exist_ok=True)
         return log_dir
     except Exception:
-        # Fallback: If Home is not writable, use the Application directory
-        if hasattr(sys, "frozen"):
-            base_path = Path(sys.executable).parent
-        else:
-            base_path = Path(__file__).resolve().parent
-
-        log_dir = base_path / "logs"
+        log_dir = ROOT_PATH / "logs"
 
         try:
             log_dir.mkdir(parents=True, exist_ok=True)

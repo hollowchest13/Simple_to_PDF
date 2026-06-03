@@ -7,25 +7,22 @@ from simple_to_pdf.pdf.models import PageFormat
 
 # --- PATHS CONFIGURATION ---
 
-# Determine the base directory whether running as a script or a frozen executable.
 if getattr(sys, "frozen", False):
-    # If the application is bundled by PyInstaller
-    BASE_PATH = Path(sys.executable).parent
+    # В .exe файли лежать поруч з exe
+    ROOT_PATH = Path(sys.executable).parent
 else:
-    # If running as a script: config.py -> simple_to_pdf/ -> src/ -> ROOT/
-    # Adjust the number of .parent calls based on your actual file depth
-    BASE_PATH = Path(__file__).resolve().parent.parent.parent.parent
+    ROOT_PATH = Path(__file__).resolve().parents[3]
 
-# Path to the pyproject.toml file for version tracking
-CONFIG_PATH = BASE_PATH / "pyproject.toml"
-LICENCE_PATH = BASE_PATH / "LICENSE"
-DEPENDENCIES_PATH = BASE_PATH / "THIRD-PARTY-NOTICES.txt"
-ICONS_PATH = BASE_PATH / "src" / "simple_to_pdf" / "icons"
-SETTINGS_PATH = BASE_PATH / "settings.json"
+LANG_PATH = ROOT_PATH / "lang"
+ICONS_PATH = ROOT_PATH / "icons"
+CONFIG_PATH = ROOT_PATH / "pyproject.toml"
+LICENCE_PATH = ROOT_PATH / "LICENSE"
+DEPENDENCIES_PATH = ROOT_PATH / "THIRD-PARTY-NOTICES.txt"
+SETTINGS_PATH = ROOT_PATH / "settings.json"
 
 # ---DEFAULT SETTINGS ---
 
-DEFAULT_SETTINGS = {"language": "uk"}
+DEFAULT_SETTINGS = {"language": "English", "compress": "False", "format": "Original"}
 
 # --- GITHUB CONFIGURATION ---
 

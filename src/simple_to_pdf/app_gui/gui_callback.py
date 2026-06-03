@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 class GUICallback(ThemeProviderMixin, LocalizationMixin):
     def __init__(self, main_frame):
-        # main_frame should be an instance of your MainFrame (CTkFrame/tk.Frame)
         self.main_frame = main_frame
 
     def safe_callback(
@@ -19,7 +18,6 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
         """Thread-safe router for GUI events using .after()."""
 
         if event_type == "progress":
-            # Extract only valid arguments for progress_bar_update to avoid TypeErrors
             progress_params = {
                 "stage": params.get("stage", "processing"),
                 "mode": params.get("mode", "indeterminate"),
@@ -42,7 +40,6 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
                     key=k, status=s, **sp
                 ),
             )
-        logger.info(f"CALLBACK EVENT: {params}")
 
     def progress_bar_update(
         self,

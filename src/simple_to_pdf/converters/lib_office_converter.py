@@ -26,6 +26,7 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
         self.SUPPORTED_FORMATS = self.get_supported_formats()
 
     def convert_to_pdf(self, *, files: list[tuple[int, Path]]) -> ConversionResult:
+        """Categorize files by type, convert them to PDF, and aggregate the results."""
         docs: list[tuple[int, Path]] = []
         imgs: list[tuple[int, Path]] = []
         final_result: ConversionResult = ConversionResult()
@@ -54,9 +55,9 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
     def _convert_docs_to_pdf(
         self, *, files: list[tuple[int, Path]]
     ) -> ConversionResult:
+        """Convert documents to PDF in chunks and aggregate conversion results."""
         all_results = ConversionResult()
         for chunk in self.make_chunks(files, self.chunk_size):
-            # Call the new method that handles one chunk
             chunk_res = self._convert_chunk(chunk=chunk)
             all_results.success.extend(chunk_res.success)
             all_results.failed.extend(chunk_res.failed)
@@ -65,7 +66,7 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
     def _run_libreoffice_format_conversion(
         self, *, input_paths: list[Path], out_dir: Path
     ):
-        """all tables to xlsx conversion"""
+        """All tables to xlsx conversion"""
 
         command = [
             self.soffice_path,
@@ -119,11 +120,9 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
 
-            # Prepare files (copy with index prefix)
             all_tmp_paths: list[Path] = self._prepare_temp_files(
                 chunk=chunk, tmp_path=tmp_path
             )
-            # Selecting EVERYTHING that requires conversion to .xlsx before running openpyxl
             xls_to_convert: list[Path] = [
                 p for p in all_tmp_paths if p.suffix.lower() in to_convert_exts
             ]
@@ -139,12 +138,10 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
                     self._prepare_excel_scaling(file_path=path)
             input_paths = [str(p) for p in all_tmp_paths]
 
-            # Run the conversion
             success = self._run_libreoffice_command(
                 input_paths=input_paths, out_dir=tmp_path
             )
 
-            # if command was successful, collect results
             chunk_res: ConversionResult = ConversionResult()  # створюємо завчасно
             if success:
                 chunk_res = self._collect_results(chunk=chunk, tmp_path=tmp_path)
@@ -153,6 +150,7 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
     def _update_paths(
         self, *, all_paths: list[Path], to_check_exts: list[str]
     ) -> list[Path]:
+        """Validate file extensions and replace with existing .xlsx counterparts if applicable."""
         updated = []
         for p in all_paths:
             if p.suffix.lower() in to_check_exts:
@@ -161,11 +159,10 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
                     updated.append(expected)
                 else:
                     logger.warning(
-                        f"⚠️ Failed to xlsx conversion {p.name}, keeping as {p.suffix}"
+                        f"Failed to xlsx conversion {p.name}, keeping as {p.suffix}"
                     )
                     updated.append(p)
             else:
-                # If it's .xlsx or any other file - just adding it back
                 updated.append(p)
         return updated
 
@@ -216,6 +213,7 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
         return res
 
     def get_excel_width(self, *, file_path: Path) -> dict[str, int]:
+        """Calculate and return the maximum column count for each sheet in an Excel file."""
         workbook = openpyxl.load_workbook(filename=file_path, data_only=True)
         report: dict[str, int] = {}
         for sheet_name in workbook.sheetnames:

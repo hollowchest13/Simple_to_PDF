@@ -103,7 +103,6 @@ def get_files(
     and ready-made filters: [("Label", "*.ext"), ...]
     """
 
-    # Check if filetypes is already in (label, pattern) format
     if (
         isinstance(filetypes, list)
         and len(filetypes) > 0
@@ -111,7 +110,6 @@ def get_files(
     ):
         filters = filetypes
     else:
-        # Logic for raw extensions
         all_supported_mask = " ".join([f"*{ext}" for ext in filetypes])
         filters = [("All supported types", all_supported_mask)]
 

@@ -27,7 +27,6 @@ class InfoDialog(BaseDialog):
         text: Optional[str] = None,
         **kwargs,
     ):
-        # Initialize base class with a path to the title within the scenario
         group = scenario_key.split(".")[0] if "." in scenario_key else "info"
         super().__init__(
             parent, title_key=f"{group}.__title__", loc_section="notifications"
@@ -41,8 +40,6 @@ class InfoDialog(BaseDialog):
 
         self.raw_text = msg
         self.footer_text = self.get_text(f"{scenario_key}.footer", **kwargs)
-
-        # Automatically use scenario_key as icon_type if not explicitly provided
         self.current_icon = self._load_icon(with_icon=with_icon, window_type=group)
 
         if size:
@@ -59,7 +56,6 @@ class InfoDialog(BaseDialog):
         self.header.grid_columnconfigure(1, weight=2)
         self.header.grid_columnconfigure(2, weight=0)
 
-        # Header: Icon and Scenario-based Title
         if self.current_icon:
             self.icon_label = BaseLabel(self.header, text="", image=self.current_icon)
             self.icon_label.grid(
@@ -71,7 +67,6 @@ class InfoDialog(BaseDialog):
             row=0, column=1, sticky="ew", padx=(0, 50), pady=(20, 10)
         )
 
-        # Content: Scrollable text area
         self.txt = BaseTextBox(
             self.content, textbox_type="info", font=(font_name, font_size)
         )
@@ -79,7 +74,6 @@ class InfoDialog(BaseDialog):
         self.txt.configure(state="disabled")
         self.txt.pack(expand=True, fill="both", padx=15, pady=10)
 
-        # Footer: Scenario-based action button
         self.ui["btn_close"] = PrimaryButton(
             self.footer, text="", command=self._on_close, height=40, width=120
         )
@@ -94,13 +88,11 @@ class InfoDialog(BaseDialog):
         """Synchronizes UI elements with the current language dictionary."""
         super().refresh_localization()  # Updates window title
 
-        # Update header title from scenario
         if "header_title" in self.ui:
             self.ui["header_title"].configure(
                 text=self.get_text(f"{self.scenario}.header")
             )
 
-        # Update button text with fallback to general 'OK'
         if "btn_close" in self.ui:
             btn_text = self.get_text(f"{self.scenario}.btn")
             self.ui["btn_close"].configure(text=btn_text)
