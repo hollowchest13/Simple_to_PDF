@@ -45,15 +45,6 @@
       "description_label": "Tool zum Zusammenfügen verschiedener Dateitypen in PDF mit Extraktions- und Komprimierungsfunktionen.",
       "github_btn": "Quellcode auf GitHub"
     },
-    "update_dialog": {
-      "window_title": "Update verfügbar",
-      "header_title": "Neues Update!",
-      "header_subtitle": "Version {version} ist bereit",
-      "whats_new_title": "Was ist neu:",
-      "changelog_text": "{logs}",
-      "btn_download": "Jetzt herunterladen",
-      "btn_later": "Später"
-    },
     "page_selection_dialog": {
       "window_title": "Seiten extrahieren",
       "header_title": "Seiten auswählen",
@@ -72,7 +63,13 @@
         "message": "Es wurden keine Dateien ausgewählt. Möchten Sie stattdessen die gesamte Liste leeren?",
         "btn_yes": "Ja",
         "btn_no": "Nein"
-      }
+      },
+      "confirm_update": {
+        "header": "Update verfügbar: {version}!",
+        "message": "Was ist neu: {changelog_text}",
+        "btn_yes": "Jetzt herunterladen",
+        "btn_no": "Später"
+    }
     },
     "info": {
       "__title__": "Information",

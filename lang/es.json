@@ -45,15 +45,6 @@
       "description_label": "Utilidad para combinar por lotes varios tipos de archivos en PDF con funciones de extracción y compresión.",
       "github_btn": "Código fuente en GitHub"
     },
-    "update_dialog": {
-      "window_title": "Actualización disponible",
-      "header_title": "¡Nueva actualización!",
-      "header_subtitle": "La versión {version} está lista",
-      "whats_new_title": "Qué hay de nuevo:",
-      "changelog_text": "{logs}",
-      "btn_download": "Descargar ahora",
-      "btn_later": "Más tarde"
-    },
     "page_selection_dialog": {
       "window_title": "Extraer páginas",
       "header_title": "Seleccionar páginas",
@@ -72,7 +63,13 @@
         "message": "No hay archivos seleccionados. ¿Desea limpiar toda la lista en su lugar?",
         "btn_yes": "Sí",
         "btn_no": "No"
-      }
+      },
+      "confirm_update":{
+        "header": "Update verfügbar: {version}!",
+        "message": "Was ist neu: {changelog_text}",
+        "btn_yes": "Jetzt herunterladen",
+        "btn_no": "Später"
+    }
     },
     "info": {
       "__title__": "Información",

@@ -98,9 +98,12 @@ class ConfirmDialog(BaseDialog):
 
         # Header title
         if "header_title" in self.ui:
-            self.ui["header_title"].configure(
-                text=self.get_text(f"{self.scenario}.header")
-            )
+            new_width = self.header.winfo_width() - 40
+            if new_width > 0:
+                self.ui["header_title"].configure(
+                    text=self.get_text(f"{self.scenario}.header", **kwargs),
+                    wraplength=new_width,
+                )
 
         # Message
         if "message" in self.ui:

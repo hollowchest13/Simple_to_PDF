@@ -45,15 +45,6 @@
       "description_label": "Утиліта для пакетного об'єднання різних типів файлів в PDF із функцією розділення та стистнення PDF.",
       "github_btn": "Вихідний код на GitHub"
     },
-    "update_dialog": {
-      "window_title": "Доступне оновлення",
-      "header_title": "Нове оновлення!",
-      "header_subtitle": "Версія {version} готова",
-      "whats_new_title": "Що нового:",
-      "changelog_text": "{logs}",
-      "btn_download": "Завантажити зараз",
-      "btn_later": "Пізніше"
-    },
     "page_selection_dialog": {
       "window_title": "Витягти сторінки",
       "header_title": "Вибір сторінок",
@@ -72,7 +63,13 @@
         "message": "Наразі не вибрано жодного файлу. Бажаєте замість цього очистити весь список?",
         "btn_yes": "Так",
         "btn_no": "Ні"
-      }
+      },
+      "confirm_update":{
+      "header": "Доступне оновлення: {version}!",
+      "message": "Що нового: {changelog_text}",
+      "btn_yes": "Завантажити",
+      "btn_no": "Пізніше"
+    }
     },
     "info": {
       "__title__": "Інформація",

@@ -45,15 +45,7 @@
       "description_label": "Utility for batch merging various file types into PDF with page extraction and compression features.",
       "github_btn": "Source code on GitHub"
     },
-    "update_dialog": {
-      "window_title": "Update available",
-      "header_title": "New update!",
-      "header_subtitle": "Version {version} is ready",
-      "whats_new_title": "What's new:",
-      "changelog_text": "{logs}",
-      "btn_download": "Download now",
-      "btn_later": "Later"
-    },
+   
     "page_selection_dialog": {
       "window_title": "Extract pages",
       "header_title": "Select pages",
@@ -72,7 +64,13 @@
         "message": "No files currently selected. Would you like to clear the entire list instead?",
         "btn_yes": "Yes",
         "btn_no": "No"
-      }
+      },
+      "confirm_update": {
+      "header": "Update Available: {version}!",
+      "message": "What's new: {changelog_text}",
+      "btn_yes": "Download now",
+      "btn_no": "Later"
+    }
     },
     "info": {
       "__title__": "Information",

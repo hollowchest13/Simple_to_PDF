@@ -45,15 +45,6 @@
       "description_label": "Narzędzie do wsadowego łączenia różnych typów plików w PDF z funkcją wyodrębniania i kompresji.",
       "github_btn": "Kod źródłowy na GitHub"
     },
-    "update_dialog": {
-      "window_title": "Dostępna aktualizacja",
-      "header_title": "Nowa aktualizacja!",
-      "header_subtitle": "Wersja {version} jest gotowa",
-      "whats_new_title": "Co nowego:",
-      "changelog_text": "{logs}",
-      "btn_download": "Pobierz teraz",
-      "btn_later": "Później"
-    },
     "page_selection_dialog": {
       "window_title": "Wyodrębnij strony",
       "header_title": "Wybór stron",
@@ -72,6 +63,12 @@
         "message": "Obecnie nie wybrano żadnego pliku. Czy chcesz zamiast tego wyczyścić całą listę?",
         "btn_yes": "Tak",
         "btn_no": "Nie"
+      },
+      "confirm_update": {
+        "header": "Dostępna aktualizacja: {version}!",
+        "message": "Co nowego: {changelog_text}",
+        "btn_yes": "Pobierz teraz",
+        "btn_no": "Później"
       }
     },
     "info": {

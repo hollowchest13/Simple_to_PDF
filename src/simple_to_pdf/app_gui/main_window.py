@@ -14,7 +14,7 @@ import customtkinter as ctk
 from simple_to_pdf.app_dialog import (
     AboutDialog,
     PageSelectionDialog,
-    UpdateDialog,
+    ConfirmDialog,
 )
 from simple_to_pdf.app_gui.base_window import BaseWindow
 from simple_to_pdf.app_gui.gui_callback import GUICallback
@@ -274,7 +274,15 @@ class PDFMergerGUI(BaseWindow):
             return
 
         if result.is_available and result.release:
-            UpdateDialog(self, result.release.version, result.release.notes)
+            confirmed = ConfirmDialog.ask(
+                parent=self,
+                scenario_key="confirmation.confirm_update",
+                version=result.release.version,
+                changelog_text=result.release.notes,
+            )
+            if confirmed:
+                webbrowser.open_new_tab(config.RELEASES_URL)
+                return
         else:
             current_v = self.version_controller._get_current_version()
             self.notifier.info(scenario_key="no_updates", version=current_v)
