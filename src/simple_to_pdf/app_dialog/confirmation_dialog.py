@@ -62,7 +62,6 @@ class ConfirmDialog(BaseDialog):
         self.ui["message"] = BaseLabel(self.content, text="", label_type="content")
         self.ui["message"].pack(expand=True, fill="both", padx=20, pady=10)
 
-        self.bind("<Configure>", self._adjust_wraplength)
         btns_height = 50
         btns_width = 110
 
@@ -84,26 +83,15 @@ class ConfirmDialog(BaseDialog):
         )
         self.ui["btn_no"].pack(side="right", padx=10, pady=15)
 
-    def _adjust_wraplength(self, event=None):
-        """
-        Calculate wrablengh for message label.
-        """
-        new_width = self.content.winfo_width() - 40
-        if new_width > 0:
-            self.ui["message"].configure(wraplength=new_width)
-
     def refresh_localization(self, **kwargs):
         """Updates all UI texts based on current language."""
         super().refresh_localization()
 
         # Header title
         if "header_title" in self.ui:
-            new_width = self.header.winfo_width() - 40
-            if new_width > 0:
-                self.ui["header_title"].configure(
-                    text=self.get_text(f"{self.scenario}.header", **kwargs),
-                    wraplength=new_width,
-                )
+            self.ui["header_title"].configure(
+                text=self.get_text(f"{self.scenario}.header", **kwargs),
+            )
 
         # Message
         if "message" in self.ui:
