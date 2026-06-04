@@ -1,0 +1,213 @@
+{
+  "info": {
+    "lang_name": "English"
+  },
+  "ui": {
+    "main_panel": {
+      "filebox": "Selected files",
+      "progress_label": "Execution status"
+    },
+    "list_controls_panel": {
+      "btn_add": "Add files",
+      "btn_up": "Move up",
+      "btn_down": "Move down",
+      "btn_remove": "Remove file",
+      "btn_merge": "Merge to PDF",
+      "btn_convert": "Convert to PDF",
+      "btn_compress":"Compress PDF",
+      "btn_extract": "Extract pages",
+      "btn_status_clear": "Clear console",
+      "btn_help": "Help",
+      "btn_settings": "Settings"
+    },
+    "help_panel": {
+      "title_label": "Help",
+      "license_btn": "License",
+      "documentation_btn": "How to use",
+      "about_btn": "About program",
+      "check_updates_btn": "Check for updates",
+      "logs_btn": "Show logs",
+      "dep_btn": "Dependencies"
+    },
+    "settings_panel": {
+      "language_label": "Language",
+      "title_label": "Settings",
+      "compress_label": "Compress PDF",
+      "format_label": "Format"
+    }
+  },
+  "dialogs": {
+    "about_dialog": {
+      "window_title": "About Simple to PDF",
+      "header_title": "Simple to PDF",
+      "header_subtitle": "Version {version}",
+      "engine_badge": "Engine: {engine}",
+      "description_label": "Utility for batch merging various file types into PDF with page extraction and compression features.",
+      "github_btn": "Source code on GitHub"
+    },
+   
+    "page_selection_dialog": {
+      "window_title": "Extract pages",
+      "header_title": "Select pages",
+      "header_subtitle": "Extracting specific pages from PDF",
+      "instruction_label": "Enter pages to extract:",
+      "hint_label": "Use commas for individual pages (1, 3)\nand hyphens for ranges (5-10).",
+      "page_entry_placeholder": "e.g. 1, 2, 5-8",
+      "btn_ok": "Confirm"
+    }
+  },
+  "notifications": {
+    "confirmation": {
+      "__title__": "Confirmation",
+      "confirm_delete": {
+        "header": "Remove all files?",
+        "message": "No files currently selected. Would you like to clear the entire list instead?",
+        "btn_yes": "Yes",
+        "btn_no": "No"
+      },
+      "confirm_update": {
+      "header": "Update Available: {version}!",
+      "message": "What's new: {changelog_text}",
+      "btn_yes": "Download now",
+      "btn_no": "Later"
+    }
+    },
+    "info": {
+      "__title__": "Information",
+      "license_info": {
+        "header": "License terms",
+        "message": "Full text of the license...",
+        "footer_text": "Copyright © {year} {app_name}. All rights reserved...",
+        "btn": "I agree"
+      },
+      "dependencies_info": {
+        "header": "Dependencies list",
+        "message": "List of dependencies",
+        "btn": "OK"
+      },
+      "no_updates": {
+        "header": "Software update",
+        "message": "You are running the latest version {version}.",
+        "btn": "Got it"
+      },
+      "empty_file_list": {
+        "header": "List is empty!",
+        "message": "The file list is already empty.",
+        "btn": "OK"
+      }
+    },
+    "success": {
+      "__title__": "Success",
+      "update_success": {
+        "header": "Software updated",
+        "message": "Version {version} has been successfully installed.",
+        "btn": "Great!"
+      }
+    },
+    "warning": {
+      "__title__": "Attention!",
+      "no_file_to_merge": {
+        "header": "No files!",
+        "message": "Please add files to the list before starting the merge.",
+        "btn": "OK"
+      },
+      "wrong_page_format": {
+        "header": "Invalid format!",
+        "message": "Please use a correct format (e.g., 1-5, 8, 10-12).",
+        "btn": "Got it"
+      },
+      "process_in_progress": {
+        "header": "Process in progress!",
+        "message": "A background task is currently running.\n\nThe application will close automatically once finished. Please wait.",
+        "btn": "Wait"
+      },
+      "file_not_found": {
+        "header": "Not found",
+        "message": "File {file_name} not found.",
+        "btn": "Got it"
+      },
+      "file_read_error": {
+        "header": "File read error",
+        "message": "Check the integrity and access to the file at path {path}.",
+        "btn": "Got it"
+      }
+    },
+    "error": {
+      "__title__": "File error",
+      "file_read_error": {
+        "header": "Read error",
+        "message": "Failed to read file {file_name}.",
+        "btn": "Got it"
+      },
+      "page_validation_error": {
+        "header": "Validation error",
+        "message": "Critical error: {error}",
+        "btn": "Close"
+      },
+      "page_extraction_error": {
+        "header": "Extraction error",
+        "message": "Error while extracting pages: {error}",
+        "btn": "Close"
+      },
+      "update_error": {
+        "header": "Update error",
+        "message": "Failed to check for updates:\n{error}",
+        "btn": "Close"
+      }
+    }
+  },
+  "status": {
+    "merging": {
+      "done": "Merged: {success}; Failed: {failed}",
+      "error": {
+        "unknown": "Error: Failed to merge file {path}.\nReason: {error}",
+        "critical": "Merging process error.\nReason: {error}"
+      }
+    },
+    "processing": {
+      "done": "Processed: {success}; Failed: {failed}",
+      "error": {
+        "unknown": "Error: Failed to process file.\nReason: {error}"
+      }
+    },
+    "extracting": {
+      "done": "Extraction finished",
+      "error": {
+        "unknown": "Error: Failed to extract page {page_number}.\nReason: {error}"
+      }
+    },
+    "converting": {
+      "done": "Converted: {success}; Failed: {failed}",
+      "error": {
+        "unknown": "Error converting file: {path}\nReason: {error}"
+      }
+    },
+    "compressing": {
+      "done": "Compression finished successfully",
+      "error": {
+        "critical": "Failed to compress file"
+      }
+    },
+    "saving": {
+      "done": "File saved at path: {path}",
+      "error": {
+        "unknown": "Error: Failed to save file at path:\n{path}\nReason: {error}",
+        "permission": "Folder access error"
+      }
+    }
+  },
+  "progress": {
+    "stage": {
+      "compressing": "Compressing",
+      "extracting": "Extracting",
+      "converting": "Converting",
+      "merging": "Merging",
+      "saving": "Saving",
+      "processing": "Processing",
+      "analyzing": "Analyzing",
+      "common": "Done"
+    },
+    "indeterminate": "{stage}...",
+    "detailed": "{stage}: {filename} ({current}/{total}) — {percent:.1f}%"
+  }
+}

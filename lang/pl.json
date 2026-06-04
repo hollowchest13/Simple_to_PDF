@@ -1,0 +1,212 @@
+{
+  "info": {
+    "lang_name": "Polski"
+  },
+  "ui": {
+    "main_panel": {
+      "filebox": "Wybrane pliki",
+      "progress_label": "Status wykonania"
+    },
+    "list_controls_panel": {
+      "btn_add": "Dodaj pliki",
+      "btn_up": "Przenieś w górę",
+      "btn_down": "Przenieś w dół",
+      "btn_remove": "Usuń plik",
+      "btn_merge": "Połącz w PDF",
+      "btn_convert": "Konwertuj do PDF",
+      "btn_compress":"Kompresuj PDF",
+      "btn_extract": "Wyodrębnij strony",
+      "btn_status_clear": "Wyczyść konsolę",
+      "btn_help": "Pomoc",
+      "btn_settings": "Ustawienia"
+    },
+    "help_panel": {
+      "title_label": "Pomoc",
+      "license_btn": "Licencja",
+      "documentation_btn": "Jak używać",
+      "about_btn": "O programie",
+      "check_updates_btn": "Sprawdź aktualizacje",
+      "logs_btn": "Pokaż logi",
+      "dep_btn": "Zależności"
+    },
+    "settings_panel": {
+      "language_label": "Język",
+      "title_label": "Ustawienia",
+      "compress_label": "Kompresuj PDF",
+      "format_label": "Format"
+    }
+  },
+  "dialogs": {
+    "about_dialog": {
+      "window_title": "O Simple to PDF",
+      "header_title": "Simple to PDF",
+      "header_subtitle": "Wersja {version}",
+      "engine_badge": "Silnik: {engine}",
+      "description_label": "Narzędzie do wsadowego łączenia różnych typów plików w PDF z funkcją wyodrębniania i kompresji.",
+      "github_btn": "Kod źródłowy na GitHub"
+    },
+    "page_selection_dialog": {
+      "window_title": "Wyodrębnij strony",
+      "header_title": "Wybór stron",
+      "header_subtitle": "Wyodrębnianie określonych stron z PDF",
+      "instruction_label": "Wprowadź strony do wyodrębnienia:",
+      "hint_label": "Użyj przecinków dla pojedynczych stron (1, 3)\noraz myślników dla zakresów (5-10).",
+      "page_entry_placeholder": "np. 1, 2, 5-8",
+      "btn_ok": "Potwierdź"
+    }
+  },
+  "notifications": {
+    "confirmation": {
+      "__title__": "Potwierdzenie",
+      "confirm_delete": {
+        "header": "Usunąć wszystkie pliki?",
+        "message": "Obecnie nie wybrano żadnego pliku. Czy chcesz zamiast tego wyczyścić całą listę?",
+        "btn_yes": "Tak",
+        "btn_no": "Nie"
+      },
+      "confirm_update": {
+        "header": "Dostępna aktualizacja: {version}!",
+        "message": "Co nowego: {changelog_text}",
+        "btn_yes": "Pobierz teraz",
+        "btn_no": "Później"
+      }
+    },
+    "info": {
+      "__title__": "Informacja",
+      "license_info": {
+        "header": "Warunki licencji",
+        "message": "Pełny tekst licencji...",
+        "footer_text": "Copyright © {year} {app_name}. Wszelkie prawa zastrzeżone...",
+        "btn": "Zgadzam się"
+      },
+      "dependencies_info": {
+        "header": "Lista zależności",
+        "message": "Lista zależności",
+        "btn": "OK"
+      },
+      "no_updates": {
+        "header": "Aktualizacja oprogramowania",
+        "message": "Używasz najnowszej wersji {version}.",
+        "btn": "Rozumiem"
+      },
+      "empty_file_list": {
+        "header": "Lista jest pusta!",
+        "message": "Lista plików jest już pusta.",
+        "btn": "OK"
+      }
+    },
+    "success": {
+      "__title__": "Sukces",
+      "update_success": {
+        "header": "Oprogramowanie zaktualizowane",
+        "message": "Wersja {version} została pomyślnie zainstalowana.",
+        "btn": "Świetnie!"
+      }
+    },
+    "warning": {
+      "__title__": "Uwaga!",
+      "no_file_to_merge": {
+        "header": "Brak plików!",
+        "message": "Proszę dodać pliki do listy przed rozpoczęciem łączenia.",
+        "btn": "OK"
+      },
+      "wrong_page_format": {
+        "header": "Błędny format!",
+        "message": "Proszę użyć poprawnego formatu (np. 1-5, 8, 10-12).",
+        "btn": "Rozumiem"
+      },
+      "process_in_progress": {
+        "header": "Proces w toku!",
+        "message": "Obecnie wykonywane jest zadanie w tle.\n\nProgram zamknie się automatycznie po zakończeniu. Proszę czekać.",
+        "btn": "Czekaj"
+      },
+      "file_not_found": {
+        "header": "Nie znaleziono",
+        "message": "Nie znaleziono pliku {file_name}.",
+        "btn": "Rozumiem"
+      },
+      "file_read_error": {
+        "header": "Błąd odczytu pliku",
+        "message": "Sprawdź integralność i dostęp do pliku w ścieżce {path}.",
+        "btn": "Rozumiem"
+      }
+    },
+    "error": {
+      "__title__": "Błąd pliku",
+      "file_read_error": {
+        "header": "Błąd odczytu",
+        "message": "Nie udało się odczytać pliku {file_name}.",
+        "btn": "Rozumiem"
+      },
+      "page_validation_error": {
+        "header": "Błąd walidacji",
+        "message": "Błąd krytyczny: {error}",
+        "btn": "Zamknij"
+      },
+      "page_extraction_error": {
+        "header": "Błąd wyodrębniania",
+        "message": "Błąd podczas wyodrębniania stron: {error}",
+        "btn": "Zamknij"
+      },
+      "update_error": {
+        "header": "Błąd aktualizacji",
+        "message": "Nie udało się sprawdzić aktualizacji:\n{error}",
+        "btn": "Zamknij"
+      }
+    }
+  },
+  "status": {
+    "merging": {
+      "done": "Połączono: {success}; Błędów: {failed}",
+      "error": {
+        "unknown": "Błąd: Nie udało się połączyć pliku {path}.\nPrzyczyna: {error}",
+        "critical": "Błąd procesu łączenia.\nPrzyczyna: {error}"
+      }
+    },
+    "processing": {
+      "done": "Przetworzono: {success}; Błędów: {failed}",
+      "error": {
+        "unknown": "Błąd: Nie udało się przetworzyć pliku.\nPrzyczyna: {error}"
+      }
+    },
+    "extracting": {
+      "done": "Wyodrębnianie zakończone",
+      "error": {
+        "unknown": "Błąd: Nie udało się wyodrębnić strony {page_number}.\nPrzyczyna: {error}"
+      }
+    },
+    "converting": {
+      "done": "Skonwertowano: {success}; Błędów: {failed}",
+      "error": {
+        "unknown": "Błąd konwersji pliku: {path}\nPrzyczyna: {error}"
+      }
+    },
+    "compressing": {
+      "done": "Kompresja zakończona sukcesem",
+      "error": {
+        "critical": "Nie udało się skompresować pliku"
+      }
+    },
+    "saving": {
+      "done": "Plik zapisano w ścieżce: {path}",
+      "error": {
+        "unknown": "Błąd: Nie udało się zapisać pliku w ścieżce:\n{path}\nPrzyczyna: {error}",
+        "permission": "Błąd dostępu do folderu"
+      }
+    }
+  },
+  "progress": {
+    "stage": {
+      "compressing": "Kompresowanie",
+      "extracting": "Wyodrębnianie",
+      "converting": "Konwertowanie",
+      "merging": "Łączenie",
+      "saving": "Zapisywanie",
+      "processing": "Przetwarzanie",
+      "analyzing": "Analiza",
+      "common": "Gotowe"
+    },
+    "indeterminate": "{stage}...",
+    "detailed": "{stage}: {filename} ({current}/{total}) — {percent:.1f}%"
+  }
+}

@@ -1,5 +1,5 @@
-{
-  "version": "1.0.1",
-  "release_date": "2026-02-03",
-  "notes": "Fixed an issue where the script would kill all active Office processes instead of its own."
+  {
+  "version": "1.0.2",
+  "release_date": "2026-03-03",
+  "notes": "- Added Excel (.xlsx) to PDF conversion support.\n- Fixed an issue with processing large files.\n- Improved image handling using Pillow library."
 }

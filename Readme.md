@@ -1,22 +1,14 @@
-# Simple_to_PDF 📄🚀
+# Simple_to_PDF
 
-## ⬇️ Download
+[AGPL License](https://github.com/hollowchest13/Simple_to_PDF/tree/Readme?tab=License-1-ov-file#)
 
-- 🪟 **Windows**: [Download .exe](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.1/SimpleToPDF.exe)
+**Simple_to_PDF** is a local multi-format converter that allows you to merge various file types into a single PDF or extract pages and compress with just one click.
 
-- 🐧 **Linux**: [Download AppImage](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.1/SimpleToPDF)
+The project is built for **Linux (Mint, Ubuntu)** and **Windows** users.
 
-👉 No Python required. Just download & run.
+**Like this project?** If you find this tool useful, please consider giving it a star on GitHub! It helps the project grow and motivates further development.
 
-## 📄 License
-MIT License
-
-**Simple_to_PDF** is a lightweight and powerful Python-based tool designed for batch converting office documents, spreadsheets, presentations, and images into a single, cohesive PDF file. It also features a built-in PDF utility for extracting specific page ranges from existing documents.
-
-The project is built for **Linux (Mint, Ubuntu)** and **Windows** users, providing an intuitive Graphical User Interface (GUI) for complex file processing.
-
-
-## 🖼 Screenshots
+## Screenshots
 
 <p align="center">
   <img src="screenshots/main.png" alt="Main Window" width="600">
@@ -30,21 +22,12 @@ The project is built for **Linux (Mint, Ubuntu)** and **Windows** users, providi
   <em>Process of extracting pages from PDF</em>
 </p>
 
-## 📌 Project Status
-🟡 Actively developed  
-⚠️ Feature-complete, testing in progress  
-🧪 New features and fixes may be added
-
-## ⚠️ Known Limitations
+## Known Limitations
 - Password-protected PDFs are not supported
 - Very large files (>500MB) may require additional memory
 - MS Office automation works only on Windows
 
----
-
-## 🛠 Requirements
-- **Python 3.10+ (developed and tested on Python 3.12.3)**
-The application requires one of the following to be installed for documents conversion:
+## Requirements
 
 1. **Microsoft Office** (Windows only) — detected automatically via COM interface.
 2. **LibreOffice** (Windows or Linux) — Used as a fallback or primary engine.
@@ -53,24 +36,6 @@ The application requires one of the following to be installed for documents conv
 
  - `C:\Program Files\LibreOffice`
  - `C:\Program Files (x86)\LibreOffice`
-
----
-
-### 🔄 Conversion Priority (Windows)
-The application follows a specific priority order when choosing a conversion engine:
-1. **Microsoft Office** (Primary) — If detected, it will be used by default for the best formatting accuracy.
-2. **LibreOffice** (Fallback) — If Microsoft Office is not found, the app will automatically look for LibreOffice in the default system paths.
-
-## ✨ Key Features
-- **Batch Conversion:** Merge dozens of different file types into one PDF with a single click.
-- **Order Management:** Easily rearrange the file sequence before merging.
-- **Smart Processing:** Automatic image scaling and page orientation detection.
-- **PDF Surgery:** Extract specific page ranges (e.g., 1, 3-5) from existing PDF files.
-- **Detailed Logging:** Built-in logging system for quick troubleshooting and debugging.
-
----
-
-## ⚙️ Conversion Engines & Formats
 
 The application dynamically adapts to the software installed on your system. For full office document support, **MS Office** or **LibreOffice** is required.
 
@@ -89,10 +54,23 @@ If no office suite is detected, the app functions as a robust image-to-PDF conve
 * **PDF:** .pdf (merging and page extraction)
 * **Images:** .jpg, .jpeg, .png, .bmp, .gif, .tiff, .tif, .webp, .ppm, .icns, .ico, .jfif, .jpe, .tga
 
----
+## How to use:
 
-## 🚀 Installation & Usage
+Download the version compatible with your operating system using the link provided.
 
+**Windows**: [Download Simple_to_PDF.exe](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.2/SimpleToPDF.exe)
+
+ **Linux**: [Download Simple_to_PDF](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.2/SimpleToPDF)
+
+Once downloaded, run the program.
+
+**To merge files**: First, click the plus (+) button on the right side of the window, select the files you need, and press "Open." Then, go to the File menu and click "Merge to PDF."
+
+**To extract pages**: Go to the File menu and choose "Extract Pages." Select the PDF file you want to process and click "Open." Enter the page numbers you wish to extract, click "OK," and then select the destination folder where you want to save the result.
+
+If you want to run the script yourself, check the [Installation section](#installation).
+
+## Installation
 
 ### Clone the Repository
 ```bash
@@ -109,73 +87,41 @@ sudo apt update
 sudo apt install python3-venv python3-tk
 ```
 2. **Create and activate environment:**
+### For Linux in terminal:
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
-3. **Install requirements:**
-
-```bash
-pip install --upgrade pip
-pip install -r requirements.txt
-```
 ### For Windows:
-1. Create virtual environment in **PowerShell** or **CMD**:
+In**CMD**:
 
 ```bash
 python -m venv venv
-```
-2. Activate environment in **PowerShell** :
-
-```bash
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
-.\venv\Scripts\Activate.ps1
-```
-In **CMD**:
-
-```bash
 venv\Scripts\activate
 ```
-3. Install requirements:
+## App installation and run:
 
 ```bash
-pip install -r requirements.txt
+pip install --upgrade pip
 ```
----
-4. Getting Started:
+If you just want use app:
 
 ```bash
-python -m src.simple_to_pdf.cli
+pip install .
+```
+Or if you want edit code:
+
+```bash
+pip install -e .
+```
+Getting Started:
+
+```bash
+python -m simple_to_pdf.cli
 ```
 
-## 🛠 Technology Stack
-Simple_to_PDF utilizes a multi-layered approach to handle various file formats efficiently:
-
-### 🐍 Core Logic & System
-Python 3.12.3: The heart of the application.
-
-**Subprocess & Shutil:** Used for high-level system operations, such as calling LibreOffice in headless mode and managing file movements.
-
-**Tempfile & Pathlib:** Ensure clean and safe file handling by using isolated temporary directories and cross-platform path management.
-
-### 📊 Spreadsheet & Data Processing
-
-**openpyxl:** A specialized library for reading and writing Excel (.xlsx, .xlsm) files. This allows the app to handle spreadsheet data independently of Microsoft Excel.
-
-### 📄 Document Automation
-**pypdf:** For professional PDF manipulation including merging, splitting, and metadata handling.
-
-**pywin32 (COM Interop):** Provides native integration with MS Office for high-fidelity document rendering on Windows.
-
-**Pillow:** The industry-standard library for image processing and raster-to-PDF conversion.
-
-### 📝 Reliability & Maintenance
-**Logging:** Comprehensive system logs with automated rotation to ensure the app remains easy to debug without wasting disk space.
-
----
-
-## 📬 Support
+## Support
 If you encounter any issues or the program behaves unexpectedly:
 
 1. Go to the **Help** menu in the top bar.
@@ -186,8 +132,3 @@ Send the logs along with a short description of what happened to:
 
 📧 **hollowchest13@gmail.com**
 
----
-
-## 🤝 Contributing
-Issues and pull requests are welcome.
-Please open an issue before proposing major changes.

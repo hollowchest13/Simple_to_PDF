@@ -1,0 +1,212 @@
+{
+  "info": {
+    "lang_name": "Українська"
+  },
+  "ui": {
+    "main_panel": {
+      "filebox": "Вибрані файли",
+      "progress_label": "Стан виконання"
+    },
+    "list_controls_panel": {
+      "btn_add": "Додати файли",
+      "btn_up": "Перемістити вгору",
+      "btn_down": "Перемістити вниз",
+      "btn_remove": "Видалити файл",
+      "btn_merge": "Об'єднати в PDF",
+      "btn_convert":"Конвертувати в PDF",
+      "btn_compress":"Стиснути PDF",
+      "btn_extract": "Витягти сторінки",
+      "btn_status_clear": "Очистити консоль",
+      "btn_help": "Довідка",
+      "btn_settings": "Налаштування"
+    },
+    "help_panel": {
+      "title_label": "Допомога",
+      "license_btn": "Ліцензія",
+      "documentation_btn": "Як користуватися",
+      "about_btn": "Про програму",
+      "check_updates_btn": "Перевірити оновлення",
+      "logs_btn": "Показати логи",
+      "dep_btn":"Залежності"
+    },
+    "settings_panel": {
+      "language_label": "Мова",
+      "title_label": "Налаштування",
+      "compress_label": "Стиснути PDF",
+      "format_label":"Формат"
+    }
+  },
+  "dialogs": {
+    "about_dialog": {
+      "window_title": "Про Simple to PDF",
+      "header_title": "Simple to PDF",
+      "header_subtitle": "Версія {version}",
+      "engine_badge": "Рушій: {engine}",
+      "description_label": "Утиліта для пакетного об'єднання різних типів файлів в PDF із функцією розділення та стистнення PDF.",
+      "github_btn": "Вихідний код на GitHub"
+    },
+    "page_selection_dialog": {
+      "window_title": "Витягти сторінки",
+      "header_title": "Вибір сторінок",
+      "header_subtitle": "Витягування окремих сторінок з PDF",
+      "instruction_label": "Введіть сторінки для витягу:",
+      "hint_label": "Використовуйте коми для окремих сторінок (1, 3)\nта дефіси для діапазонів (5-10).",
+      "page_entry_placeholder": "напр. 1, 2, 5-8",
+      "btn_ok": "Підтвердити"
+    }
+  },
+  "notifications": {
+    "confirmation": {
+      "__title__": "Підтвердження",
+      "confirm_delete": {
+        "header": "Видалити всі файли?",
+        "message": "Наразі не вибрано жодного файлу. Бажаєте замість цього очистити весь список?",
+        "btn_yes": "Так",
+        "btn_no": "Ні"
+      },
+      "confirm_update":{
+      "header": "Доступне оновлення: {version}!",
+      "message": "Що нового: {changelog_text}",
+      "btn_yes": "Завантажити",
+      "btn_no": "Пізніше"
+    }
+    },
+    "info": {
+      "__title__": "Інформація",
+      "license_info": {
+        "header": "Умови ліцензії",
+        "message": "Повний текст ліцензії...",
+        "footer_text": "Copyright © {year} {app_name}. Усі права захищено...",
+        "btn": "Я згоден(на)"
+      },
+        "dependencies_info": {
+        "header": "Список залежностей",
+        "message": "Список залежностей",
+        "btn": "ОК"
+      },
+      "no_updates": {
+        "header": "Оновлення ПЗ",
+        "message": "У вас встановлена найновіша версія {version}.",
+        "btn": "Зрозуміло"
+      },
+      "empty_file_list": {
+        "header": "Список порожній!",
+        "message": "Список файлів уже порожній.",
+        "btn": "ОК"
+      }
+    },
+    "success": {
+      "__title__": "Успішно",
+      "update_success": {
+        "header": "Програмне забезпечення оновлено",
+        "message": "Версію {version} було успішно встановлено.",
+        "btn": "Чудово!"
+      }
+    },
+    "warning": {
+      "__title__": "Увага!",
+      "no_file_to_merge": {
+        "header": "Немає файлів!",
+        "message": "Будь ласка, додайте файли до списку перед початком об'єднання.",
+        "btn": "ОК"
+      },
+      "wrong_page_format": {
+        "header": "Невірний формат!",
+        "message": "Будь ласка, використовуйте правильний формат (напр., 1-5, 8, 10-12).",
+        "btn": "Зрозуміло"
+      },
+      "process_in_progress": {
+        "header": "Процес триває!",
+        "message": "Наразі виконується фонове завдання.\n\nПрограма закриється автоматично після завершення. Будь ласка, зачекайте.",
+        "btn": "Зачекати"
+      },
+      "file_not_found": {
+        "header": "Не знайдено",
+        "message": "Файл {file_name} не знайдено",
+        "btn": "Зрозуміло"
+      },
+      "file_read_error": {
+        "header": "Помилка читання файлу",
+        "message": "Перевірте цілісність та доступ до файлу за шляхом {path}",
+        "btn": "Зрозуміло"
+      }
+    },
+    "error": {
+      "__title__": "Помилка файлу",
+      "file_read_error": {
+        "header": "Помилка читання",
+        "message": "Не вдалося прочитати файл {file_name}",
+        "btn": "Зрозуміло"
+      },
+      "page_validation_error": {
+        "header": "Помилка валідації",
+        "message": "Критична помилка: {error}",
+        "btn": "Закрити"
+      },
+      "page_extraction_error": {
+        "header": "Помилка витягування",
+        "message": "Помилка під час витягування сторінок: {error}",
+        "btn": "Закрити"
+      },
+      "update_error": {
+        "header": "Помилка оновлення",
+        "message": "Не вдалося перевірити оновлення:\n{error}",
+        "btn": "Закрити"
+      }
+    }
+  },
+  "status": {
+    "merging": {
+      "done": "Об'єднано: {success}; Помилок: {failed}",
+      "error": {
+        "unknown":"Помилка: Не вдалося об'єднати файл {path}.\nПричина: {error}",
+        "critical" : "Помилка процесу об'єднання.\nПричина: {error}"
+      }
+    },
+    "processing": {
+      "done": "Опрацьовано: {success}; Помилок: {failed}",
+      "error": {
+        "unknown":"Помилка: Не вдалося опрацювати файл.\nПричина: {error}"
+      }
+    },
+    "extracting": {
+      "done": "Витягування завершено",
+      "error": {
+        "unknown":"Помилка: Не вдалося витягти сторінку {page_number}.\nПричина: {error}"
+      }
+    },
+    "converting": {
+      "done": "Конвертовано: {success}; Помилок: {failed}",
+      "error": {
+        "unknown":"Помилка конвертації файлу: {path}\nПричина: {error}"
+      }
+    },
+    "compressing": {
+      "done": "Cтиснення завершено успішно",
+      "error":{
+        "critical": "Не вдалося стиснути файл"
+      }
+    },
+    "saving": {
+      "done": "Файл збережено із шляхом : {path}",
+      "error": {
+        "unknown":"Помилка: Не вдалося зберегти файл за шляхом:\n{path}\nПричина: {error}",
+        "permission":"Помилка доступу до папки"
+      }
+    }
+  },
+  "progress": {
+    "stage": {
+      "compressing": "Стиснення",
+      "extracting": "Витягування",
+      "converting": "Конвертування",
+      "merging": "Об'єднання",
+      "saving": "Збереження",
+      "processing":"Опрацювання",
+      "analyzing":"Аналіз",
+      "common":"Готово"
+    },
+    "indeterminate": "{stage}...",
+    "detailed": "{stage}: {filename} ({current}/{total}) — {percent:.1f}%"
+  }
+}

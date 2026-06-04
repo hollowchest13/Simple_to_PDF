@@ -2,7 +2,9 @@ import logging
 import platform
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-import sys
+
+from simple_to_pdf.core.config import ROOT_PATH
+
 
 def get_log_dir() -> Path:
     """
@@ -10,27 +12,22 @@ def get_log_dir() -> Path:
     """
     # Try the Home directory first
     log_dir = Path.home() / "simple_to_pdf" / "logs"
-    
+
     try:
         # Try to create Home directory
         log_dir.mkdir(parents=True, exist_ok=True)
         return log_dir
     except Exception:
-        # Fallback: If Home is not writable, use the Application directory
-        if hasattr(sys, 'frozen'):
-            base_path = Path(sys.executable).parent
-        else:
-            base_path = Path(__file__).resolve().parent
-        
-        log_dir = base_path / "logs"
-        
+        log_dir = ROOT_PATH / "logs"
+
         try:
             log_dir.mkdir(parents=True, exist_ok=True)
         except Exception:
             # Last resort: just return whatever we have to avoid crash
             pass
-            
+
     return log_dir
+
 
 def setup_logger():
     # Defining the path to the logs folder (universally via pathlib). On Linux it will be /home/user/..., on Windows C:\Users...

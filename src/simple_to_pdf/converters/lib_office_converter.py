@@ -5,14 +5,14 @@ import tempfile
 from pathlib import Path
 
 import openpyxl
-
-from src.simple_to_pdf.converters.img_converter import ImageConverter
-from src.simple_to_pdf.converters.models import ConversionResult
+from simple_to_pdf.converters.lib_mixin import LibreSetupMixin
+from simple_to_pdf.converters.img_converter import ImageConverter
+from simple_to_pdf.converters.models import ConversionResult
 
 logger = logging.getLogger(__name__)
 
 
-class LibreOfficeConverter(ImageConverter):
+class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
     SUPPORTED_FORMATS = {
         "table": {".xlsx", ".xlsm", ".xltx", ".xltm", ".xls", ".xlsb", ".ods", ".csv"},
         "document": {".doc", ".docx", ".odt", ".rtf", ".txt"},
@@ -21,15 +21,12 @@ class LibreOfficeConverter(ImageConverter):
 
     def __init__(self, *, soffice_path: str, chunk_size: int = 30):
         # Call constructor of base class, so it can initialize its data
-        super().__init__()
-
+        super().__init__(chunk_size=chunk_size)
         self.soffice_path = soffice_path
-        self.chunk_size = chunk_size
         self.SUPPORTED_FORMATS = self.get_supported_formats()
 
-    def convert_to_pdf(
-        self, *, files: list[tuple[int, Path]]
-    ) -> list[tuple[int, bytes]]:
+    def convert_to_pdf(self, *, files: list[tuple[int, Path]]) -> ConversionResult:
+        """Categorize files by type, convert them to PDF, and aggregate the results."""
         docs: list[tuple[int, Path]] = []
         imgs: list[tuple[int, Path]] = []
         final_result: ConversionResult = ConversionResult()
@@ -46,11 +43,11 @@ class LibreOfficeConverter(ImageConverter):
             elif self.is_image_file(file_path=path):
                 imgs.append((idx, path))
         docs_res = self._convert_docs_to_pdf(files=docs)
-        img_res = self.convert_images_to_pdf(files=imgs)
+        img_res = self._convert_images_to_pdf(files=imgs)
 
-        final_result.successful.extend(docs_res.successful)
+        final_result.success.extend(docs_res.success)
         final_result.failed.extend(docs_res.failed)
-        final_result.successful.extend(img_res.successful)
+        final_result.success.extend(img_res.success)
         final_result.failed.extend(img_res.failed)
 
         return final_result
@@ -58,18 +55,18 @@ class LibreOfficeConverter(ImageConverter):
     def _convert_docs_to_pdf(
         self, *, files: list[tuple[int, Path]]
     ) -> ConversionResult:
+        """Convert documents to PDF in chunks and aggregate conversion results."""
         all_results = ConversionResult()
         for chunk in self.make_chunks(files, self.chunk_size):
-            # Call the new method that handles one chunk
             chunk_res = self._convert_chunk(chunk=chunk)
-            all_results.successful.extend(chunk_res.successful)
+            all_results.success.extend(chunk_res.success)
             all_results.failed.extend(chunk_res.failed)
         return all_results
 
     def _run_libreoffice_format_conversion(
         self, *, input_paths: list[Path], out_dir: Path
     ):
-        """all tables to xlsx conversion"""
+        """All tables to xlsx conversion"""
 
         command = [
             self.soffice_path,
@@ -91,16 +88,16 @@ class LibreOfficeConverter(ImageConverter):
                     p.unlink()
         except subprocess.TimeoutExpired:
             logger.error(
-                f"❌ LibreOffice timed out after {timeout} seconds for {num_files} files: {[p.name for p in input_paths]}"
+                f"LibreOffice timed out after {timeout} seconds for {num_files} files: {[p.name for p in input_paths]}"
             )
         except subprocess.CalledProcessError as e:
             logger.error(
-                f"❌ LibreOffice conversion error for {[p.name for p in input_paths]}: {e.stderr.decode()}",
+                f"LibreOffice conversion error for {[p.name for p in input_paths]}: {e.stderr.decode()}",
                 exc_info=True,
             )
         except Exception as e:
             logger.error(
-                f"❌ Unexpected error during table conversion: {e}", exc_info=True
+                f" Unexpected error during table conversion: {e}", exc_info=True
             )
 
     def _prepare_temp_files(
@@ -123,11 +120,9 @@ class LibreOfficeConverter(ImageConverter):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
 
-            # Prepare files (copy with index prefix)
-            all_tmp_paths: Path = self._prepare_temp_files(
+            all_tmp_paths: list[Path] = self._prepare_temp_files(
                 chunk=chunk, tmp_path=tmp_path
             )
-            # Selecting EVERYTHING that requires conversion to .xlsx before running openpyxl
             xls_to_convert: list[Path] = [
                 p for p in all_tmp_paths if p.suffix.lower() in to_convert_exts
             ]
@@ -143,12 +138,10 @@ class LibreOfficeConverter(ImageConverter):
                     self._prepare_excel_scaling(file_path=path)
             input_paths = [str(p) for p in all_tmp_paths]
 
-            # Run the conversion
             success = self._run_libreoffice_command(
                 input_paths=input_paths, out_dir=tmp_path
             )
 
-            # if command was successful, collect results
             chunk_res: ConversionResult = ConversionResult()  # створюємо завчасно
             if success:
                 chunk_res = self._collect_results(chunk=chunk, tmp_path=tmp_path)
@@ -157,6 +150,7 @@ class LibreOfficeConverter(ImageConverter):
     def _update_paths(
         self, *, all_paths: list[Path], to_check_exts: list[str]
     ) -> list[Path]:
+        """Validate file extensions and replace with existing .xlsx counterparts if applicable."""
         updated = []
         for p in all_paths:
             if p.suffix.lower() in to_check_exts:
@@ -165,54 +159,12 @@ class LibreOfficeConverter(ImageConverter):
                     updated.append(expected)
                 else:
                     logger.warning(
-                        f"⚠️ Failed to xlsx conversion {p.name}, keeping as {p.suffix}"
+                        f"Failed to xlsx conversion {p.name}, keeping as {p.suffix}"
                     )
                     updated.append(p)
             else:
-                # If it's .xlsx or any other file - just adding it back
                 updated.append(p)
         return updated
-
-    def _prepare_excel_scaling(self, *, file_path: Path):
-        """
-        Configures Excel print settings to prevent table 'breaking'.
-        """
-        wb = None
-        try:
-            wb = openpyxl.load_workbook(str(file_path))
-
-            for sheet in wb.worksheets:
-                # Detecting sheet orientation.
-                max_col = sheet.max_column
-                if max_col > 10:
-                    sheet.page_setup.orientation = sheet.ORIENTATION_LANDSCAPE
-                else:
-                    sheet.page_setup.orientation = sheet.ORIENTATION_PORTRAIT
-
-                # Scaling: Fit all columns to one page width.
-                sheet.page_setup.fitToWidth = 1
-                sheet.page_setup.fitToHeight = 0
-
-                # Enabling scaling mode (required for fitToWidth to take effect).
-                sheet.sheet_properties.pageSetUpPr.fitToPage = True
-
-                # Paper Size: Set to A4 (as a fallback/safety measure)
-                sheet.page_setup.paperSize = sheet.PAPERSIZE_A4
-
-                # Margins: Set to minimum to maximize usable area
-                sheet.page_margins.left = 0.15
-                sheet.page_margins.right = 0.15
-                sheet.page_margins.top = 0.2
-                sheet.page_margins.bottom = 0.2
-        except Exception as e:
-            logger.error(f"⚠️ Failed to scale table file {file_path.name}: {e}")
-        finally:
-            if wb is not None:
-                try:
-                    wb.save(str(file_path))
-                    wb.close()
-                except Exception as e:
-                    logger.error(f"⚠️ Failed to save table file {file_path.name}: {e}")
 
     def _run_libreoffice_command(
         self, *, input_paths: list[str], out_dir: Path
@@ -234,16 +186,17 @@ class LibreOfficeConverter(ImageConverter):
             return True
         except subprocess.TimeoutExpired:
             logger.error(
-                f"❌ LibreOffice timed out after {timeout} seconds for {num_files} files"
+                f"LibreOffice timed out after {timeout} seconds for {num_files} files"
             )
             return False
         except subprocess.CalledProcessError as e:
-            logger.error(f"❌ LibreOffice error: {e}", exc_info=True)
+            logger.error(f"LibreOffice error: {e}", exc_info=True)
             return False
         except Exception as e:
             logger.error(
-                f"❌ Unexpected error during table conversion: {e}", exc_info=True
+                f"Unexpected error during table conversion: {e}", exc_info=True
             )
+            return False
 
     def _collect_results(
         self, *, chunk: list[tuple[int, Path]], tmp_path: Path
@@ -253,13 +206,14 @@ class LibreOfficeConverter(ImageConverter):
         for idx, original_path in chunk:
             expected_pdf = tmp_path / f"{idx}_{original_path.stem}.pdf"
             if expected_pdf.exists():
-                res.successful.append((idx, expected_pdf.read_bytes()))
+                res.success.append((idx, expected_pdf.read_bytes()))
             else:
-                logger.warning(f"⚠️ Failed conversion to pdf: {expected_pdf.name}")
+                logger.warning(f"Failed conversion to pdf: {expected_pdf.name}")
                 res.failed.append((idx, original_path))
         return res
 
-    def get_excel_width(self, *, file_path: Path) -> dict[Path, int]:
+    def get_excel_width(self, *, file_path: Path) -> dict[str, int]:
+        """Calculate and return the maximum column count for each sheet in an Excel file."""
         workbook = openpyxl.load_workbook(filename=file_path, data_only=True)
         report: dict[str, int] = {}
         for sheet_name in workbook.sheetnames:

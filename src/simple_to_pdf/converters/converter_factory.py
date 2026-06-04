@@ -2,6 +2,8 @@ import logging
 import platform
 import shutil
 from pathlib import Path
+from typing import Callable, List
+from simple_to_pdf.converters.base_converter import BaseConverter
 
 logger = logging.getLogger(__name__)
 
@@ -13,13 +15,11 @@ class ConverterFactory:
     def _find_soffice_windows(self) -> str:
         """Strict search for LibreOffice on Windows."""
 
-        # 1. Check in system PATH
         in_path = shutil.which("soffice")
         if in_path:
             logger.info(f"LibreOffice found in PATH: {in_path}")
             return in_path
 
-        # 2. Check standard paths
         standard_paths = [
             r"C:\Program Files\LibreOffice\program\soffice.exe",
             r"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
@@ -29,13 +29,12 @@ class ConverterFactory:
                 logger.info(f"LibreOffice found at standard path: {p}")
                 return p
 
-        # 3. If no LibreOffice found — raise an error
         raise FileNotFoundError(
             "LibreOffice not found in standard folders or PATH. "
             "Please specify the path manually via the 'soffice_path' parameter."
         )
 
-    def _get_libre_path(self, *, custom_path: str = None) -> str:
+    def _get_libre_path(self, *, custom_path: str | None = None) -> str | None:
         """Find path to LibreOffice depending on the system"""
 
         if custom_path:
@@ -48,7 +47,7 @@ class ConverterFactory:
     def _try_ms_office(self, *, chunk_size: int):
         "Encapsulates import and creation of MSOfficeConverter"
 
-        from src.simple_to_pdf.converters.ms_office_converter import MSOfficeConverter
+        from simple_to_pdf.converters.ms_office_converter import MSOfficeConverter
 
         return MSOfficeConverter(chunk_size=chunk_size)
 
@@ -60,7 +59,7 @@ class ConverterFactory:
         if not self.soffice_path:
             raise FileNotFoundError("LibreOffice ('soffice') not found.")
 
-        from src.simple_to_pdf.converters.lib_office_converter import (
+        from simple_to_pdf.converters.lib_office_converter import (
             LibreOfficeConverter,
         )
 
@@ -71,14 +70,14 @@ class ConverterFactory:
     def _try_image_only(self, *, chunk_size: int):
         """Encapsulates import and creation of ImageConverter"""
 
-        from src.simple_to_pdf.converters.img_converter import ImageConverter
+        from simple_to_pdf.converters.img_converter import ImageConverter
 
         return ImageConverter(chunk_size=chunk_size)
 
-    def get_converter(self):
+    def get_converter(self) -> BaseConverter:
         os_name = platform.system()
         logger.info(f"Operating System detected: {os_name}")
-        strategies = []
+        strategies: List[Callable[[], BaseConverter]] = []
         if os_name == "Windows":
             strategies = [
                 lambda: self._try_ms_office(chunk_size=self.chunk_size),
@@ -89,8 +88,12 @@ class ConverterFactory:
         strategies.append(lambda: self._try_image_only(chunk_size=self.chunk_size))
         for strategy in strategies:
             try:
-                converter = strategy()
+                converter: BaseConverter = strategy()
                 logger.info(f"Using converter: {converter.__class__.__name__}")
                 return converter
             except Exception as e:
                 logger.warning(f"Converter initialization failed: {e}", exc_info=True)
+        raise RuntimeError(
+            "Could not initialize any converter. "
+            "Please check if LibreOffice or MS Office is installed."
+        )

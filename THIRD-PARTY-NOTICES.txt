@@ -1,0 +1,9 @@
+ Name                Version   License                                                              
+ PyMuPDF             1.27.2.3  Dual Licensed - GNU AFFERO GPL 3.0 or Artifex Commercial License                                          
+ customtkinter       5.2.2     MIT License                                                      
+ darkdetect          0.8.0     BSD License                                                                                                   
+ openpyxl            3.1.5     MIT License                                                                                   
+ pillow              12.1.0    MIT-CMU                                                          
+ pypdf               6.7.0     BSD-3-Clause                                                     
+ requests            2.32.5    Apache Software License                                                                                                                                           
+ tendo               0.3.0     Python Software Foundation License                                                                                      

@@ -1,38 +1,61 @@
 import logging
 import tkinter as tk
-from tkinter import messagebox, ttk
+from typing import Any, Callable, Dict, Tuple
 
-from src.simple_to_pdf.app_gui.utils import (
+import customtkinter as ctk
+
+from simple_to_pdf.app_dialog import ConfirmDialog
+from simple_to_pdf.utils.file_tools import get_files
+from simple_to_pdf.utils.notification_manager import NotificationManager
+from simple_to_pdf.utils.ui_tools import (
     clear_text_widget,
-    get_files,
-    get_selected_values,
-    list_update,
-    listbox_clear,
-    reselect_items,
 )
-from src.simple_to_pdf.pdf.pdf_merger import PdfMerger
+from simple_to_pdf.widgets import (
+    BaseFrame,
+    BaseLabel,
+    BaseProgress,
+    BaseTextBox,
+    CTkListbox,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class MainFrame(tk.Frame):
-    def __init__(self, parent: tk.Tk, merger: PdfMerger):
-        super().__init__(parent)
-        self.ui: dict[str, tk.Widget] = {}
+class MainFrame(BaseFrame):
+    def __init__(
+        self,
+        *,
+        master: tk.Frame,
+        get_supported_formats_func: Callable[[], dict[str, str]],
+        notifier: NotificationManager,
+        handlers: Dict[str, Callable],
+    ):
+        super().__init__(master)
+        self.get_supported_formats = get_supported_formats_func
+        self.notifier = notifier
+        self.handlers = handlers
+        self.loc_section = "ui.main_panel"
 
-        # Set attributes and register in self.ui
+        self.status_text: BaseTextBox
+        self.filebox: CTkListbox
+        self.progress_bar: BaseProgress
+        self.progress_label: BaseLabel
+
+        self.ui: Dict[str, Any] = {}
+
         self._register_components(self._setup_layout())
-        self.merger = merger
 
-    def _setup_layout(self):
+        self.init_localization()
+
+    def _setup_layout(self) -> Dict[str, Any]:
+        """Sets up the visual frames and returns a dictionary of created widgets."""
         raw_components = {}
         LEFT_SIDE_PAD: int = 10
         RIGHT_SIDE_PAD: int = 10
         TOP_SIDE_PAD: int = 5
         BOTTOM_SIDE_PAD: int = 10
-        SB_CORRECTION: int = 14
 
-        status_area = tk.Frame(self)
+        status_area = BaseFrame(self)
         status_area.pack(
             side="bottom",
             fill="x",
@@ -40,7 +63,7 @@ class MainFrame(tk.Frame):
             pady=(TOP_SIDE_PAD, BOTTOM_SIDE_PAD),
         )
 
-        file_batch_area = tk.Frame(self)
+        file_batch_area = BaseFrame(self, frame_type="scr_frame_container")
         file_batch_area.pack(
             fill="both",
             expand=True,
@@ -48,110 +71,77 @@ class MainFrame(tk.Frame):
             pady=(TOP_SIDE_PAD, BOTTOM_SIDE_PAD),
         )
 
-        progress_area = tk.Frame(self)
+        progress_area = BaseFrame(self)
         progress_area.pack(
             side="top",
             fill="x",
-            padx=(LEFT_SIDE_PAD, RIGHT_SIDE_PAD + SB_CORRECTION),
+            padx=(LEFT_SIDE_PAD, RIGHT_SIDE_PAD),
             pady=(TOP_SIDE_PAD, BOTTOM_SIDE_PAD),
         )
 
-        # Create and register all components
-        raw_components = {
-            "filebox": self._setup_file_batch_area(mid=file_batch_area),
-            "status_text": self._setup_status_area(status_frame=status_area),
-        }
+        raw_components["filebox"] = self._setup_file_batch_area(mid=file_batch_area)
+        raw_components["status_text"] = self._setup_status_area(
+            status_frame=status_area
+        )
 
-        # Then build progress bar and label because it returns two widgets
         p_bar, p_label = self._setup_progress_bar_area(progress_frame=progress_area)
         raw_components["progress_bar"] = p_bar
         raw_components["progress_label"] = p_label
+
         return raw_components
 
-    def _register_components(self, components: dict[str, tk.Widget]):
-        """Adds components to self and self.ui for easy access."""
-
+    def _register_components(self, components: Dict[str, Any]) -> None:
+        """Adds components to self as attributes and to self.ui for localization."""
         for key, widget in components.items():
             setattr(self, key, widget)
             self.ui[key] = widget
 
-    def _setup_file_batch_area(self, mid: tk.Frame) -> tk.Listbox:
-        """Builds the central Listbox area for displaying files."""
+    def _setup_file_batch_area(self, mid: BaseFrame) -> CTkListbox:
+        """Builds the central scrollable area for displaying files."""
+        filebox = CTkListbox(mid, label_text="Selected Files")
+        filebox.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+        return filebox
 
-        scrollbar = tk.Scrollbar(mid)
-        scrollbar.pack(side="right", fill="y")
-
-        listbox = tk.Listbox(
-            mid,
-            selectmode="multiple",
-            yscrollcommand=scrollbar.set,
-            borderwidth=1,
-            relief="solid",
-        )
-        listbox.pack(side="left", fill="both", expand=True)
-        scrollbar.config(command=listbox.yview)
-        return listbox
-
-    def _setup_status_area(self, status_frame: tk.Frame) -> tk.Text:
-        scrollbar = tk.Scrollbar(status_frame)
-        scrollbar.pack(side="right", fill="y")
-
-        text = tk.Text(
-            status_frame,
-            height=5,
-            state="disabled",
-            font=("Consolas", 9),
-            yscrollcommand=scrollbar.set,
-            borderwidth=1,
-            relief="solid",
-        )
+    def _setup_status_area(self, status_frame: ctk.CTkFrame) -> BaseTextBox:
+        """Builds the bottom status console."""
+        text = BaseTextBox(status_frame, textbox_type="status_text")
         text.pack(side="bottom", fill="x", expand=True)
-        scrollbar.config(command=text.yview)
         return text
 
     def _setup_progress_bar_area(
-        self, progress_frame: tk.Frame
-    ) -> tuple[ttk.Progressbar, tk.Label]:
-        label = tk.Label(progress_frame, text="Progress:")
+        self, progress_frame: ctk.CTkFrame
+    ) -> Tuple[BaseProgress, BaseLabel]:
+        """Builds the top progress tracking section."""
+        label = BaseLabel(progress_frame, text="Progress:", label_type="badge")
         label.pack(pady=4)
 
-        bar = ttk.Progressbar(progress_frame, orient="horizontal", mode="determinate")
+        bar = BaseProgress(
+            progress_frame, progress_type="merge_progress", mode="determinate"
+        )
+        empty_track_color = bar.cget("fg_color")
+        bar.configure(progress_color=empty_track_color)
+        bar.set(0)
         bar.pack(pady=8, fill="x")
         return bar, label
 
     def clear_status_text(self) -> None:
+        """Clears the status textbox content."""
         content = self.status_text.get("1.0", "end-1c")
         if content.strip():
             clear_text_widget(self.status_text)
-        else:
-            messagebox.showinfo("Clear status","Status is already empty!")
-
-    def load_from_listbox(self) -> list[tuple[int, str]]:
-        result: list[tuple[int, str]] = []
-        if self.filebox.size() == 0:
-            return result
-        for i in range(self.filebox.size()):
-            text = self.filebox.get(i)
-            result.append((i, text))
-        return result
 
     def _get_formatted_filetypes(self) -> list[tuple[str, str]]:
-        """Converts a dictionary of formats into a list of tuples for the dialog window."""
-
-        supported_dict = self.merger.converter.get_supported_formats()
+        """Prepares file extension filters for the dialog window."""
+        supported_dict = self.get_supported_formats()
         formatted_types = []
 
-        # 1.Get all extensions for the general filter
         all_exts = []
         for exts in supported_dict.values():
             all_exts.extend(exts)
 
-        # Create a string like "*.pdf *.docx *.png"
         all_pattern = " ".join([f"*{e}" for e in all_exts])
         formatted_types.append(("All supported files", all_pattern))
 
-        # 2. Add each category separately
-        # Sort keys so PDF is always at the top or logically first
         for category in sorted(supported_dict.keys()):
             exts = supported_dict[category]
             label = f"{category.capitalize()} files"
@@ -159,94 +149,58 @@ class MainFrame(tk.Frame):
             formatted_types.append((label, pattern))
         return formatted_types
 
-    # Add files to the listbox
-    def add_files(self):
-        """Add files of selected types."""
-
-        # Supported list the extensions
+    def add_files(self) -> None:
+        """Opens file dialog and adds files to the listbox."""
         types = self._get_formatted_filetypes()
         new_files_paths: list[str] = list(get_files(filetypes=types, multiple=True))
 
         if not new_files_paths:
             return
 
-        # Call the method. It will create "All supported" files
-        saved_files_paths: list[str] = list(self.filebox.get(0, tk.END))
-
-        files_paths: list[str] = saved_files_paths + new_files_paths
-
-        if files_paths:
-            self.progress_bar_reset()
-            list_update(files=files_paths, listbox=self.filebox)
+        self.progress_bar_reset()
+        self.filebox.add_new_files(file_list=new_files_paths)
 
     def remove_files(self) -> None:
-        all_files = list(self.filebox.get(0, tk.END))
-        sel_files = get_selected_values(listbox=self.filebox)
+        """Handles removal of selected files with confirmation dialogs."""
+        all_files = self.filebox.all_rows
+        sel_files = self.filebox.get_selected_paths()
+
         if not all_files:
-            messagebox.showinfo("No files", "The file list is already empty.")
+            self.notifier.info(scenario_key="empty_file_list")
             return
         elif not sel_files:
-            answer = messagebox.askyesno(
-                "No files.", "No files selected. Do you want to remove all files?"
+            confirmed = ConfirmDialog.ask(
+                parent=self.master, scenario_key="confirmation.confirm_delete"
             )
-            if answer:
-                listbox_clear(listbox=self.filebox)
-                self.reset_progress_widgets()
+
+            if confirmed:
+                self.filebox.clear(callback=self.reset_progress_widgets)
                 return
 
-        remaining_files = [f for f in all_files if f not in set(sel_files)]
-        list_update(files=remaining_files, listbox=self.filebox)
-        self.progress_bar_reset()
+        self.filebox.remove_selected(callback=self.progress_bar_reset)
 
-    def reset_progress_widgets(self):
+    def reset_progress_widgets(self) -> None:
+        """Full reset of progress and status UI."""
         self.progress_bar_reset()
         self.clear_status_text()
 
-    # Move selected items in the listbox
-    def move_on_listbox(self, *, direction: str):
-        """Move selected items up or down in the listbox."""
+    def move_on_listbox(self, *, direction: str) -> None:
+        """Shifts items in listbox and resets progress bar state."""
+        self.filebox.move(direction=direction, callback=self.progress_bar_reset)
 
-        sel_idxs = sorted(self.filebox.curselection())
-        if not sel_idxs:
-            return
-
-        items = list(self.filebox.get(0, tk.END))
-        selected_values = [items[i] for i in sel_idxs]
-
-        max_idx = len(items) - 1
-
-        if direction == "down":
-            for i in reversed(sel_idxs):
-                if i < max_idx and i + 1 not in sel_idxs:
-                    items[i], items[i + 1] = items[i + 1], items[i]
-                    sel_idxs[sel_idxs.index(i)] += 1
-
-        elif direction == "up":
-            for i in sel_idxs:
-                if i > 0 and i - 1 not in sel_idxs:
-                    items[i], items[i - 1] = items[i - 1], items[i]
-                    sel_idxs[sel_idxs.index(i)] -= 1
-
-        self.progress_bar_reset()
-        list_update(files=items, listbox=self.filebox)
-        reselect_items(
-            all_items=items, selected_values=selected_values, listbox=self.filebox
+    def progress_bar_reset(self) -> None:
+        """Resets the progress bar and label to 'Ready' state."""
+        self.set_progress_determinate()
+        self.progress_bar.set(0)
+        self.progress_bar.configure(progress_color=self.progress_bar.cget("fg_color"))
+        self.progress_label.configure(
+            text=self.get_text(key="main_panel.progress_label", section="ui")
         )
-
-    def progress_bar_reset(self):
-        pb: ttk.Progressbar = self.progress_bar
-        pl: tk.Label = self.progress_label
-        pb.stop()
-        pb.config(mode="determinate", value=0, maximum=100)
-        pl.config(text="Progress: Ready")
         self.update_idletasks()
 
-    def set_progress_determinate(self, max_value=100):
-        """
-        Safely switches the progress bar to determinate mode.
-        This method should be called via .after() if triggered from a worker thread.
-        """
+    def set_progress_determinate(self) -> None:
+        """Stops progress animations and sets to determinate mode."""
         if self.progress_bar.winfo_exists():
-            self.progress_bar.stop()  # Stop indeterminate animation
-            self.progress_bar.config(mode="determinate", value=0, maximum=max_value)
-            self.update_idletasks()  # Refresh the UI immediately
+            self.progress_bar.stop()
+            self.progress_bar.configure(mode="determinate")
+            self.update_idletasks()
