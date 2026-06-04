@@ -173,7 +173,6 @@ class BaseLabel(ctk.CTkLabel, LabelThemeMixin):
         parent,
         *,
         padding=40,
-        max_width=300,
         label_type: Literal["badge", "title", "content", "subtitle"] = "badge",
         **kwargs,
     ):
@@ -181,15 +180,14 @@ class BaseLabel(ctk.CTkLabel, LabelThemeMixin):
         params.update(kwargs)
         super().__init__(parent, **params)
         self.padding = padding
-        self.max_width = max_width
-        self.bind("<Configure>", self._adjust_wraplength)
+        parent.bind("<Configure>", self._adjust_wraplength)
 
     def _adjust_wraplength(self, event):
+        available_width = event.width - self.padding
 
-        if event.width > self.max_width:
-            new_width = event.width - self.padding
-            if new_width > 0:
-                self.configure(wraplength=new_width)
+        if available_width > 0:
+            if self.cget("wraplength") != available_width:
+                self.configure(wraplength=available_width)
 
 
 class BaseProgress(ctk.CTkProgressBar, ProgressThemeMixin):

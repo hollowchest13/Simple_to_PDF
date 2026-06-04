@@ -1,10 +1,10 @@
 # Simple_to_PDF 📄🚀
 
-[MIT License](https://github.com/hollowchest13/Simple_to_PDF?tab=MIT-1-ov-file)
+[AGPL License](https://github.com/hollowchest13/Simple_to_PDF/tree/Readme?tab=License-1-ov-file#)
 
-**Simple_to_PDF** is a lightweight, local multi-format converter that allows you to merge various file types into a single PDF or extract pages with just one click.
+**Simple_to_PDF** is a local multi-format converter that allows you to merge various file types into a single PDF or extract pages and compress with just one click.
 
-The project is built for **Linux (Mint, Ubuntu)** and **Windows** users, providing an intuitive Graphical User Interface (GUI) for complex file processing.
+The project is built for **Linux (Mint, Ubuntu)** and **Windows** users.
 
 ## Screenshots
 
