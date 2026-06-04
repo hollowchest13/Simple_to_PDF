@@ -1,10 +1,12 @@
-# Simple_to_PDF 📄🚀
+# Simple_to_PDF
 
 [AGPL License](https://github.com/hollowchest13/Simple_to_PDF/tree/Readme?tab=License-1-ov-file#)
 
 **Simple_to_PDF** is a local multi-format converter that allows you to merge various file types into a single PDF or extract pages and compress with just one click.
 
 The project is built for **Linux (Mint, Ubuntu)** and **Windows** users.
+
+**Like this project?** If you find this tool useful, please consider giving it a star on GitHub! It helps the project grow and motivates further development.
 
 ## Screenshots
 
@@ -21,7 +23,6 @@ The project is built for **Linux (Mint, Ubuntu)** and **Windows** users.
 </p>
 
 ## Known Limitations
-- Does not support spreadsheet files with chart sheets.
 - Password-protected PDFs are not supported
 - Very large files (>500MB) may require additional memory
 - MS Office automation works only on Windows
@@ -57,9 +58,9 @@ If no office suite is detected, the app functions as a robust image-to-PDF conve
 
 Download the version compatible with your operating system using the link provided.
 
-**Windows**: [Download Simple_to_PDF.exe](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.1/SimpleToPDF.exe)
+**Windows**: [Download Simple_to_PDF.exe](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.2/SimpleToPDF.exe)
 
- **Linux**: [Download Simple_to_PDF](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.1/SimpleToPDF)
+ **Linux**: [Download Simple_to_PDF](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.2/SimpleToPDF)
 
 Once downloaded, run the program.
 
@@ -107,12 +108,12 @@ pip install --upgrade pip
 If you just want use app:
 
 ```bash
-pip insrall .
+pip install .
 ```
 Or if you want edit code:
 
 ```bash
-pip insrall -e .
+pip install -e .
 ```
 Getting Started:
 
@@ -130,3 +131,4 @@ If you encounter any issues or the program behaves unexpectedly:
 Send the logs along with a short description of what happened to:
 
 📧 **hollowchest13@gmail.com**
+

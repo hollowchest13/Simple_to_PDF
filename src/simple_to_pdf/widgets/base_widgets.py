@@ -185,9 +185,8 @@ class BaseLabel(ctk.CTkLabel, LabelThemeMixin):
     def _adjust_wraplength(self, event):
         available_width = event.width - self.padding
 
-        if available_width > 0:
-            if self.cget("wraplength") != available_width:
-                self.configure(wraplength=available_width)
+        if available_width > 0 and self.cget("wraplength") != available_width:
+            self.configure(wraplength=available_width)
 
 
 class BaseProgress(ctk.CTkProgressBar, ProgressThemeMixin):
