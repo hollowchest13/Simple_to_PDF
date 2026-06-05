@@ -52,7 +52,7 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         self.header.pack(fill="x", side="top")
 
         self.content = BaseFrame(self, frame_type="content")
-        self.content.pack(fill="both", expand=True, padx=35, pady=20)
+        self.content.pack(fill="both", expand=True, padx=25, pady=20)
 
         self.footer = BaseFrame(self, frame_type="footer")
         self.footer.pack(side="bottom", fill="x", pady=15)

@@ -13,8 +13,8 @@
       "btn_down": "Перемістити вниз",
       "btn_remove": "Видалити файл",
       "btn_merge": "Об'єднати в PDF",
-      "btn_convert":"Конвертувати в PDF",
-      "btn_compress":"Стиснути PDF",
+      "btn_convert": "Конвертувати в PDF",
+      "btn_compress": "Стиснути PDF",
       "btn_extract": "Витягти сторінки",
       "btn_status_clear": "Очистити консоль",
       "btn_help": "Довідка",
@@ -27,13 +27,13 @@
       "about_btn": "Про програму",
       "check_updates_btn": "Перевірити оновлення",
       "logs_btn": "Показати логи",
-      "dep_btn":"Залежності"
+      "dep_btn": "Залежності"
     },
     "settings_panel": {
       "language_label": "Мова",
       "title_label": "Налаштування",
       "compress_label": "Стиснути PDF",
-      "format_label":"Формат"
+      "format_label": "Формат"
     }
   },
   "dialogs": {
@@ -64,12 +64,12 @@
         "btn_yes": "Так",
         "btn_no": "Ні"
       },
-      "confirm_update":{
-      "header": "Доступне оновлення: {version}!",
-      "message": "Що нового: {changelog_text}",
-      "btn_yes": "Завантажити",
-      "btn_no": "Пізніше"
-    }
+      "confirm_update": {
+        "header": "Доступне оновлення: {version}!",
+        "message": "Що нового: {changelog_text}",
+        "btn_yes": "Завантажити",
+        "btn_no": "Пізніше"
+      }
     },
     "info": {
       "__title__": "Інформація",
@@ -79,7 +79,7 @@
         "footer_text": "Copyright © {year} {app_name}. Усі права захищено...",
         "btn": "Я згоден(на)"
       },
-        "dependencies_info": {
+      "dependencies_info": {
         "header": "Список залежностей",
         "message": "Список залежностей",
         "btn": "ОК"
@@ -159,39 +159,39 @@
     "merging": {
       "done": "Об'єднано: {success}; Помилок: {failed}",
       "error": {
-        "unknown":"Помилка: Не вдалося об'єднати файл {path}.\nПричина: {error}",
-        "critical" : "Помилка процесу об'єднання.\nПричина: {error}"
+        "unknown": "Помилка: Не вдалося об'єднати файл {path}.\nПричина: {error}",
+        "critical": "Помилка процесу об'єднання.\nПричина: {error}"
       }
     },
     "processing": {
       "done": "Опрацьовано: {success}; Помилок: {failed}",
       "error": {
-        "unknown":"Помилка: Не вдалося опрацювати файл.\nПричина: {error}"
+        "unknown": "Помилка: Не вдалося опрацювати файл.\nПричина: {error}"
       }
     },
     "extracting": {
       "done": "Витягування завершено",
       "error": {
-        "unknown":"Помилка: Не вдалося витягти сторінку {page_number}.\nПричина: {error}"
+        "unknown": "Помилка: Не вдалося витягти сторінку {page_number}.\nПричина: {error}"
       }
     },
     "converting": {
       "done": "Конвертовано: {success}; Помилок: {failed}",
       "error": {
-        "unknown":"Помилка конвертації файлу: {path}\nПричина: {error}"
+        "unknown": "Помилка конвертації файлу: {path}\nПричина: {error}"
       }
     },
     "compressing": {
       "done": "Cтиснення завершено успішно",
-      "error":{
+      "error": {
         "critical": "Не вдалося стиснути файл"
       }
     },
     "saving": {
       "done": "Файл збережено із шляхом : {path}",
       "error": {
-        "unknown":"Помилка: Не вдалося зберегти файл за шляхом:\n{path}\nПричина: {error}",
-        "permission":"Помилка доступу до папки"
+        "unknown": "Помилка: Не вдалося зберегти файл за шляхом:\n{path}\nПричина: {error}",
+        "permission": "Помилка доступу до папки"
       }
     }
   },
@@ -202,9 +202,9 @@
       "converting": "Конвертування",
       "merging": "Об'єднання",
       "saving": "Збереження",
-      "processing":"Опрацювання",
-      "analyzing":"Аналіз",
-      "common":"Готово"
+      "processing": "Опрацювання",
+      "analyzing": "Аналіз",
+      "common": "Готово"
     },
     "indeterminate": "{stage}...",
     "detailed": "{stage}: {filename} ({current}/{total}) — {percent:.1f}%"

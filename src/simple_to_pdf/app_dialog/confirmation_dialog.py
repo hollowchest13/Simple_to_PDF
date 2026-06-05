@@ -58,8 +58,9 @@ class ConfirmDialog(BaseDialog):
         self.ui["header_title"].grid(
             row=0, column=1, sticky="ew", padx=(0, 50), pady=(20, 10)
         )
-
-        self.ui["message"] = BaseLabel(self.content, text="", label_type="content")
+        self.ui["message"] = BaseLabel(
+            self.content, text="", label_type="content", wraplength=300
+        )
         self.ui["message"].pack(expand=True, fill="both", padx=20, pady=10)
 
         btns_height = 50
