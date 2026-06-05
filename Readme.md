@@ -124,9 +124,9 @@ python -m simple_to_pdf.cli
 ## Support
 If you encounter any issues or the program behaves unexpectedly:
 
-1. Go to the **Help** menu in the top bar.
-2. Choose **Show Logs**.
-3. A window will open showing the real-time application history. 
+1. Click the **Help** button in the left sidebar.
+2. Select **Show Logs** from the menu.
+3. A window will open, displaying the application's real-time history.
 
 Send the logs along with a short description of what happened to:
 
