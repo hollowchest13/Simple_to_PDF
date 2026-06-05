@@ -1,6 +1,4 @@
-import ctypes
 import logging
-import platform
 import sys
 
 import customtkinter as ctk
@@ -17,18 +15,8 @@ from simple_to_pdf.settings.settings_manager import SettingsManager
 logger = logging.getLogger(__name__)
 
 
-def enable_dpi_awareness():
-    """Налаштування коректного масштабування для Windows."""
-    if platform.system() == "Windows":
-        try:
-            ctypes.windll.shcore.SetProcessDpiAwareness(2)
-        except Exception:
-            ctypes.windll.user32.SetProcessDPIAware()
-
-
 def main():
     """Initialize application components and launch the graphical user interface."""
-    enable_dpi_awareness()
     try:
         me = singleton.SingleInstance(flavor_id="simple_to_pdf_unique_lock")  # noqa: F841
     except singleton.SingleInstanceException:
