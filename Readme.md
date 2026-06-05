@@ -58,11 +58,11 @@ If no office suite is detected, the app functions as a robust image-to-PDF conve
 
 Download the version compatible with your operating system using the link provided.
 
-**Windows**: [Download Simple_to_PDF.exe](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.2/SimpleToPDF.exe)
+**Windows**: [Download Simple_to_PDF.exe](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.2/Simple_to_PDF_beta.zip)
 
- **Linux**: [Download Simple_to_PDF](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.2/SimpleToPDF)
+**Linux**: [Download Simple_to_PDF](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.2/Simple_to_PDF_beta.tar.gz)
 
-Once downloaded, run the program.
+Once downloaded, extract the archive, open the folder, and run 'Simple_to_PDF.exe' on Windows or 'Simple_to_PDF' on Linux.
 
 **To merge files**: First, click the plus (+) button on the right side of the window, select the files you need, and press "Open." Then, go to the File menu and click "Merge to PDF."
 

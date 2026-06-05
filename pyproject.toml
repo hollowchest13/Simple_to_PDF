@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 [project]
 # Core project metadata (PEP 621)
 name = "simple-to-pdf"
-version = "1.0.0"
+version = "1.0.2"
 description = "Simple_to_PDF is a lightweight, local multi-format converter"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -43,9 +43,12 @@ simple-pdf = "simple_to_pdf.main:main"
 
 [tool.app_metadata]
 # Custom section for application UI (About dialog, versioning, etc.)
-release_date = "2024-05-22"
+release_date = "2026-06-05"
 release_notes = """
-- Added Excel (.xlsx) to PDF conversion support.
-- Fixed an issue with processing large files.
-- Improved image handling using Pillow library.
+   - Added: PDF compression functionality.
+   - Added: Selection of output sheet format.
+   - Added: Support for 4 new languages.
+   - Improved: Image handling using the Pillow library.
+   - Improved: Overall user interface.
+   - Fixed: An issue with processing large files.
 """
