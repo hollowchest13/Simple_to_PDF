@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+
 from simple_to_pdf.converters import ConverterFactory
 from simple_to_pdf.converters.models import ConversionResult
 from simple_to_pdf.pdf.models import BytePdfDocument, ProcessingReport
@@ -40,6 +41,13 @@ class ConversionService:
 
         if to_conversion:
             stage_name = "converting"
+            self.callback(
+                "progress",
+                **{
+                    "stage": stage_name,
+                    "mode": "indeterminate",
+                },
+            )
             paths_by_idx = {file_idx: path for file_idx, path in files}
 
             conversion_res: ConversionResult = self.converter.convert_to_pdf(
@@ -56,7 +64,15 @@ class ConversionService:
                 for idx, pdf_data in conversion_res.success
             ]
             pdf_data_list.extend(converted_docs)
-
+            self.callback(
+                "progress",
+                **{
+                    "stage": stage_name,
+                    "mode": "determinate",
+                    "current": 1,
+                    "total": 1,
+                },
+            )
             self.callback(
                 "status",
                 **{

@@ -7,14 +7,14 @@ import webbrowser
 from datetime import datetime
 from pathlib import Path
 from tkinter import filedialog
-from typing import Callable, Dict, List, Any
+from typing import Any, Callable, Dict, List
 
 import customtkinter as ctk
 
 from simple_to_pdf.app_dialog import (
     AboutDialog,
-    PageSelectionDialog,
     ConfirmDialog,
+    PageSelectionDialog,
 )
 from simple_to_pdf.app_gui.base_window import BaseWindow
 from simple_to_pdf.app_gui.gui_callback import GUICallback
