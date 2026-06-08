@@ -1,6 +1,6 @@
 # Simple_to_PDF
 
-[AGPL License](https://github.com/hollowchest13/Simple_to_PDF/tree/Readme?tab=License-1-ov-file#)
+[AGPL License](https://github.com/hollowchest13/Simple_to_PDF?tab=AGPL-3.0-1-ov-file#)
 
 **Simple_to_PDF** is a local multi-format converter that allows you to merge various file types into a single PDF or extract pages and compress with just one click.
 
