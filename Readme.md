@@ -58,7 +58,7 @@ If no office suite is detected, the app functions as a robust image-to-PDF conve
 
 Download the version compatible with your operating system using the link provided.
 
-**Windows**: [Download Simple_to_PDF.exe](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.3/Simple_to_PDF_beta.zip)
+**Windows**: [Download Simple_to_PDF](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.3/Simple_to_PDF_beta.zip)
 
 **Linux**: [Download Simple_to_PDF](https://github.com/hollowchest13/Simple_to_PDF/releases/download/v1.0.3/Simple_to_PDF_beta.tar.gz)
 
