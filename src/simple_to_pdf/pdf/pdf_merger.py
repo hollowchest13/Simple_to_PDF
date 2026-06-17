@@ -1,15 +1,18 @@
 import io
 import logging
+import threading
 from typing import List
 
 from pypdf import PageObject, PdfReader, PdfWriter, Transformation
+
+from simple_to_pdf.base_services.base import BaseService
 
 from .models import BytePdfDocument, PageFormat, ProcessingReport
 
 logger = logging.getLogger(__name__)
 
 
-class PdfMerger:
+class PdfMerger(BaseService):
     def __init__(self):
         self._callback = lambda *args, **kwargs: None
 
@@ -26,7 +29,7 @@ class PdfMerger:
         *,
         reader: PdfReader,
         writer: PdfWriter,
-        target_page_format: PageFormat|None=None,
+        target_page_format: PageFormat | None = None,
     ):
         """
         Scales all pages from reader and adds them to writer.
@@ -73,7 +76,8 @@ class PdfMerger:
         self,
         *,
         conversion_rep: ProcessingReport,
-        target_page_format: PageFormat|None=None,
+        target_page_format: PageFormat | None = None,
+        stop_event: threading.Event | None = None,
     ) -> bytes:
         """Merges multiple files into a single PDF and returns original bytes if it is single PDF."""
 
@@ -102,6 +106,7 @@ class PdfMerger:
         total_to_merge = len(pdf_data_list)
         try:
             for i, pdf_data in enumerate(pdf_data_list, start=1):
+                self.check_stop()
                 file_path = pdf_data.original_path
                 filename = file_path.name
 
@@ -117,6 +122,16 @@ class PdfMerger:
                             writer=writer,
                             target_page_format=target_page_format,
                         )
+                except InterruptedError:
+                    logger.info("Operation successfully cancelled by the user.")
+                    self._show_callback(
+                        "status",
+                        {
+                            "key": "merged.cancelled",
+                            "status": "info",
+                            "message": "Operation cancelled",
+                        },
+                    )
                 except Exception as e:
                     logger.error(f"Failed to process {filename}: {e}", exc_info=True)
                     failed += 1

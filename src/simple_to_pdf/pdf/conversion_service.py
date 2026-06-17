@@ -51,7 +51,7 @@ class ConversionService:
             paths_by_idx = {file_idx: path for file_idx, path in files}
 
             conversion_res: ConversionResult = self.converter.convert_to_pdf(
-                files=to_conversion
+                files=to_conversion,
             )
 
             success = len(conversion_res.success)

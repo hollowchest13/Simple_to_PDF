@@ -48,6 +48,9 @@ def ui_locker(func):
     def wrapper(self, *args, **kwargs):
         if getattr(self, "thread_running", False):
             return
+        if hasattr(self, "stop_event"):
+            self.stop_event.clear()
+
         self.toggle_ui(active=False)  # lock in main thread
         self.thread_running = True
 

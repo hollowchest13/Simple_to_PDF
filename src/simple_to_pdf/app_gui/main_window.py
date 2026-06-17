@@ -570,8 +570,15 @@ class PDFMergerGUI(BaseWindow):
                 with_icon=True,
             )
             self._wait_for_thread_finish()
+            self._stop_services()
+
         else:
             self._save_and_destroy()
+
+    def _stop_services(self):
+        self.merger.stop_event.set()
+        self.page_extractor.stop_event.set()
+        self.conversion_service.converter.stop_event.set()
 
     def _wait_for_thread_finish(self) -> None:
         """Poll until any background work finishes before closing the window."""

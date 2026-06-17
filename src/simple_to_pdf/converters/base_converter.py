@@ -1,12 +1,13 @@
 import logging
 from pathlib import Path
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+from simple_to_pdf.base_services.base import BaseService
 from simple_to_pdf.converters.models import ConversionResult
 
 logger = logging.getLogger(__name__)
 
 
-class BaseConverter(ABC):
+class BaseConverter(BaseService):
     SUPPORTED_FORMATS = {"pdf": {".pdf"}}
 
     def __init__(self, *, chunk_size: int = 30):

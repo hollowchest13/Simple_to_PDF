@@ -4,12 +4,14 @@ import logging
 import pymupdf
 from PIL import Image
 
+from simple_to_pdf.base_services.base import BaseService
+
 from .models import PixInfo
 
 logger = logging.getLogger(__name__)
 
 
-class PDFCompressor:
+class PDFCompressor(BaseService):
     """A class to compress PDF files by optimizing embedded images.
 
     This class utilizes the PyMuPDF library to parse the PDF structure
