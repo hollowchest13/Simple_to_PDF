@@ -29,6 +29,19 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
         "document": {".doc", ".docx", ".docm", ".rtf", ".txt"},
         "presentation": {".ppt", ".pptx", ".pptm", ".pps", ".ppsx"},
     }
+    OFFICE_CONFIG = {
+        OfficeApp.EXCEL: {
+            "visible": False,
+            "display_alerts": False,
+        },
+        OfficeApp.WORD: {
+            "visible": False,
+            "display_alerts": 0,  # 0 = wdAlertsNone
+        },
+        OfficeApp.POWERPOINT: {
+            "display_alerts": False,
+        },
+    }
 
     def __init__(self, chunk_size: int = 30):
         super().__init__(chunk_size=chunk_size)
@@ -80,7 +93,7 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
         return final_results
 
     def _convert_files_to_pdf(
-        self, *, files: list[tuple[int, Path]], app_type: str
+        self, *, files: list[tuple[int, Path]], app_type: OfficeApp
     ) -> ConversionResult:
         """Convert a list of files to PDF by routing to the appropriate processor based on the application type."""
         all_results: ConversionResult = ConversionResult()
@@ -89,22 +102,9 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
             return all_results
 
         for chunk in self.make_chunks(files, n=self.chunk_size):
-            match app_type:
-                case OfficeApp.POWERPOINT:
-                    chunk_results: ConversionResult = self._process_presentation_chunk(
-                        chunk=chunk
-                    )
-                case OfficeApp.EXCEL:
-                    chunk_results: ConversionResult = self._process_table_chunk(
-                        chunk=chunk
-                    )
-                case OfficeApp.WORD:
-                    chunk_results: ConversionResult = self._process_documents_chunk(
-                        chunk=chunk
-                    )
-                case _:
-                    logger.error(f"Unknown app_type: {app_type}")
-                    continue
+            chunk_results: ConversionResult = self._process_chunk(
+                chunk=chunk, app_type=app_type
+            )
             all_results.success.extend(chunk_results.success)
             all_results.failed.extend(chunk_results.failed)
 
@@ -138,7 +138,6 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                     f"for {app_type}: {e_crit}",
                     exc_info=True,
                 )
-
                 return None
 
     def _clear_cache(self) -> None:
@@ -166,27 +165,56 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                 exc_info=True,
             )
 
-    def _process_presentation_chunk(
-        self, *, chunk: list[tuple[int, Path]]
+    def _get_processor(self, *, app_type: OfficeApp):
+        processors = {
+            OfficeApp.WORD: self._convert_doc_to_pdf,
+            OfficeApp.EXCEL: self._convert_table_to_pdf,
+            OfficeApp.POWERPOINT: self._convert_pres_to_pdf,
+        }
+        return processors[app_type]
+
+    def _disable_visibility(self, *, app, app_type: OfficeApp) -> None:
+        config = self.OFFICE_CONFIG.get(app_type)
+        if not config:
+            logger.warning(f"No configuration found for {app_type}.")
+            return
+
+        if "visible" in config and hasattr(app, "Visible"):
+            try:
+                app.Visible = config["visible"]
+            except Exception as e:
+                logger.warning(f"Could not set Visible for {app_type}: {e}")
+
+        if "display_alerts" in config and hasattr(app, "DisplayAlerts"):
+            try:
+                app.DisplayAlerts = config["display_alerts"]
+            except Exception as e:
+                logger.warning(f"Could not set DisplayAlerts for {app_type}: {e}")
+
+        logger.debug(
+            f"Application {app_type.value} configured for background execution."
+        )
+
+    def _process_chunk(
+        self, *, chunk: list[tuple[int, Path]], app_type: OfficeApp
     ) -> ConversionResult:
         chunk_res: ConversionResult = ConversionResult()
 
         pythoncom.CoInitialize()
-        powerpoint = None
-        app_type: str = OfficeApp.POWERPOINT
+        app = None
         try:
-            powerpoint = self._get_app_instance(app_type=app_type)
+            app = self._get_app_instance(app_type=app_type)
 
-            if powerpoint is None:
+            if app is None:
                 raise RuntimeError(f"Could not initialize {app_type}.")
+            self._disable_visibility(app=app, app_type=app_type)
 
             for idx, pf in chunk:
                 pdf_data = None
                 self.check_stop()
                 try:
-                    pdf_data = self._convert_single_presentation(
-                        ppt_app=powerpoint, file_path=pf
-                    )
+                    processor = self._get_processor(app_type=app_type)
+                    pdf_data = processor(app=app, file_path=pf)
                     chunk_res.success.append((idx, pdf_data))
                 except Exception:
                     chunk_res.failed.append((idx, pf))
@@ -194,7 +222,7 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
         except InterruptedError:
             raise
         except Exception as e:
-            logger.error(f"Presentations chunk error: {e}", exc_info=True)
+            logger.error(f"{app_type} chunk error: {e}", exc_info=True)
             already_done = {item[0] for item in chunk_res.success} | {
                 item[0] for item in chunk_res.failed
             }
@@ -202,183 +230,62 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                 if idx not in already_done:
                     chunk_res.failed.append((idx, pf))
         finally:
-            self._safe_release_com_object(obj=powerpoint, app_type=app_type)
-            powerpoint = None
+            self._safe_release_com_object(obj=app, app_type=app_type)
+            app = None
             gc.collect()
             pythoncom.CoUninitialize()
 
         return chunk_res
 
-    def _process_table_chunk(self, chunk: list[tuple[int, Path]]) -> ConversionResult:
-        chunk_res: ConversionResult = ConversionResult()
-
-        pythoncom.CoInitialize()
-        excel = None
-        app_type: str = OfficeApp.EXCEL
-
-        try:
-            excel = self._get_app_instance(app_type=app_type)
-            if excel is None:
-                raise RuntimeError(f"Could not initialize {app_type}.")
-
-            excel.Visible = False
-            excel.DisplayAlerts = False
-            for idx, f in chunk:
-                pdf_data = None
-                self.check_stop()
-                try:
-                    pdf_data = self._convert_single_table(excel, f)
-                    chunk_res.success.append((idx, pdf_data))
-                except Exception:
-                    chunk_res.failed.append((idx, f))
-                    continue
-        except InterruptedError:
-            raise
-        except Exception as e:
-            logger.error(f"Tables chunk error: {e}", exc_info=True)
-            already_done = {item[0] for item in chunk_res.success} | {
-                item[0] for item in chunk_res.failed
-            }
-            for idx, f in chunk:
-                if idx not in already_done:
-                    chunk_res.failed.append((idx, f))
-        finally:
-            self._safe_release_com_object(obj=excel, app_type=app_type)
-            excel = None
-            gc.collect()
-            pythoncom.CoUninitialize()
-        return chunk_res
-
-    def _process_documents_chunk(
-        self, chunk: list[tuple[int, Path]]
-    ) -> ConversionResult:
-        chunk_res: ConversionResult = ConversionResult()
-        pythoncom.CoInitialize()
-        word = None
-        app_type: str = OfficeApp.WORD
-        try:
-            word = self._get_app_instance(app_type=app_type)
-            if word is None:
-                raise RuntimeError(f"Could not initialize {app_type}.")
-            word.Visible = False
-            word.DisplayAlerts = 0  # 0 = wdAlertsNone (disable all pop-up windows)
-            for idx, wf in chunk:
-                pdf_data = None
-                self.check_stop()
-                try:
-                    pdf_data = self._convert_single_document(word, wf)
-                    chunk_res.success.append((idx, pdf_data))
-                except Exception:
-                    chunk_res.failed.append((idx, wf))
-                    continue
-        except InterruptedError:
-            raise
-        except Exception as e:
-            logger.error(f"Documents chunk error: {e}", exc_info=True)
-            already_done = {item[0] for item in chunk_res.success} | {
-                item[0] for item in chunk_res.failed
-            }
-            for idx, wf in chunk:
-                if idx not in already_done:
-                    chunk_res.failed.append((idx, wf))
-        finally:
-            self._safe_release_com_object(obj=word, app_type=app_type)
-            word = None
-            gc.collect()
-            pythoncom.CoUninitialize()
-        return chunk_res
-
-    def _convert_single_presentation(self, *, ppt_app, file_path: Path) -> bytes:
-        """Conversion of a single PowerPoint presentation."""
-
-        input_file = file_path.resolve()
-        pres = None
-        pdf_bytes = None
-
+    def _run_conversion(self, *, file_path: Path, conversion_func) -> bytes:
+        """
+        Universal wrapper for file conversion.
+        Handles temporary file lifecycle and resource cleanup.
+        """
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
             temp_pdf_path = Path(tmp.name)
-
         try:
-            # WithWindow=0 — critical! Opens PPT without showing a window on the screen.
-            pres = ppt_app.Presentations.Open(
-                str(input_file), ReadOnly=True, WithWindow=0
-            )
-            pres.SaveAs(str(temp_pdf_path), 32)
-            pdf_bytes = temp_pdf_path.read_bytes()
-
-        except Exception as e:
-            logger.error(
-                f"PowerPoint file error in {file_path.name}: {e}", exc_info=True
-            )
-            raise
+            conversion_func(file_path.resolve(), temp_pdf_path)
+            return temp_pdf_path.read_bytes()
         finally:
-            if pres:
-                try:
-                    pres.Close()
-                except:  # noqa: E722
-                    pass
             if temp_pdf_path.exists():
                 temp_pdf_path.unlink()
 
-        return pdf_bytes
+    def _convert_pres_to_pdf(self, *, app, file_path: Path) -> bytes:
+        def action(input_path, output_path):
+            pres = app.Presentations.Open(str(input_path), ReadOnly=True, WithWindow=0)
+            try:
+                pres.SaveAs(str(output_path), 32)
+            finally:
+                pres.Close()
+                del pres
 
-    def _convert_single_table(self, excel_app, file_path: Path) -> bytes:
-        """Converting a single file inside the opened application."""
+        return self._run_conversion(file_path=file_path, conversion_func=action)
 
-        input_file = file_path.resolve()
-        wb = None
-        pdf_bytes = None
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-            temp_pdf_path = Path(tmp.name)
-
-        try:
-            wb = excel_app.Workbooks.Open(str(input_file), ReadOnly=True)
-            self._prepare_table_for_export(wb=wb)
-            wb.ExportAsFixedFormat(0, str(temp_pdf_path))
-            pdf_bytes = temp_pdf_path.read_bytes()
-        except Exception as e:
-            logger.error(f"Table file error in {file_path.name}: {e}", exc_info=True)
-            raise
-        finally:
-            if wb:
+    def _convert_table_to_pdf(self, *, app, file_path: Path) -> bytes:
+        def action(input_path, output_path):
+            wb = app.Workbooks.Open(str(input_path), ReadOnly=True)
+            try:
+                self._prepare_table_for_export(wb=wb)
+                wb.ExportAsFixedFormat(0, str(output_path))
+            finally:
                 wb.Close(SaveChanges=False)
-            if temp_pdf_path.exists():
-                temp_pdf_path.unlink()
+                del wb
 
-        return pdf_bytes
+        return self._run_conversion(file_path=file_path, conversion_func=action)
 
-    def _convert_single_document(self, word_app, file_path: Path) -> bytes:
-        """Conversion of a single Word document within the open application."""
-
-        input_file = file_path.resolve()
-        doc = None
-        pdf_bytes = None
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-            temp_pdf_path = Path(tmp.name)
-
-        try:
-            # Open document (ReadOnly=True — it is important for stability)
-            doc = word_app.Documents.Open(
-                str(input_file), ReadOnly=True, ConfirmConversions=False
+    def _convert_doc_to_pdf(self, *, app, file_path: Path) -> bytes:
+        def action(input_path, output_path):
+            doc = app.Documents.Open(
+                str(input_path), ReadOnly=True, ConfirmConversions=False
             )
-            doc.ExportAsFixedFormat(str(temp_pdf_path), 17)
+            try:
+                doc.ExportAsFixedFormat(str(output_path), 17)
+            finally:
+                doc.Close(SaveChanges=0)
+                del doc
 
-            pdf_bytes = temp_pdf_path.read_bytes()
-
-        except Exception as e:
-            logger.error(
-                f"Document file error in {input_file.name}: {e}", exc_info=True
-            )
-            raise
-        finally:
-            if doc:
-                doc.Close(SaveChanges=0)  # 0 = wdDoNotSaveChanges
-            if temp_pdf_path.exists():
-                temp_pdf_path.unlink()
-
-        return pdf_bytes
+        return self._run_conversion(file_path=file_path, conversion_func=action)
 
     def _safe_release_com_object(self, *, obj, app_type: str = "Office App"):
         """Safely closes the Office application and releases COM resources."""
