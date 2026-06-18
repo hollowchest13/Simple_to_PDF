@@ -52,16 +52,17 @@ def ui_locker(func):
             self.stop_event.clear()
 
         self.toggle_ui(active=False)  # lock in main thread
-        self.thread_running = True
 
         def run():
             try:
+                self.thread_running = True
                 func(self, *args, **kwargs)  # run in background thread
             finally:
                 # unlock in main thread
                 self.after(0, lambda: self.toggle_ui(active=True))
                 self.thread_running = False
+                logger.info(f"Thread {func.__name__} ended work")
 
-        threading.Thread(target=run, daemon=True).start()
+        threading.Thread(target=run, daemon=False).start()
 
     return wrapper

@@ -11,6 +11,7 @@ class BaseConverter(BaseService):
     SUPPORTED_FORMATS = {"pdf": {".pdf"}}
 
     def __init__(self, *, chunk_size: int = 30):
+        super().__init__()
         self.chunk_size = chunk_size
 
     @abstractmethod

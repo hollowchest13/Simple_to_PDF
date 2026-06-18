@@ -1,6 +1,5 @@
 import io
 import logging
-import threading
 from typing import List
 
 from pypdf import PageObject, PdfReader, PdfWriter, Transformation
@@ -14,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 class PdfMerger(BaseService):
     def __init__(self):
+        super().__init__()
         self._callback = lambda *args, **kwargs: None
 
     @property
@@ -77,7 +77,6 @@ class PdfMerger(BaseService):
         *,
         conversion_rep: ProcessingReport,
         target_page_format: PageFormat | None = None,
-        stop_event: threading.Event | None = None,
     ) -> bytes:
         """Merges multiple files into a single PDF and returns original bytes if it is single PDF."""
 
@@ -122,16 +121,6 @@ class PdfMerger(BaseService):
                             writer=writer,
                             target_page_format=target_page_format,
                         )
-                except InterruptedError:
-                    logger.info("Operation successfully cancelled by the user.")
-                    self._show_callback(
-                        "status",
-                        {
-                            "key": "merged.cancelled",
-                            "status": "info",
-                            "message": "Operation cancelled",
-                        },
-                    )
                 except Exception as e:
                     logger.error(f"Failed to process {filename}: {e}", exc_info=True)
                     failed += 1
@@ -154,15 +143,18 @@ class PdfMerger(BaseService):
                             "total": total_to_merge,
                         },
                     )
-
             if len(writer.pages) == 0:
                 raise ValueError("No PDF data")
+            self.check_stop()
 
             with io.BytesIO() as pdf_buffer:
                 writer.write(pdf_buffer)
                 pdf_bytes = pdf_buffer.getvalue()
             success = total_to_merge - failed
             return pdf_bytes
+        except InterruptedError:
+            logger.info(f"{stage_name} successfully cancelled by the user.")
+            raise
         finally:
             self._show_callback(
                 "status",

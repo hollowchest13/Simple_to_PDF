@@ -30,7 +30,6 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
         docs: list[tuple[int, Path]] = []
         imgs: list[tuple[int, Path]] = []
         final_result: ConversionResult = ConversionResult()
-
         for idx, path in files:
             if not path.exists():
                 continue
@@ -49,7 +48,6 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
         final_result.failed.extend(docs_res.failed)
         final_result.success.extend(img_res.success)
         final_result.failed.extend(img_res.failed)
-
         return final_result
 
     def _convert_docs_to_pdf(
@@ -58,6 +56,7 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
         """Convert documents to PDF in chunks and aggregate conversion results."""
         all_results = ConversionResult()
         for chunk in self.make_chunks(files, self.chunk_size):
+            self.check_stop()
             chunk_res = self._convert_chunk(chunk=chunk)
             all_results.success.extend(chunk_res.success)
             all_results.failed.extend(chunk_res.failed)
@@ -142,7 +141,7 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
                 input_paths=input_paths, out_dir=tmp_path
             )
 
-            chunk_res: ConversionResult = ConversionResult()  # створюємо завчасно
+            chunk_res: ConversionResult = ConversionResult()
             if success:
                 chunk_res = self._collect_results(chunk=chunk, tmp_path=tmp_path)
             return chunk_res

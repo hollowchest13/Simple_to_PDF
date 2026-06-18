@@ -87,28 +87,27 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
         chunk_results: ConversionResult = ConversionResult()
         if not files:
             return all_results
-        try:
-            for chunk in self.make_chunks(files, n=self.chunk_size):
-                match app_type:
-                    case OfficeApp.POWERPOINT:
-                        chunk_results: ConversionResult = (
-                            self._process_presentation_chunk(chunk=chunk)
-                        )
-                    case OfficeApp.EXCEL:
-                        chunk_results: ConversionResult = self._process_table_chunk(
-                            chunk=chunk
-                        )
-                    case OfficeApp.WORD:
-                        chunk_results: ConversionResult = self._process_documents_chunk(
-                            chunk=chunk
-                        )
-                    case _:
-                        logger.error(f"Unknown app_type: {app_type}")
-                        continue
-                all_results.success.extend(chunk_results.success)
-                all_results.failed.extend(chunk_results.failed)
-        except InterruptedError:
-            return ConversionResult()
+
+        for chunk in self.make_chunks(files, n=self.chunk_size):
+            match app_type:
+                case OfficeApp.POWERPOINT:
+                    chunk_results: ConversionResult = self._process_presentation_chunk(
+                        chunk=chunk
+                    )
+                case OfficeApp.EXCEL:
+                    chunk_results: ConversionResult = self._process_table_chunk(
+                        chunk=chunk
+                    )
+                case OfficeApp.WORD:
+                    chunk_results: ConversionResult = self._process_documents_chunk(
+                        chunk=chunk
+                    )
+                case _:
+                    logger.error(f"Unknown app_type: {app_type}")
+                    continue
+            all_results.success.extend(chunk_results.success)
+            all_results.failed.extend(chunk_results.failed)
+
         return all_results
 
     def _get_app_instance(self, *, app_type: str):
@@ -225,8 +224,8 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
             excel.Visible = False
             excel.DisplayAlerts = False
             for idx, f in chunk:
-                self.check_stop()
                 pdf_data = None
+                self.check_stop()
                 try:
                     pdf_data = self._convert_single_table(excel, f)
                     chunk_res.success.append((idx, pdf_data))
@@ -264,6 +263,7 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
             word.Visible = False
             word.DisplayAlerts = 0  # 0 = wdAlertsNone (disable all pop-up windows)
             for idx, wf in chunk:
+                pdf_data = None
                 self.check_stop()
                 try:
                     pdf_data = self._convert_single_document(word, wf)

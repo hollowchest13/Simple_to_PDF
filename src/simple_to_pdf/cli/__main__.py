@@ -3,7 +3,6 @@ import sys
 
 import customtkinter as ctk
 from tendo import singleton
-
 from simple_to_pdf.app_gui.main_window import PDFMergerGUI
 from simple_to_pdf.cli.logger import setup_logger
 from simple_to_pdf.core import config

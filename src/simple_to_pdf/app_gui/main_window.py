@@ -464,14 +464,24 @@ class PDFMergerGUI(BaseWindow):
             data = self.merger.merge_to_pdf(
                 conversion_rep=conversion_res, target_page_format=target_format
             )
+            need_compress: bool = self.settings_panel.compress_selector.get()
+            if need_compress:
+                data = self.compressor.compress(pdf_bytes=data)
+            if data:
+                self.save_result(data=data, output_path=output_path)
+        except InterruptedError:
+            self.callback.safe_callback(
+                "status",
+                **{
+                    "key": "process.cancelation",
+                    "status": "info",
+                },
+            )
+            return
         except Exception as e:
             logger.error(f"Merge stage failed: {e}", exc_info=True)
             self.schedule_ui_task(self.main_panel.progress_bar_reset)
             return
-        need_compress: bool = self.settings_panel.compress_selector.get()
-        if need_compress:
-            data = self.compressor.compress(pdf_bytes=data)
-        self.save_result(data=data, output_path=output_path)
 
     def prompt_pages_to_remove(self) -> None:
         """Prompt the user to select a PDF and choose pages for extraction."""
@@ -564,21 +574,9 @@ class PDFMergerGUI(BaseWindow):
 
     def _on_closing(self) -> None:
         """Handle window close requests and wait for background work if needed."""
-        if self.thread_running:
-            self.notifier.warning(
-                scenario_key="process_in_progress",
-                with_icon=True,
-            )
-            self._wait_for_thread_finish()
-            self._stop_services()
-
-        else:
-            self._save_and_destroy()
-
-    def _stop_services(self):
-        self.merger.stop_event.set()
-        self.page_extractor.stop_event.set()
-        self.conversion_service.converter.stop_event.set()
+        self._stop_services()
+        self.protocol("WM_DELETE_WINDOW", lambda: None)
+        self._wait_for_thread_finish()
 
     def _wait_for_thread_finish(self) -> None:
         """Poll until any background work finishes before closing the window."""
@@ -590,6 +588,16 @@ class PDFMergerGUI(BaseWindow):
         else:
             logger.info("Background thread finished. Closing the application.")
             self._save_and_destroy()
+
+    def _stop_services(self):
+        for service in [
+            self.merger,
+            self.compressor,
+            self.conversion_service.converter,
+            self.page_extractor,
+        ]:
+            if service and hasattr(service, "stop_event"):
+                service.stop_event.set()
 
     def _save_and_destroy(self) -> None:
         """Persist current settings and destroy the main window."""

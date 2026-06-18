@@ -30,7 +30,7 @@ class PDFCompressor(BaseService):
             deflate (bool): Whether to compress data streams (text, fonts, etc.) using ZIP.
             clean (bool): Whether to clean and optimize the internal file structure.
         """
-
+        super().__init__()
         self.garbage_level = garbage_level
         self.deflate = deflate
         self.clean = clean
@@ -176,6 +176,7 @@ class PDFCompressor(BaseService):
                 processed_xrefs = set()
 
                 for idx in range(total_pages):
+                    self.check_stop()
                     page = doc[idx]
                     self._set_page_images_quality(
                         page, doc=doc, quality=quality, processed_xrefs=processed_xrefs
@@ -214,7 +215,9 @@ class PDFCompressor(BaseService):
                     },
                 )
                 return compressed_stream.getvalue()
-
+        except InterruptedError:
+            logger.info(f"{stage_name} process was interrupted by user.")
+            raise
         except Exception as e:
             logger.error(f"Compressing error: {e}", exc_info=True)
             self.callback(

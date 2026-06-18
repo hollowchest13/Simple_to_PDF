@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 class PageExtractor(BaseService):
     def __init__(self):
         self._callback: Callable = lambda *args, **kwargs: None
+        super().__init__()
 
     @property
     def callback(self):
@@ -31,7 +32,7 @@ class PageExtractor(BaseService):
     ) -> bytes:
         input_file = Path(input_path)
         output_file = Path(output_path).resolve()
-        stage = "extracting"
+        stage_name = "extracting"
 
         writer = PdfWriter()
 
@@ -49,7 +50,7 @@ class PageExtractor(BaseService):
                         self.callback(
                             "progress",
                             **{
-                                "stage": stage,
+                                "stage": stage_name,
                                 "mode": "determinate",
                                 "current": i,
                                 "total": total,
@@ -61,7 +62,7 @@ class PageExtractor(BaseService):
                         self.callback(
                             "status",
                             **{
-                                "key": f"{stage}.error",
+                                "key": f"{stage_name}.error",
                                 "status": "error",
                                 "page_number": p_num,
                                 "error": e,
@@ -74,7 +75,7 @@ class PageExtractor(BaseService):
             self.callback(
                 "status",
                 **{
-                    "key": f"{stage}.done",
+                    "key": f"{stage_name}.done",
                     "status": "info",
                     "path": str(output_file),
                 },
@@ -82,14 +83,8 @@ class PageExtractor(BaseService):
             return data
 
         except InterruptedError:
-            self.callback(
-                "status",
-                **{
-                    "key": f"{stage}.canceled",
-                    "status": "info",
-                },
-            )
-            return b""
+            logger.info(f"{stage_name} successfully cancelled by the user.")
+            raise
 
         finally:
             writer.close()
