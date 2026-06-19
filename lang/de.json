@@ -14,9 +14,9 @@
       "btn_remove": "Datei entfernen",
       "btn_merge": "In PDF zusammenfügen",
       "btn_convert": "In PDF konvertieren",
-      "btn_compress":"PDF komprimieren",
+      "btn_compress": "PDF komprimieren",
       "btn_extract": "Seiten extrahieren",
-      "btn_status_clear": "Konsole leeren",
+      "btn_stop": "Stornieren",
       "btn_help": "Hilfe",
       "btn_settings": "Einstellungen"
     },
@@ -69,7 +69,7 @@
         "message": "Was ist neu: {changelog_text}",
         "btn_yes": "Jetzt herunterladen",
         "btn_no": "Später"
-    }
+      }
     },
     "info": {
       "__title__": "Information",
@@ -114,11 +114,6 @@
         "header": "Ungültiges Format!",
         "message": "Bitte verwenden Sie ein korrektes Format (z.B. 1-5, 8, 10-12).",
         "btn": "Verstanden"
-      },
-      "process_in_progress": {
-        "header": "Vorgang läuft!",
-        "message": "Eine Hintergrundaufgabe wird derzeit ausgeführt.\n\nDas Programm wird nach Abschluss automatisch geschlossen. Bitte warten.",
-        "btn": "Warten"
       },
       "file_not_found": {
         "header": "Nicht gefunden",

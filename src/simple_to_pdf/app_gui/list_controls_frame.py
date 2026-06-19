@@ -1,9 +1,9 @@
 import logging
-import customtkinter as ctk
 from typing import Callable, Dict
+
+import customtkinter as ctk
+
 from simple_to_pdf.core.models import App_Mode
-
-
 from simple_to_pdf.widgets import BaseFrame
 
 logger = logging.getLogger(__name__)
@@ -109,9 +109,10 @@ class ListControlsFrame(BaseFrame):
                 "icon_name": "extract_btn.png",
             },
             {
-                "id": "btn_status_clear",
-                "cmd": self._trigger("clear_status"),
-                "icon_name": "clean_btn.png",
+                "id": "btn_stop",
+                "cmd": self._trigger("stop"),
+                "icon_name": "stop_btn.png",
+                "state": "disabled",
             },
         ]
         return self._buttons_pack(btns_config=button_configs, parent=self.action_frame)

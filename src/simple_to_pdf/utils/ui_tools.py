@@ -34,7 +34,7 @@ def change_state(
             pass
 
 
-def ui_locker(func):
+def threaded_task(func):
     """
     Decorator to execute a decorated method in a separate background thread
     to keep the GUI responsive.
@@ -48,9 +48,10 @@ def ui_locker(func):
     def wrapper(self, *args, **kwargs):
         if getattr(self, "thread_running", False):
             return
-        if hasattr(self, "stop_event"):
-            self.stop_event.clear()
-
+        if hasattr(self, "_manage_services"):
+            self._manage_services(action="reset")
+        if hasattr(self, "clear_console"):
+            self.clear_console()
         self.toggle_ui(active=False)  # lock in main thread
 
         def run():

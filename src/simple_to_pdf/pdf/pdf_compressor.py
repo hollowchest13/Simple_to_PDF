@@ -177,7 +177,10 @@ class PDFCompressor(BaseService):
 
                 for idx in range(total_pages):
                     self.check_stop()
+
                     page = doc[idx]
+                    if self.is_hard_page(page=page):
+                        continue
                     self._set_page_images_quality(
                         page, doc=doc, quality=quality, processed_xrefs=processed_xrefs
                     )
@@ -228,3 +231,11 @@ class PDFCompressor(BaseService):
                 },
             )
             return pdf_bytes
+
+    def is_hard_page(self, *, page) -> bool:
+        try:
+            drawings = page.get_drawings()
+            return True if len(drawings) > 1000 else False
+        except Exception as e:
+            logger.error(f"Page parsing error:{e}", exc_info=True)
+            return False

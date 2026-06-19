@@ -14,9 +14,9 @@
       "btn_remove": "Usuń plik",
       "btn_merge": "Połącz w PDF",
       "btn_convert": "Konwertuj do PDF",
-      "btn_compress":"Kompresuj PDF",
+      "btn_compress": "Kompresuj PDF",
       "btn_extract": "Wyodrębnij strony",
-      "btn_status_clear": "Wyczyść konsolę",
+      "btn_stop": "Anulować",
       "btn_help": "Pomoc",
       "btn_settings": "Ustawienia"
     },
@@ -114,11 +114,6 @@
         "header": "Błędny format!",
         "message": "Proszę użyć poprawnego formatu (np. 1-5, 8, 10-12).",
         "btn": "Rozumiem"
-      },
-      "process_in_progress": {
-        "header": "Proces w toku!",
-        "message": "Obecnie wykonywane jest zadanie w tle.\n\nProgram zamknie się automatycznie po zakończeniu. Proszę czekać.",
-        "btn": "Czekaj"
       },
       "file_not_found": {
         "header": "Nie znaleziono",

@@ -86,6 +86,7 @@ class BaseFrame(ctk.CTkFrame, FrameThemeMixin, LocalizationMixin):
                 if "icon_name" in cfg
                 else None
             )
+            state = cfg.get("state", "normal")
             btn = PrimaryButton(
                 parent,
                 text=self.get_text(cfg["id"], section=self.loc_section),
@@ -93,6 +94,7 @@ class BaseFrame(ctk.CTkFrame, FrameThemeMixin, LocalizationMixin):
                 image=icon,
                 width=btns_width,
                 height=btns_height,
+                state=state,
             )
 
             is_first = i == 0

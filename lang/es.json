@@ -14,9 +14,9 @@
       "btn_remove": "Eliminar archivo",
       "btn_merge": "Combinar en PDF",
       "btn_convert": "Convertir a PDF",
-      "btn_compress":"Comprimir PDF",
+      "btn_compress": "Comprimir PDF",
       "btn_extract": "Extraer páginas",
-      "btn_status_clear": "Limpiar consola",
+      "btn_stop": "Cancelar",
       "btn_help": "Ayuda",
       "btn_settings": "Configuración"
     },
@@ -64,12 +64,12 @@
         "btn_yes": "Sí",
         "btn_no": "No"
       },
-      "confirm_update":{
+      "confirm_update": {
         "header": "Update verfügbar: {version}!",
         "message": "Was ist neu: {changelog_text}",
         "btn_yes": "Jetzt herunterladen",
         "btn_no": "Später"
-    }
+      }
     },
     "info": {
       "__title__": "Información",
@@ -114,11 +114,6 @@
         "header": "¡Formato inválido!",
         "message": "Por favor, utilice un formato correcto (ej. 1-5, 8, 10-12).",
         "btn": "Entendido"
-      },
-      "process_in_progress": {
-        "header": "¡Proceso en curso!",
-        "message": "Actualmente hay una tarea en segundo plano ejecutándose.\n\nEl programa se cerrará automáticamente al finalizar. Por favor, espere.",
-        "btn": "Esperar"
       },
       "file_not_found": {
         "header": "No encontrado",
