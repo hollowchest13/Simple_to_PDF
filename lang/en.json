@@ -66,7 +66,7 @@
       },
       "confirm_update": {
         "header": "Update Available: {version}!",
-        "message": "What's new: {changelog_text}",
+        "message": "What's new:\n {changelog_text}",
         "btn_yes": "Download now",
         "btn_no": "Later"
       }

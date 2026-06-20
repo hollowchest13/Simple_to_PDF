@@ -7,20 +7,19 @@ from PIL import Image
 
 from simple_to_pdf.core.config import ICONS_PATH, ThemeKeys
 from simple_to_pdf.utils.file_tools import get_file_category
-from simple_to_pdf.utils.theme_provider import ScrolableFrameThemeMixin
 from simple_to_pdf.widgets import BaseFrame, BaseLabel
+from simple_to_pdf.widgets.base_widgets import BaseScrollableFrame
 
 logger = logging.getLogger(__name__)
 
 
-class CTkListbox(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
+class CTkListbox(BaseScrollableFrame):
     """Scrollable file list widget with row selection and ordering controls."""
 
     def __init__(self, parent, **kwargs):
         """Initialize the listbox and its internal state containers."""
-        params = self.set_params(scr_frame_type="file_list")
-        params.update(kwargs)
-        super().__init__(parent, **params)
+       
+        super().__init__(parent,scr_frame_type="file_list",**kwargs)
 
         self._scroll_target = 0
         self._is_scrolling = False
