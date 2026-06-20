@@ -14,9 +14,9 @@
       "btn_remove": "Datei entfernen",
       "btn_merge": "In PDF zusammenfügen",
       "btn_convert": "In PDF konvertieren",
-      "btn_compress":"PDF komprimieren",
+      "btn_compress": "PDF komprimieren",
       "btn_extract": "Seiten extrahieren",
-      "btn_status_clear": "Konsole leeren",
+      "btn_stop": "Stornieren",
       "btn_help": "Hilfe",
       "btn_settings": "Einstellungen"
     },
@@ -51,7 +51,7 @@
       "header_subtitle": "Einzelne Seiten aus PDF extrahieren",
       "instruction_label": "Seiten zum Extrahieren eingeben:",
       "hint_label": "Kommas für einzelne Seiten (1, 3)\nund Bindestriche für Bereiche (5-10) verwenden.",
-      "page_entry_placeholder": "z.B. 1, 2, 5-8",
+      "page_entry": "z.B. 1, 2, 5-8",
       "btn_ok": "Bestätigen"
     }
   },
@@ -69,7 +69,7 @@
         "message": "Was ist neu: {changelog_text}",
         "btn_yes": "Jetzt herunterladen",
         "btn_no": "Später"
-    }
+      }
     },
     "info": {
       "__title__": "Information",
@@ -115,11 +115,6 @@
         "message": "Bitte verwenden Sie ein korrektes Format (z.B. 1-5, 8, 10-12).",
         "btn": "Verstanden"
       },
-      "process_in_progress": {
-        "header": "Vorgang läuft!",
-        "message": "Eine Hintergrundaufgabe wird derzeit ausgeführt.\n\nDas Programm wird nach Abschluss automatisch geschlossen. Bitte warten.",
-        "btn": "Warten"
-      },
       "file_not_found": {
         "header": "Nicht gefunden",
         "message": "Datei {file_name} wurde nicht gefunden.",
@@ -132,7 +127,7 @@
       }
     },
     "error": {
-      "__title__": "Dateifehler",
+      "__title__": "Fehler",
       "file_read_error": {
         "header": "Lesefehler",
         "message": "Datei {file_name} konnte nicht gelesen werden.",
@@ -140,8 +135,13 @@
       },
       "page_validation_error": {
         "header": "Validierungsfehler",
-        "message": "Kritischer Fehler: {error}",
+        "message": "Fehler: {error}",
         "btn": "Schließen"
+      },
+      "page_limit_error": {
+        "header": "Zu viele Seiten",
+        "message": "Es wurden mehr als {limit} Seiten ausgewählt.",
+        "btn": "Ok"
       },
       "page_extraction_error": {
         "header": "Extraktionsfehler",
@@ -165,6 +165,7 @@
     },
     "processing": {
       "done": "Verarbeitet: {success}; Fehler: {failed}",
+      "cancel": "Vorgang vom Benutzer abgebrochen",
       "error": {
         "unknown": "Fehler: Datei konnte nicht verarbeitet werden.\nGrund: {error}"
       }

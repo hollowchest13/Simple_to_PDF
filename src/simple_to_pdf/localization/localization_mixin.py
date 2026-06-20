@@ -146,7 +146,7 @@ class LocalizationMixin:
                 return
             if self._try_configure(widget, label_text=text):
                 return
-            if self._try_configure(widget, placeholder_text=text):
+            if self._try_configure(widget, placeholder_text=f"{text}"):
                 return
 
             logger.debug(

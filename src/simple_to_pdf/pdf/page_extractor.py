@@ -5,12 +5,15 @@ from typing import Callable
 
 from pypdf import PdfReader, PdfWriter
 
+from simple_to_pdf.base_services.base import BaseService
+
 logger = logging.getLogger(__name__)
 
 
-class PageExtractor:
+class PageExtractor(BaseService):
     def __init__(self):
         self._callback: Callable = lambda *args, **kwargs: None
+        super().__init__()
 
     @property
     def callback(self):
@@ -27,72 +30,77 @@ class PageExtractor:
         pages_to_extract: list[int],
         output_path: str | Path,
     ) -> bytes:
-        """
-        Extracts specific pages from a PDF file and saves them to a new file.
-        Provides progress updates via the callback.
-        """
         input_file = Path(input_path)
         output_file = Path(output_path).resolve()
-        stage = "extracting"
+        stage_name = "extracting"
 
         writer = PdfWriter()
 
-        # Step 1: Read the source file and extract pages
-        with input_file.open("rb") as f:
-            reader = PdfReader(f)
-            total = len(pages_to_extract)
-            for i, p_num in enumerate(pages_to_extract, 1):
-                p_idx = p_num - 1
-                try:
-                    writer.add_page(reader.pages[p_idx])
-                    # Update progress for every page processed
-                    self.callback(
-                        "progress",
-                        **{
-                            "stage": stage,
-                            "mode": "determinate",
-                            "current": i,
-                            "total": total,
-                            "filename": f"page {p_num}",
-                        },  # Display 1-based index for user
-                    )
-                except IndexError as e:
-                    logger.error(f"Page {p_num} is out of range for {input_path}")
-                    self.callback(
-                        "status",
-                        **{
-                            "key": f"{stage}.error",
-                            "status": "error",
-                            "page_number": p_num,
-                            "error": e,
-                        },  # Display 1-based index for user
-                    )
-                continue
+        try:
+            with input_file.open("rb") as f:
+                reader = PdfReader(f)
+                total = len(pages_to_extract)
 
-        with io.BytesIO() as buffer:
-            writer.write(buffer)
-            data = buffer.getvalue()
+                for i, p_num in enumerate(pages_to_extract, 1):
+                    self.check_stop()
+
+                    p_idx = p_num - 1
+                    try:
+                        writer.add_page(reader.pages[p_idx])
+                        self.callback(
+                            "progress",
+                            **{
+                                "stage": stage_name,
+                                "mode": "determinate",
+                                "current": i,
+                                "total": total,
+                                "filename": f"page {p_num}",
+                            },
+                        )
+                    except IndexError as e:
+                        logger.error(f"Page {p_num} is out of range for {input_path}")
+                        self.callback(
+                            "status",
+                            **{
+                                "key": f"{stage_name}.error",
+                                "status": "error",
+                                "page_number": p_num,
+                                "error": e,
+                            },
+                        )
+            with io.BytesIO() as buffer:
+                writer.write(buffer)
+                data = buffer.getvalue()
+
             self.callback(
                 "status",
                 **{
-                    "key": f"{stage}.done",
+                    "key": f"{stage_name}.done",
                     "status": "info",
                     "path": str(output_file),
                 },
             )
-
             return data
+
+        except InterruptedError:
+            logger.info(f"{stage_name} successfully cancelled by the user.")
+            raise
+
+        finally:
+            writer.close()
 
     def validate_pages(
         self,
         *,
         input_path: Path,
-        pages_to_extract: list[int],
+        pages_to_extract: list[int]|None,
     ) -> None:
         """
         Validates if the provided page numbers exist within the source PDF.
         Raises ValueError if indices are out of bounds or list is empty.
         """
+        if not pages_to_extract:
+            raise ValueError("No pages selected for extraction.")
         if not input_path.exists():
             raise FileNotFoundError(f"Input file not found: {input_path}")
 

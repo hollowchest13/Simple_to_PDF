@@ -6,12 +6,12 @@ build-backend = "setuptools.build_meta"
 [project]
 # Core project metadata (PEP 621)
 name = "simple-to-pdf"
-version = "1.0.2"
+version = "1.0.3"
 description = "Simple_to_PDF is a lightweight, local multi-format converter"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "MIT"}
-authors = [{name = "hollowchest13", email = "hollowchest13@gmail.com"}]
+license = { text = "MIT" }
+authors = [{ name = "hollowchest13", email = "hollowchest13@gmail.com" }]
 
 # Project dependencies to be installed via pip
 dependencies = [
@@ -31,7 +31,7 @@ Homepage = "https://github.com/hollowchest13/Simple_to_PDF"
 
 [tool.setuptools]
 # Map the root package to the 'src' directory
-package-dir = {"" = "src"}
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 # Automatically discover packages in the 'src' folder
@@ -43,12 +43,9 @@ simple-pdf = "simple_to_pdf.main:main"
 
 [tool.app_metadata]
 # Custom section for application UI (About dialog, versioning, etc.)
-release_date = "2026-06-05"
+release_date = "2026-06-20"
 release_notes = """
-   - Added: PDF compression functionality.
-   - Added: Selection of output sheet format.
-   - Added: Support for 4 new languages.
-   - Improved: Image handling using the Pillow library.
-   - Improved: Overall user interface.
-   - Fixed: An issue with processing large files.
+   - Added: Cancelation button.
+   - Fixed: An issue with processing large files with vector graphix.
+   - Fixed an issue where the page extraction dialog would crash or block the interface upon closing.
 """

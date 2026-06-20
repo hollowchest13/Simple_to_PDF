@@ -49,10 +49,13 @@ class ConversionService:
                 },
             )
             paths_by_idx = {file_idx: path for file_idx, path in files}
-
-            conversion_res: ConversionResult = self.converter.convert_to_pdf(
-                files=to_conversion
-            )
+            try:
+                conversion_res: ConversionResult = self.converter.convert_to_pdf(
+                    files=to_conversion,
+                )
+            except InterruptedError:
+                logger.info(f"{stage_name} process was interrupted by user.")
+                raise
 
             success = len(conversion_res.success)
             failed = len(conversion_res.failed)

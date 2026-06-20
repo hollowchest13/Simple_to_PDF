@@ -38,12 +38,10 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         self.init_localization()
         self.loc_section = loc_section
         self.protocol("WM_DELETE_WINDOW", self._on_close)
-
         self._center_window(parent)
-
         self.wait_visibility()
-        self.grab_set()
-        self.focus_set()
+        self.bind("<Map>", self._on_map)
+        
 
     def _init_layout(self):
         """Creates the structural frames: Header, Content, and Footer."""
@@ -72,6 +70,7 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         """
         if hasattr(self, "remove_from_observers"):
             self.remove_from_observers()
+        self.grab_release()
         self.destroy()
 
     def refresh_localization(self) -> None:
@@ -101,6 +100,18 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
             "warning": str(base_path / "warning.png"),
             "confirmation": str(base_path / "confirmation.png"),
         }
+    def _on_map(self, event):
+        self.unbind("<Map>")  
+        self.after(50, self._finalize)
+
+    def _finalize(self):
+        if not self.winfo_exists():
+            return
+        if not self.winfo_viewable():
+            self.after(50, self._finalize)
+            return
+        self.grab_set()
+        self.focus_set()
 
     def _load_icon(
         self, *, with_icon: bool = False, window_type: str

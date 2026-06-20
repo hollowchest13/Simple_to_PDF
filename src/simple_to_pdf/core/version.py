@@ -1,6 +1,4 @@
-import json
 import logging
-from typing import Callable, List
 
 import requests
 import tomllib
@@ -17,10 +15,6 @@ class VersionController:
         self._git_repo: str = git_repo
         self._git_user: str = git_user
 
-    def _get_version_json_url(self) -> str:
-        version_json_url = f"https://raw.githubusercontent.com/{self._git_user}/{self._git_repo}/main/src/simple_to_pdf/cli/version.json"
-        return version_json_url
-
     def _get_version_toml_url(self) -> str:
         version_toml_url = f"https://raw.githubusercontent.com/{self._git_user}/{self._git_repo}/main/pyproject.toml"
         return version_toml_url
@@ -28,29 +22,7 @@ class VersionController:
     def _get_release_url(self):
         return f"{self._git_repo}/releases"
 
-    def _get_release_info_from_json(
-        self, *, version_json_url, timeout: int = 5
-    ) -> ReleaseInfo:
-        try:
-            content = fetch_remote_content(file_url=version_json_url, timeout=timeout)
-            data = json.loads(content)
-
-            latest_version = data.get("version")
-            if not latest_version:
-                raise ValueError("Version is missing in the response.")
-            else:
-                return ReleaseInfo(
-                    version=latest_version,
-                    date=data.get("release_date", "No release date provided."),
-                    notes=data.get(
-                        "release_notes", "Fixed minor bugs and improved stability."
-                    ),
-                )
-        except (requests.RequestException, ValueError) as e:
-            logger.error(f"Failed to fetch release info: {e}")
-            raise
-
-    def _get_release_info_from_toml(
+    def _get_release_info(
         self, *, version_toml_url: str, timeout: int = 5
     ) -> ReleaseInfo:
         try:
@@ -75,27 +47,6 @@ class VersionController:
             logger.error(f"Failed to fetch release info: {e}")
             raise
 
-    def _get_release_info(self, *, timeout: int = 5) -> ReleaseInfo:
-        version_json_url: str = self._get_version_json_url()
-        version_toml_url: str = self._get_version_toml_url()
-        strategies: List[Callable[[], ReleaseInfo]] = [
-            lambda: self._get_release_info_from_json(
-                version_json_url=version_json_url, timeout=timeout
-            ),
-            lambda: self._get_release_info_from_toml(
-                version_toml_url=version_toml_url, timeout=timeout
-            ),
-        ]
-        for strategy in strategies:
-            try:
-                release: ReleaseInfo = strategy()
-                return release
-            except Exception as e:
-                err_type = type(e).__name__
-                err_msg = str(e)
-                logger.warning(f"Error details: [{err_type}] {err_msg}", exc_info=True)
-        raise RuntimeError("All update fetch strategies failed. Check network or URLs.")
-
     def _get_current_version(self) -> str:
         default_version = "0.0.0"
         config_toml_path = "Unknown path"
@@ -119,8 +70,9 @@ class VersionController:
         return default_version
 
     def check_for_updates(self) -> UpdateCheckResult:
+        version_toml_url=self._get_version_toml_url()
         try:
-            latest_release = self._get_release_info(timeout=5)
+            latest_release = self._get_release_info(version_toml_url=version_toml_url,timeout=5)
             current_version = self._get_current_version()
 
             if version.parse(latest_release.version) > version.parse(current_version):
