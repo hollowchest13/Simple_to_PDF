@@ -127,7 +127,7 @@
       }
     },
     "error": {
-      "__title__": "File error",
+      "__title__": "Error",
       "file_read_error": {
         "header": "Read error",
         "message": "Failed to read file {file_name}.",
@@ -135,7 +135,7 @@
       },
       "page_validation_error": {
         "header": "Validation error",
-        "message": "Critical error: {error}",
+        "message": "Error: {error}",
         "btn": "Close"
       },
       "page_extraction_error": {

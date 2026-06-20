@@ -37,11 +37,9 @@ class ConfirmDialog(BaseDialog):
             self.geometry(size)
 
         self._setup_dialog_ui()
-
         self.refresh_localization(**kwargs)
-
-        self.grab_set()
-        self.wait_window()
+        self.update_idletasks()
+        self.after(self.FINALIZE_DELAY_MS, self._finalize)
 
     def _setup_dialog_ui(self):
         """

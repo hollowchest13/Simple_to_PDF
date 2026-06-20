@@ -127,7 +127,7 @@
       }
     },
     "error": {
-      "__title__": "Błąd pliku",
+      "__title__": "Błąd",
       "file_read_error": {
         "header": "Błąd odczytu",
         "message": "Nie udało się odczytać pliku {file_name}.",
@@ -135,7 +135,7 @@
       },
       "page_validation_error": {
         "header": "Błąd walidacji",
-        "message": "Błąd krytyczny: {error}",
+        "message": "Błąd: {error}",
         "btn": "Zamknij"
       },
       "page_extraction_error": {

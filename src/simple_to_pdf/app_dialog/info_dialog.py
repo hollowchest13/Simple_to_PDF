@@ -48,6 +48,8 @@ class InfoDialog(BaseDialog):
         self.with_footer = with_footer
         self._setup_dialog_ui(text_font, font_size)
         self.refresh_localization(**kwargs)
+        self.update_idletasks()
+        self.after(self.FINALIZE_DELAY_MS, self._finalize)
 
     def _setup_dialog_ui(self, font_name: str, font_size: int) -> None:
         """Constructs the UI layout and registers widgets for the localization engine."""

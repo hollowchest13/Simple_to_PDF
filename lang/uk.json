@@ -127,7 +127,7 @@
       }
     },
     "error": {
-      "__title__": "Помилка файлу",
+      "__title__": "Помилка",
       "file_read_error": {
         "header": "Помилка читання",
         "message": "Не вдалося прочитати файл {file_name}",
@@ -135,7 +135,7 @@
       },
       "page_validation_error": {
         "header": "Помилка валідації",
-        "message": "Критична помилка: {error}",
+        "message": "Помилка: {error}",
         "btn": "Закрити"
       },
       "page_extraction_error": {

@@ -127,7 +127,7 @@
       }
     },
     "error": {
-      "__title__": "Dateifehler",
+      "__title__": "Fehler",
       "file_read_error": {
         "header": "Lesefehler",
         "message": "Datei {file_name} konnte nicht gelesen werden.",
@@ -135,7 +135,7 @@
       },
       "page_validation_error": {
         "header": "Validierungsfehler",
-        "message": "Kritischer Fehler: {error}",
+        "message": "Fehler: {error}",
         "btn": "Schließen"
       },
       "page_extraction_error": {

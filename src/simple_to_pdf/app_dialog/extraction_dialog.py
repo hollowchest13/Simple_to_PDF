@@ -21,6 +21,8 @@ class PageSelectionDialog(BaseDialog):
         self.result = None
         self._setup_dialog_ui()
         self.refresh_localization()
+        self.update_idletasks()
+        self.after(self.FINALIZE_DELAY_MS, self._finalize)
 
     def _setup_dialog_ui(self) -> None:
         """Creates widgets and maps them to self.ui for the LocalizationMixin."""
@@ -70,7 +72,7 @@ class PageSelectionDialog(BaseDialog):
         self.entry.focus_set()
         self.bind("<Return>", lambda event: self._on_ok())
 
-    def _on_ok(self, event=None):
+    def _on_ok(self):
         """Save input and close the dialog."""
         user_input = self.entry.get().strip()
         if user_input:

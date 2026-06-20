@@ -1,6 +1,6 @@
 import logging
 import sys
-
+import traceback
 import customtkinter as ctk
 from tendo import singleton
 from simple_to_pdf.app_gui.main_window import PDFMergerGUI
@@ -12,10 +12,19 @@ from simple_to_pdf.pdf import ConversionService, PageExtractor, PDFCompressor, P
 from simple_to_pdf.settings.settings_manager import SettingsManager
 
 logger = logging.getLogger(__name__)
+def handle_exception(exc_type, exc_value, exc_traceback):
+    logger.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+    traceback.print_exception(exc_type, exc_value, exc_traceback)
 
+
+def handle_tk_exception(args):
+    logger.error("Tkinter exception", exc_info=(args.exc_type, args.exc_value, args.exc_tb))
+    traceback.print_exception(args.exc_type, args.exc_value, args.exc_tb)
 
 def main():
     """Initialize application components and launch the graphical user interface."""
+    sys.excepthook = handle_exception
+    ctk.CTk.report_callback_exception = lambda *args, **kwargs: handle_tk_exception(args[0]) if args else None
     try:
         me = singleton.SingleInstance(flavor_id="simple_to_pdf_unique_lock")  # noqa: F841
     except singleton.SingleInstanceException:
