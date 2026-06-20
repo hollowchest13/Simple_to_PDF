@@ -39,7 +39,6 @@ class ConfirmDialog(BaseDialog):
         self._setup_dialog_ui()
         self.refresh_localization(**kwargs)
         self.update_idletasks()
-        self.after(self.FINALIZE_DELAY_MS, self._finalize)
 
     def _setup_dialog_ui(self):
         """

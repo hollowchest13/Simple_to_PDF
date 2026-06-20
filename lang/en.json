@@ -51,7 +51,7 @@
       "header_subtitle": "Extracting specific pages from PDF",
       "instruction_label": "Enter pages to extract:",
       "hint_label": "Use commas for individual pages (1, 3)\nand hyphens for ranges (5-10).",
-      "page_entry_placeholder": "e.g. 1, 2, 5-8",
+      "page_entry": "e.g. 1, 2, 5-8",
       "btn_ok": "Confirm"
     }
   },
@@ -138,6 +138,11 @@
         "message": "Error: {error}",
         "btn": "Close"
       },
+      "page_limit_error": {
+        "header": "Too many pages",
+        "message": "More than {limit} pages selected.",
+        "btn": "Ok"
+      },
       "page_extraction_error": {
         "header": "Extraction error",
         "message": "Error while extracting pages: {error}",
@@ -160,6 +165,7 @@
     },
     "processing": {
       "done": "Processed: {success}; Failed: {failed}",
+      "cancel": "Operation cancelled by user",
       "error": {
         "unknown": "Error: Failed to process file.\nReason: {error}"
       }

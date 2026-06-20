@@ -32,7 +32,7 @@ from simple_to_pdf.pdf.conversion_service import ConversionService
 from simple_to_pdf.pdf.models import PageFormat
 from simple_to_pdf.settings.settings_manager import SettingsManager
 from simple_to_pdf.utils.file_tools import FileToolKit, get_files
-from simple_to_pdf.utils.logic import get_selected_pages
+from simple_to_pdf.utils.logic import get_selected_pages,InvalidPageInputError,PageLimitExceededError
 from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.utils.ui_tools import change_state, threaded_task
 from simple_to_pdf.widgets import BaseFrame, ToogleFrame
@@ -505,16 +505,21 @@ class PDFMergerGUI(BaseWindow):
 
     def on_confirm(self, *, raw_input: str, input_path) -> None:
         """Validate page selection input and launch the extraction workflow."""
-        pages = get_selected_pages(raw=raw_input.strip())
-
-        if pages is None:
-            self.notifier.warning(scenario_key="wrong_page_format")
-            return
-
+        PAGE_LIMIT=10000
         try:
+            pages = get_selected_pages(raw=raw_input.strip(),page_limit=PAGE_LIMIT)
             self.page_extractor.validate_pages(
                 input_path=Path(input_path), pages_to_extract=pages
             )
+        except InvalidPageInputError:
+            self.notifier.warning(scenario_key="wrong_page_format")
+            return
+        except PageLimitExceededError as e:
+            self.notifier.error(
+                scenario_key="page_limit_error",
+                limit=PAGE_LIMIT,
+            )
+            return
         except ValueError as e:
             self.notifier.error(
                 scenario_key="page_validation_error",

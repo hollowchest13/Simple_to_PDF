@@ -19,7 +19,6 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
     Base class for all modal dialogs in the application.
     Handles centering, theme consistency, and standard layout.
     """
-    FINALIZE_DELAY_MS: int = 150
 
     def __init__(self, parent, *, title_key="window_title", loc_section: str):
         super().__init__(parent)
@@ -41,6 +40,7 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         self._center_window(parent)
         self.wait_visibility()
+        self.bind("<Map>", self._on_map)
         
 
     def _init_layout(self):
@@ -70,6 +70,7 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         """
         if hasattr(self, "remove_from_observers"):
             self.remove_from_observers()
+        self.grab_release()
         self.destroy()
 
     def refresh_localization(self) -> None:
@@ -99,9 +100,15 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
             "warning": str(base_path / "warning.png"),
             "confirmation": str(base_path / "confirmation.png"),
         }
+    def _on_map(self, event):
+        self.unbind("<Map>")  
+        self.after(50, self._finalize)
 
     def _finalize(self):
-        if not self.winfo_exists(): 
+        if not self.winfo_exists():
+            return
+        if not self.winfo_viewable():
+            self.after(50, self._finalize)
             return
         self.grab_set()
         self.focus_set()

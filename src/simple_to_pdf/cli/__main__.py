@@ -17,14 +17,14 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     traceback.print_exception(exc_type, exc_value, exc_traceback)
 
 
-def handle_tk_exception(args):
-    logger.error("Tkinter exception", exc_info=(args.exc_type, args.exc_value, args.exc_tb))
-    traceback.print_exception(args.exc_type, args.exc_value, args.exc_tb)
+def handle_tk_exception(exc_type, exc_value, exc_tb):
+    logger.error("Tkinter exception", exc_info=(exc_type, exc_value, exc_tb))
+    traceback.print_exception(exc_type, exc_value, exc_tb)
 
 def main():
     """Initialize application components and launch the graphical user interface."""
     sys.excepthook = handle_exception
-    ctk.CTk.report_callback_exception = lambda *args, **kwargs: handle_tk_exception(args[0]) if args else None
+    ctk.CTk.report_callback_exception = handle_tk_exception
     try:
         me = singleton.SingleInstance(flavor_id="simple_to_pdf_unique_lock")  # noqa: F841
     except singleton.SingleInstanceException:

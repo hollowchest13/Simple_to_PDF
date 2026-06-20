@@ -93,12 +93,14 @@ class PageExtractor(BaseService):
         self,
         *,
         input_path: Path,
-        pages_to_extract: list[int],
+        pages_to_extract: list[int]|None,
     ) -> None:
         """
         Validates if the provided page numbers exist within the source PDF.
         Raises ValueError if indices are out of bounds or list is empty.
         """
+        if not pages_to_extract:
+            raise ValueError("No pages selected for extraction.")
         if not input_path.exists():
             raise FileNotFoundError(f"Input file not found: {input_path}")
 

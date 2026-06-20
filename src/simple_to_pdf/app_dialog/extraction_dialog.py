@@ -22,7 +22,7 @@ class PageSelectionDialog(BaseDialog):
         self._setup_dialog_ui()
         self.refresh_localization()
         self.update_idletasks()
-        self.after(self.FINALIZE_DELAY_MS, self._finalize)
+        
 
     def _setup_dialog_ui(self) -> None:
         """Creates widgets and maps them to self.ui for the LocalizationMixin."""

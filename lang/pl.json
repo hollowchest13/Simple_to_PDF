@@ -51,7 +51,7 @@
       "header_subtitle": "Wyodrębnianie określonych stron z PDF",
       "instruction_label": "Wprowadź strony do wyodrębnienia:",
       "hint_label": "Użyj przecinków dla pojedynczych stron (1, 3)\noraz myślników dla zakresów (5-10).",
-      "page_entry_placeholder": "np. 1, 2, 5-8",
+      "page_entry": "np. 1, 2, 5-8",
       "btn_ok": "Potwierdź"
     }
   },
@@ -138,6 +138,11 @@
         "message": "Błąd: {error}",
         "btn": "Zamknij"
       },
+      "page_limit_error": {
+        "header": "Zbyt wiele stron",
+        "message": "Wybrano więcej niż {limit} stron.",
+        "btn": "Ok"
+      },
       "page_extraction_error": {
         "header": "Błąd wyodrębniania",
         "message": "Błąd podczas wyodrębniania stron: {error}",
@@ -160,6 +165,7 @@
     },
     "processing": {
       "done": "Przetworzono: {success}; Błędów: {failed}",
+      "cancel": "Operacja anulowana przez użytkownika",
       "error": {
         "unknown": "Błąd: Nie udało się przetworzyć pliku.\nPrzyczyna: {error}"
       }

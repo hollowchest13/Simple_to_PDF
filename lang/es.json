@@ -51,7 +51,7 @@
       "header_subtitle": "Extracción de páginas específicas de un PDF",
       "instruction_label": "Introduzca las páginas a extraer:",
       "hint_label": "Use comas para páginas individuales (1, 3)\ny guiones para rangos (5-10).",
-      "page_entry_placeholder": "ej. 1, 2, 5-8",
+      "page_entry": "ej. 1, 2, 5-8",
       "btn_ok": "Confirmar"
     }
   },
@@ -138,6 +138,11 @@
         "message": "Error: {error}",
         "btn": "Cerrar"
       },
+      "page_limit_error": {
+        "header": "Demasiadas páginas",
+        "message": "Se han seleccionado más de {limit} páginas.",
+        "btn": "Aceptar"
+      },
       "page_extraction_error": {
         "header": "Error de extracción",
         "message": "Error durante la extracción de páginas: {error}",
@@ -160,6 +165,7 @@
     },
     "processing": {
       "done": "Procesado: {success}; Errores: {failed}",
+      "cancel": "Operación cancelada por el usuario",
       "error": {
         "unknown": "Error: No se pudo procesar el archivo.\nMotivo: {error}"
       }

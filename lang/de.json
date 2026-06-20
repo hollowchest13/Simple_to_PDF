@@ -51,7 +51,7 @@
       "header_subtitle": "Einzelne Seiten aus PDF extrahieren",
       "instruction_label": "Seiten zum Extrahieren eingeben:",
       "hint_label": "Kommas für einzelne Seiten (1, 3)\nund Bindestriche für Bereiche (5-10) verwenden.",
-      "page_entry_placeholder": "z.B. 1, 2, 5-8",
+      "page_entry": "z.B. 1, 2, 5-8",
       "btn_ok": "Bestätigen"
     }
   },
@@ -138,6 +138,11 @@
         "message": "Fehler: {error}",
         "btn": "Schließen"
       },
+      "page_limit_error": {
+        "header": "Zu viele Seiten",
+        "message": "Es wurden mehr als {limit} Seiten ausgewählt.",
+        "btn": "Ok"
+      },
       "page_extraction_error": {
         "header": "Extraktionsfehler",
         "message": "Fehler beim Extrahieren der Seiten: {error}",
@@ -160,6 +165,7 @@
     },
     "processing": {
       "done": "Verarbeitet: {success}; Fehler: {failed}",
+      "cancel": "Vorgang vom Benutzer abgebrochen",
       "error": {
         "unknown": "Fehler: Datei konnte nicht verarbeitet werden.\nGrund: {error}"
       }
