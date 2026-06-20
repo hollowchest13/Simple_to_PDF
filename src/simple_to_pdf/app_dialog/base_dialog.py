@@ -9,7 +9,7 @@ from PIL import Image
 from simple_to_pdf.core.config import ROOT_PATH, ThemeKeys
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
-from simple_to_pdf.widgets import BaseFrame,BaseScrollableFrame
+from simple_to_pdf.widgets import BaseFrame
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         self.header = BaseFrame(self, frame_type="header", height=100)
         self.header.pack(fill="x", side="top")
 
-        self.content = BaseScrollableFrame(self,scr_frame_type="content")
+        self.content = BaseFrame(self, frame_type="content")
         self.content.pack(fill="both", expand=True, padx=25, pady=20)
 
         self.footer = BaseFrame(self, frame_type="footer")
