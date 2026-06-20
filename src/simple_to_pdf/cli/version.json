@@ -1,5 +1,0 @@
-  {
-    "version": "1.0.2",
-    "release_date": "2026-06-05",
-    "notes": "- Added: PDF compression functionality.\n- Added: Selection of output sheet format.\n- Added: Support for 4 new languages.\n- Improved: Image handling using the Pillow library.\n- Improved: Overall user interface.\n- Fixed: An issue with processing large files."
-  }

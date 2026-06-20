@@ -72,6 +72,7 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         """
         if hasattr(self, "remove_from_observers"):
             self.remove_from_observers()
+        self.grab_release()
         self.destroy()
 
     def refresh_localization(self) -> None:
