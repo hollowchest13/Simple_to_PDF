@@ -116,7 +116,7 @@ class ScrolableFrameThemeMixin(WidgetThemeProviderMixin):
     def set_params(
         self,
         *,
-        scr_frame_type: Literal["file_list", "button_list", "settings", "preview"],
+        scr_frame_type: Literal["file_list", "short_content","content"],
     ) -> Dict[str, Any]:
         """
         Generates configuration parameters for different types of CTkScrollableFrames.
@@ -131,7 +131,7 @@ class ScrolableFrameThemeMixin(WidgetThemeProviderMixin):
             case "file_list":
                 params.update(
                     {
-                        "fg_color": "transparent",
+                        "fg_color": self.get_color(ThemeKeys.BG_MAIN),
                         "label_font": (
                             "Segoe UI",
                             13,
@@ -140,27 +140,11 @@ class ScrolableFrameThemeMixin(WidgetThemeProviderMixin):
                         "label_anchor": "w",
                     }
                 )
-            case "settings":
+            case "content":
                 params.update(
-                    {
-                        "fg_color": self.get_color(ThemeKeys.BG_HEADER),
-                        "orientation": "vertical",
-                    }
-                )
-            case "preview":
-                params.update(
-                    {
-                        "fg_color": self.get_color(ThemeKeys.BG_PREVIEW),
-                        "border_width": 1,
-                        "border_color": self.get_color(ThemeKeys.BORDER),
-                    }
-                )
-            case "button_list":
-                params.update(
-                    {
-                        "fg_color": "transparent",
-                        "corner_radius": 0,
-                    }
+                {
+                    "fg_color": self.get_color(ThemeKeys.BG_MAIN),
+                }
                 )
         return params
 

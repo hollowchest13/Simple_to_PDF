@@ -155,8 +155,8 @@ class BaseScrollableFrame(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
         parent,
         *,
         scr_frame_type: Literal[
-            "file_list", "button_list", "settings", "preview"
-        ] = "button_list",
+            "file_list", "content"
+        ] = "content",
         **kwargs,
     ):
         params = self.set_params(scr_frame_type=scr_frame_type)

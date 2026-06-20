@@ -1,6 +1,7 @@
 import logging
 from typing import Any, Optional
 
+from simple_to_pdf import widgets
 from simple_to_pdf.widgets import BaseLabel, PrimaryButton
 
 from .base_dialog import BaseDialog
@@ -19,7 +20,7 @@ class ConfirmDialog(BaseDialog):
         parent: Any,
         scenario_key: str,
         with_icon: bool = True,
-        size: str = "400x400",
+        size: str = "450x500",
         **kwargs,
     ):
         self.group = scenario_key.split(".")[0]
@@ -127,6 +128,7 @@ class ConfirmDialog(BaseDialog):
         Usage: if ConfirmationDialog.ask(self."confirmation.confirm_delete")
         """
         dialog = cls(parent, scenario_key, **kwargs)
+        dialog.wait_window(dialog)
         if dialog.result is None:
             return False
         return dialog.result
