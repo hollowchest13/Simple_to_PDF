@@ -19,7 +19,7 @@ jobs:
         run: pip install . pyinstaller
       
       - name: Build
-        run: pyinstaller simple_to_pdf.spec
+        run: pyinstaller Simple_to_PDF.spec
       
       - name: Archive
         run: Compress-Archive -Path dist/Simple_to_PDF -DestinationPath simple_to_pdf-windows.zip
