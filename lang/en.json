@@ -14,9 +14,9 @@
       "btn_remove": "Remove file",
       "btn_merge": "Merge to PDF",
       "btn_convert": "Convert to PDF",
-      "btn_compress":"Compress PDF",
+      "btn_compress": "Compress PDF",
       "btn_extract": "Extract pages",
-      "btn_status_clear": "Clear console",
+      "btn_stop": "Cancel",
       "btn_help": "Help",
       "btn_settings": "Settings"
     },
@@ -45,14 +45,13 @@
       "description_label": "Utility for batch merging various file types into PDF with page extraction and compression features.",
       "github_btn": "Source code on GitHub"
     },
-   
     "page_selection_dialog": {
       "window_title": "Extract pages",
       "header_title": "Select pages",
       "header_subtitle": "Extracting specific pages from PDF",
       "instruction_label": "Enter pages to extract:",
       "hint_label": "Use commas for individual pages (1, 3)\nand hyphens for ranges (5-10).",
-      "page_entry_placeholder": "e.g. 1, 2, 5-8",
+      "page_entry": "e.g. 1, 2, 5-8",
       "btn_ok": "Confirm"
     }
   },
@@ -66,11 +65,11 @@
         "btn_no": "No"
       },
       "confirm_update": {
-      "header": "Update Available: {version}!",
-      "message": "What's new: {changelog_text}",
-      "btn_yes": "Download now",
-      "btn_no": "Later"
-    }
+        "header": "Update Available: {version}!",
+        "message": "What's new:\n {changelog_text}",
+        "btn_yes": "Download now",
+        "btn_no": "Later"
+      }
     },
     "info": {
       "__title__": "Information",
@@ -116,11 +115,6 @@
         "message": "Please use a correct format (e.g., 1-5, 8, 10-12).",
         "btn": "Got it"
       },
-      "process_in_progress": {
-        "header": "Process in progress!",
-        "message": "A background task is currently running.\n\nThe application will close automatically once finished. Please wait.",
-        "btn": "Wait"
-      },
       "file_not_found": {
         "header": "Not found",
         "message": "File {file_name} not found.",
@@ -133,7 +127,7 @@
       }
     },
     "error": {
-      "__title__": "File error",
+      "__title__": "Error",
       "file_read_error": {
         "header": "Read error",
         "message": "Failed to read file {file_name}.",
@@ -141,8 +135,13 @@
       },
       "page_validation_error": {
         "header": "Validation error",
-        "message": "Critical error: {error}",
+        "message": "Error: {error}",
         "btn": "Close"
+      },
+      "page_limit_error": {
+        "header": "Too many pages",
+        "message": "More than {limit} pages selected.",
+        "btn": "Ok"
       },
       "page_extraction_error": {
         "header": "Extraction error",
@@ -166,6 +165,7 @@
     },
     "processing": {
       "done": "Processed: {success}; Failed: {failed}",
+      "cancel": "Operation cancelled by user",
       "error": {
         "unknown": "Error: Failed to process file.\nReason: {error}"
       }

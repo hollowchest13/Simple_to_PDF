@@ -25,6 +25,7 @@ class AboutDialog(BaseDialog):
         self._setup_dialog_ui()
 
         self.refresh_localization()
+        self.update_idletasks()
 
     def _setup_dialog_ui(self) -> None:
         """

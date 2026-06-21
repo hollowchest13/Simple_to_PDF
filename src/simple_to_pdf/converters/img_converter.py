@@ -42,9 +42,13 @@ class ImageConverter(BaseConverter):
     ) -> ConversionResult:
         all_results: ConversionResult = ConversionResult()
         for chunk in self.make_chunks(files, self.chunk_size):
-            chunk_res: ConversionResult = self._convert_images_chunk(chunk=chunk)
-            all_results.success.extend(chunk_res.success)
-            all_results.failed.extend(chunk_res.failed)
+            try:
+                chunk_res: ConversionResult = self._convert_images_chunk(chunk=chunk)
+                all_results.success.extend(chunk_res.success)
+                all_results.failed.extend(chunk_res.failed)
+            except Exception:
+                logger.error("Chunk conversion error:", exc_info=True)
+                continue
         return all_results
 
     def _convert_single_image(self, path: Path) -> bytes | None:
@@ -90,6 +94,7 @@ class ImageConverter(BaseConverter):
 
         for idx, path in chunk:
             path = Path(path)
+            self.check_stop()
             try:
                 pdf_data = self._convert_single_image(path)
 

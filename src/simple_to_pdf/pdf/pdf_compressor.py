@@ -4,12 +4,14 @@ import logging
 import pymupdf
 from PIL import Image
 
+from simple_to_pdf.base_services.base import BaseService
+
 from .models import PixInfo
 
 logger = logging.getLogger(__name__)
 
 
-class PDFCompressor:
+class PDFCompressor(BaseService):
     """A class to compress PDF files by optimizing embedded images.
 
     This class utilizes the PyMuPDF library to parse the PDF structure
@@ -28,7 +30,7 @@ class PDFCompressor:
             deflate (bool): Whether to compress data streams (text, fonts, etc.) using ZIP.
             clean (bool): Whether to clean and optimize the internal file structure.
         """
-
+        super().__init__()
         self.garbage_level = garbage_level
         self.deflate = deflate
         self.clean = clean
@@ -174,7 +176,11 @@ class PDFCompressor:
                 processed_xrefs = set()
 
                 for idx in range(total_pages):
+                    self.check_stop()
+
                     page = doc[idx]
+                    if self.is_hard_page(page=page):
+                        continue
                     self._set_page_images_quality(
                         page, doc=doc, quality=quality, processed_xrefs=processed_xrefs
                     )
@@ -212,7 +218,9 @@ class PDFCompressor:
                     },
                 )
                 return compressed_stream.getvalue()
-
+        except InterruptedError:
+            logger.info(f"{stage_name} process was interrupted by user.")
+            raise
         except Exception as e:
             logger.error(f"Compressing error: {e}", exc_info=True)
             self.callback(
@@ -223,3 +231,11 @@ class PDFCompressor:
                 },
             )
             return pdf_bytes
+
+    def is_hard_page(self, *, page) -> bool:
+        try:
+            drawings = page.get_drawings()
+            return True if len(drawings) > 1000 else False
+        except Exception as e:
+            logger.error(f"Page parsing error:{e}", exc_info=True)
+            return False

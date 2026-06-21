@@ -1,7 +1,6 @@
 import logging
 from typing import Any, Optional
-
-from simple_to_pdf.widgets import BaseLabel, PrimaryButton
+from simple_to_pdf.widgets import BaseLabel, PrimaryButton,BaseScrollableFrame,BaseFrame
 
 from .base_dialog import BaseDialog
 
@@ -19,7 +18,8 @@ class ConfirmDialog(BaseDialog):
         parent: Any,
         scenario_key: str,
         with_icon: bool = True,
-        size: str = "400x400",
+        scrollable_content=False,
+        size: str = "450x500",
         **kwargs,
     ):
         self.group = scenario_key.split(".")[0]
@@ -27,6 +27,7 @@ class ConfirmDialog(BaseDialog):
             parent,
             title_key=f"{self.group}.__title__",
             loc_section="notifications",
+            scrollable_content=scrollable_content
         )
 
         self.scenario = scenario_key
@@ -37,11 +38,8 @@ class ConfirmDialog(BaseDialog):
             self.geometry(size)
 
         self._setup_dialog_ui()
-
         self.refresh_localization(**kwargs)
-
-        self.grab_set()
-        self.wait_window()
+        self.update_idletasks()
 
     def _setup_dialog_ui(self):
         """
@@ -130,6 +128,7 @@ class ConfirmDialog(BaseDialog):
         Usage: if ConfirmationDialog.ask(self."confirmation.confirm_delete")
         """
         dialog = cls(parent, scenario_key, **kwargs)
+        dialog.wait_window(dialog)
         if dialog.result is None:
             return False
         return dialog.result
