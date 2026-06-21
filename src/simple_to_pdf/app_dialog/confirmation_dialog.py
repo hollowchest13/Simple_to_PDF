@@ -1,9 +1,6 @@
 import logging
 from typing import Any, Optional
-
-from simple_to_pdf import widgets
-from simple_to_pdf.widgets import BaseLabel, PrimaryButton
-from simple_to_pdf.widgets.base_widgets import BaseScrollableFrame
+from simple_to_pdf.widgets import BaseLabel, PrimaryButton,BaseScrollableFrame,BaseFrame
 
 from .base_dialog import BaseDialog
 
@@ -21,6 +18,7 @@ class ConfirmDialog(BaseDialog):
         parent: Any,
         scenario_key: str,
         with_icon: bool = True,
+        scrollable_content=False,
         size: str = "450x500",
         **kwargs,
     ):
@@ -29,14 +27,12 @@ class ConfirmDialog(BaseDialog):
             parent,
             title_key=f"{self.group}.__title__",
             loc_section="notifications",
+            scrollable_content=scrollable_content
         )
 
         self.scenario = scenario_key
         self.result: Optional[bool] = None
         self.current_icon = self._load_icon(with_icon=with_icon, window_type=self.group)
-        self.content.destroy()
-        self.content = BaseScrollableFrame(self, scr_frame_type="content")
-        self.content.pack(fill="both", expand=True, padx=25, pady=20)
 
         if size:
             self.geometry(size)

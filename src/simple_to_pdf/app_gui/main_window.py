@@ -282,6 +282,7 @@ class PDFMergerGUI(BaseWindow):
             confirmed = ConfirmDialog.ask(
                 parent=self,
                 scenario_key="confirmation.confirm_update",
+                scrollable_content=True,
                 version=result.release.version,
                 changelog_text=result.release.notes,
             )
