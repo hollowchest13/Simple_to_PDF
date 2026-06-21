@@ -9,7 +9,7 @@ from PIL import Image
 from simple_to_pdf.core.config import ROOT_PATH, ThemeKeys
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
-from simple_to_pdf.widgets import BaseFrame
+from simple_to_pdf.widgets import BaseFrame,BaseScrollableFrame
 
 logger = logging.getLogger(__name__)
 
@@ -20,13 +20,14 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
     Handles centering, theme consistency, and standard layout.
     """
 
-    def __init__(self, parent, *, title_key="window_title", loc_section: str):
+    def __init__(self, parent, *, title_key="window_title",scrollable_content:bool=False, loc_section: str):
         super().__init__(parent)
 
         """
         Setup base window configuration
         """
         self._title_key = title_key
+        self._scrollable_content:bool=scrollable_content
         self.ui = {}
 
         self.resizable(False, False)
@@ -49,7 +50,10 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         self.header = BaseFrame(self, frame_type="header", height=100)
         self.header.pack(fill="x", side="top")
 
-        self.content = BaseFrame(self, frame_type="content")
+        if self._scrollable_content:
+            self.content = BaseScrollableFrame(self, scr_frame_type="content")
+        else:
+            self.content = BaseFrame(self, frame_type="content")
         self.content.pack(fill="both", expand=True, padx=25, pady=20)
 
         self.footer = BaseFrame(self, frame_type="footer")
