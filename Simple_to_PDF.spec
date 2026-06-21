@@ -40,6 +40,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=['icon.ico'] if sys.platform == 'win32' else [],
+    contents_directory='.'
 )
 coll = COLLECT(
     exe,
