@@ -42,7 +42,7 @@ jobs:
         run: pip install . pyinstaller
       
       - name: Build
-        run: pyinstaller simple_to_pdf.spec
+        run: pyinstaller Simple_to_PDF.spec
       
       - name: Archive
         run: tar -czf simple_to_pdf-linux.tar.gz -C dist Simple_to_PDF
