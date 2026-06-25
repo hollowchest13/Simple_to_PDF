@@ -221,10 +221,8 @@ class BaseSwitcher(ctk.CTkSwitch, SwitcherThemeMixin):
     def get(self) -> bool:
         return self.var.get()
 
-    def set(self, value: str | bool) -> None:
-        """Set the switch state, supporting both strings and boolean values."""
+    def set(self, value: str | bool, from_variable_callback: bool = False) -> None:
         str_value = str(value).lower().strip()
-
         if str_value == "true":
             self.select()
         else:
