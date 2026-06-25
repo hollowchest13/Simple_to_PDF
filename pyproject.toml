@@ -15,15 +15,15 @@ authors = [{ name = "hollowchest13", email = "hollowchest13@gmail.com" }]
 
 # Project dependencies to be installed via pip
 dependencies = [
-    "openpyxl>=3.1.5",
-    "pypdf>=5.0.0",
-    "requests>=2.32.0",
-    "packaging>=24.0",
-    "pillow>=10.0.0",
+    "openpyxl==3.1.5",
+    "pypdf==6.11.0",
+    "requests==2.34.2",
+    "packaging==26.2",
+    "pillow==12.2.0",
     "tendo==0.3.0",
     "customtkinter==5.2.2",
-    "pywin32>=306; sys_platform == 'win32'",
-    "pymupdf>=1.24.0",
+    "pywin32==311; sys_platform == 'win32'",
+    "pymupdf==1.27.2.3",
 ]
 [project.urls]
 # External links for the project
