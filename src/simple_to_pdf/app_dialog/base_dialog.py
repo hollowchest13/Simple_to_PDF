@@ -40,7 +40,6 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         self.loc_section = loc_section
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         self._center_window(parent)
-        self.wait_visibility()
         self.bind("<Map>", self._on_map)
         
 
@@ -105,15 +104,16 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
             "confirmation": str(base_path / "confirmation.png"),
         }
     def _on_map(self, event):
-        self.unbind("<Map>")  
+        if getattr(self, "_map_handled", False):
+            return
+        self._map_handled = True
         self.after(50, self._finalize)
 
     def _finalize(self):
         if not self.winfo_exists():
             return
-        if not self.winfo_viewable():
-            self.after(50, self._finalize)
-            return
+        self.deiconify()
+        self.lift()
         self.grab_set()
         self.focus_set()
 
