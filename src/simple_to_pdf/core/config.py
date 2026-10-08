@@ -1,14 +1,13 @@
 import sys
-from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
+from pathlib import Path
 
 from simple_to_pdf.pdf.models import PageFormat
 
 # --- PATHS CONFIGURATION ---
 
 if getattr(sys, "frozen", False):
-    # В .exe файли лежать поруч з exe
     ROOT_PATH = Path(sys.executable).parent
 else:
     ROOT_PATH = Path(__file__).resolve().parents[3]
@@ -40,7 +39,7 @@ LATEST_RELEASE_API = (
 
 # --- APPLICATION METADATA ---
 APP_NAME = "Simple to PDF"
-CURRENT_YEAR = datetime.now().year
+CURRENT_YEAR = datetime.now(timezone.utc).year
 
 
 class ThemeKeys(Enum):
