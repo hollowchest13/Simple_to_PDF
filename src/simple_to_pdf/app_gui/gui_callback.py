@@ -1,6 +1,7 @@
-import tkinter as tk
 import logging
+import tkinter as tk
 from typing import Literal
+
 from simple_to_pdf.core.config import ThemeKeys
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
@@ -15,31 +16,30 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
     def safe_callback(
         self, event_type: Literal["status", "progress"], **params
     ) -> None:
-        """Thread-safe router for GUI events using .after()."""
+        """Can be called from any thread; hands the event over to the UI thread."""
+        self.main_frame.schedule_ui_task(self._handle_event, event_type, **params)
 
+    def _handle_event(
+        self, event_type: Literal["status", "progress"], **params
+    ) -> None:
+        """Routes GUI events. Always runs in the main (UI) thread."""
         if event_type == "progress":
-            progress_params = {
-                "stage": params.get("stage", "processing"),
-                "mode": params.get("mode", "indeterminate"),
-                "current": params.get("current", 0),
-                "total": params.get("total", 0),
-                "filename": params.get("filename", ""),
-            }
-            self.main_frame.after(
-                20, lambda p=progress_params: self.progress_bar_update(**p)
+            self.progress_bar_update(
+                stage=params.get("stage", "processing"),
+                mode=params.get("mode", "indeterminate"),
+                current=params.get("current", 0),
+                total=params.get("total", 0),
+                filename=params.get("filename", ""),
             )
 
         elif event_type == "status":
             status_params = params.copy()
             status_key = status_params.pop("key")
             status_type = status_params.pop("status", "info")
+            self.set_status(key=status_key, status=status_type, **status_params)
 
-            self.main_frame.after(
-                20,
-                lambda k=status_key, s=status_type, sp=status_params: self.set_status(
-                    key=k, status=s, **sp
-                ),
-            )
+        else:
+            logger.warning("Unknown GUI event type: %s", event_type)
 
     def progress_bar_update(
         self,

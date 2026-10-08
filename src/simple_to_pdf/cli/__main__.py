@@ -77,7 +77,7 @@ def _run_gui(
             compressor=compressor,
         )
         app.mainloop()
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.fatal(f"GUI Runtime error: {e}", exc_info=True)
 
 

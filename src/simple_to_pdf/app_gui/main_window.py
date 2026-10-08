@@ -1,13 +1,14 @@
 import logging
 import os
+import queue
 import subprocess
 import sys
-import threading
 import webbrowser
-from datetime import datetime
+from collections.abc import Callable
+from datetime import datetime, timezone
 from pathlib import Path
 from tkinter import filedialog
-from typing import Any, Callable, Dict, List, Literal
+from typing import Any, Literal
 
 import customtkinter as ctk
 
@@ -32,7 +33,11 @@ from simple_to_pdf.pdf.conversion_service import ConversionService
 from simple_to_pdf.pdf.models import PageFormat
 from simple_to_pdf.settings.settings_manager import SettingsManager
 from simple_to_pdf.utils.file_tools import FileToolKit, get_files
-from simple_to_pdf.utils.logic import get_selected_pages,InvalidPageInputError,PageLimitExceededError
+from simple_to_pdf.utils.logic import (
+    InvalidPageInputError,
+    PageLimitExceededError,
+    get_selected_pages,
+)
 from simple_to_pdf.utils.notification_manager import NotificationManager
 from simple_to_pdf.utils.ui_tools import change_state, threaded_task
 from simple_to_pdf.widgets import BaseFrame, ToogleFrame
@@ -56,6 +61,9 @@ class PDFMergerGUI(BaseWindow):
         """Create the main window and wire its dependencies."""
 
         super().__init__(title=f"{config.APP_NAME}-PDF Merger", size="1000x700")
+        self._ui_queue = queue.Queue()
+        self._poll_ui_queue()
+
         self.protocol("WM_DELETE_WINDOW", self._on_closing)
         self.thread_running: bool = False
         self.conversion_service = conversion_service
@@ -71,6 +79,20 @@ class PDFMergerGUI(BaseWindow):
         self.init_connections()
         self.build_gui()
         self.apply_settings()
+
+    def _poll_ui_queue(self):
+        try:
+            while True:
+                func, args, kwargs = self._ui_queue.get_nowait()
+                try:
+                    func(*args, **kwargs)
+                except Exception:
+                    logger.exception(
+                        "UI task failed: %s", getattr(func, "__name__", func)
+                    )
+        except queue.Empty:
+            pass
+        self.after(50, self._poll_ui_queue)
 
     def apply_settings(self) -> None:
         self.settings_panel.setup()
@@ -104,7 +126,7 @@ class PDFMergerGUI(BaseWindow):
         self.help_panel: HelpFrame = HelpFrame(
             self.dynamic_side_panel, handlers=handlers
         )
-        self.slide_tabs: List[ToogleFrame] = [self.settings_panel, self.help_panel]
+        self.slide_tabs: list[ToogleFrame] = [self.settings_panel, self.help_panel]
 
     def init_connections(self) -> None:
         """Attach callbacks to processing components."""
@@ -145,7 +167,7 @@ class PDFMergerGUI(BaseWindow):
         if sys.platform == "win32":
             try:
                 os.startfile(path_str)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.error(f"Could not open folder on Windows: {e}")
 
         elif sys.platform == "linux":
@@ -161,8 +183,8 @@ class PDFMergerGUI(BaseWindow):
                     stderr=subprocess.DEVNULL,
                     env=clean_env,
                 )
-            except Exception as e:
-                logger.error(f"Could not open folder on Linux: {e}", exc_info=True)
+            except Exception:
+                logger.exception("Could not open folder on Linux!")
 
     def _setup_handlers(self) -> dict[str, Callable]:
         """Build the UI command map."""
@@ -324,7 +346,7 @@ class PDFMergerGUI(BaseWindow):
                 scenario_key="file_not_found_error",
                 file_name=file_path,
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Error reading license file: {e}")
             self.notifier.error(
                 scenario_key="file_read_error",
@@ -356,7 +378,7 @@ class PDFMergerGUI(BaseWindow):
     def show_license(self) -> None:
         """Display the license text in the notification dialog."""
         license_path = Path(config.LICENCE_PATH)
-        cur_year = datetime.now().year
+        cur_year = datetime.now(tz=timezone.utc).year
         license_text = self.get_text_from_file(file_path=license_path)
 
         self.notifier.info(
@@ -393,11 +415,8 @@ class PDFMergerGUI(BaseWindow):
 
         self._run_merge_worker(files=files, output_path=out)
 
-    def schedule_ui_task(self, func, *args, delay: int = 10, **kwargs):
-        if threading.current_thread() != threading.main_thread():
-            self.after(delay, lambda: func(*args, **kwargs))
-        else:
-            func(*args, **kwargs)
+    def schedule_ui_task(self, func, *args, **kwargs):
+        self._ui_queue.put((func, args, kwargs))
 
     def save_result(
         self,
@@ -420,10 +439,8 @@ class PDFMergerGUI(BaseWindow):
                 "status", key=f"{stage}.done", status="info", path=output_path
             )
 
-        except OSError as e:
-            logger.error(
-                f"Saving stage ({stage}) failed (OS Error): {e}", exc_info=True
-            )
+        except OSError:
+            logger.exception(f"Saving stage ({stage}) failed (OS Error).")
             if reset_ui_on_error:
                 self.schedule_ui_task(self.main_panel.progress_bar_reset)
             self.callback.safe_callback(
@@ -433,10 +450,8 @@ class PDFMergerGUI(BaseWindow):
                 path=Path(output_path).name,
             )
 
-        except Exception as e:
-            logger.error(
-                f"Saving stage ({stage}) failed (Unknown Error): {e}", exc_info=True
-            )
+        except Exception:
+            logger.exception(f"Saving stage ({stage}) failed (Unknown Error)!")
             if reset_ui_on_error:
                 self.schedule_ui_task(self.main_panel.progress_bar_reset)
             self.callback.safe_callback(
@@ -452,17 +467,15 @@ class PDFMergerGUI(BaseWindow):
 
     @threaded_task
     def _run_merge_worker(
-        self, files: List[tuple[int, Path]], output_path: str
+        self, files: list[tuple[int, Path]], output_path: str
     ) -> None:
         """Merge the selected files, optionally compress the result, and save it."""
 
         self.schedule_ui_task(self.main_panel.progress_bar_reset)
         self.callback.safe_callback(
             "progress",
-            **{
-                "stage": "analyzing",
-                "mode": "indeterminate",
-            },
+            stage="analyzing",
+            mode="indeterminate",
         )
         try:
             conversion_res = self.conversion_service.get_pdfs_data(files=files)
@@ -478,15 +491,13 @@ class PDFMergerGUI(BaseWindow):
         except InterruptedError:
             self.callback.safe_callback(
                 "status",
-                **{
-                    "key": "processing.cancel",
-                    "status": "info",
-                },
+                key="processing.cancel",
+                status="info",
             )
-            self.schedule_ui_task(self.main_panel.progress_bar_reset, delay=10)
+            self.schedule_ui_task(self.main_panel.progress_bar_reset)
             return
-        except Exception as e:
-            logger.error(f"Merge stage failed: {e}", exc_info=True)
+        except Exception:
+            logger.exception("Merge stage failed!")
             self.schedule_ui_task(self.main_panel.progress_bar_reset)
             return
 
@@ -506,16 +517,16 @@ class PDFMergerGUI(BaseWindow):
 
     def on_confirm(self, *, raw_input: str, input_path) -> None:
         """Validate page selection input and launch the extraction workflow."""
-        PAGE_LIMIT=10000
+        PAGE_LIMIT = 10000
         try:
-            pages = get_selected_pages(raw=raw_input.strip(),page_limit=PAGE_LIMIT)
+            pages = get_selected_pages(raw=raw_input.strip(), page_limit=PAGE_LIMIT)
             self.page_extractor.validate_pages(
                 input_path=Path(input_path), pages_to_extract=pages
             )
         except InvalidPageInputError:
             self.notifier.warning(scenario_key="wrong_page_format")
             return
-        except PageLimitExceededError as e:
+        except PageLimitExceededError:
             self.notifier.error(
                 scenario_key="page_limit_error",
                 limit=PAGE_LIMIT,
@@ -527,7 +538,7 @@ class PDFMergerGUI(BaseWindow):
                 error=e,
             )
             return
-        except Exception:
+        except Exception:  # noqa: BLE001
             self.notifier.error(
                 scenario_key="file_read_error",
                 file_name=input_path,
@@ -554,7 +565,7 @@ class PDFMergerGUI(BaseWindow):
 
     @threaded_task
     def _run_page_extractor_worker(
-        self, *, input_path: str, pages: List[int], output_path: str
+        self, *, input_path: str, pages: list[int], output_path: str
     ) -> None:
         """Run the page-extraction worker and report progress or errors."""
         try:
@@ -572,12 +583,10 @@ class PDFMergerGUI(BaseWindow):
         except InterruptedError:
             self.callback.safe_callback(
                 "status",
-                **{
-                    "key": "processing.cancel",
-                    "status": "info",
-                },
+                key="processing.cancel",
+                status="info",
             )
-            self.schedule_ui_task(self.main_panel.progress_bar_reset, delay=10)
+            self.schedule_ui_task(self.main_panel.progress_bar_reset)
             return
         except Exception as e:
             error_msg = f"Error during page extraction: {e}"
@@ -587,12 +596,11 @@ class PDFMergerGUI(BaseWindow):
                         scenario_key="page_extraction_error",
                         file_name=input_path,
                     ),
-                    delay=10,
                 )
             else:
                 self.callback.set_status(key="extract.error", status="error", error=e)
-                logger.error(error_msg, exc_info=True)
-                self.schedule_ui_task(self.main_panel.progress_bar_reset, delay=10)
+                logger.exception(error_msg)
+                self.schedule_ui_task(self.main_panel.progress_bar_reset)
             return
 
     def _on_closing(self) -> None:
@@ -628,6 +636,6 @@ class PDFMergerGUI(BaseWindow):
 
     def _save_and_destroy(self) -> None:
         """Persist current settings and destroy the main window."""
-        settings: Dict[str, str] = self.settings_panel.collect_data()
+        settings: dict[str, str] = self.settings_panel.collect_data()
         self.settings_manager.save_settings(settings=settings)
         self.destroy()

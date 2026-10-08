@@ -1,6 +1,7 @@
 import customtkinter as ctk
-from simple_to_pdf.widgets import BaseFrame
+
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
+from simple_to_pdf.widgets import BaseFrame
 
 
 class BaseWindow(ctk.CTk, ThemeProviderMixin):

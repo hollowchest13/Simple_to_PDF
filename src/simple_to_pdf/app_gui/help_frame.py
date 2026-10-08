@@ -1,4 +1,4 @@
-from typing import Callable, Dict
+from collections.abc import Callable
 
 import customtkinter as ctk
 
@@ -12,14 +12,14 @@ class HelpFrame(ToogleFrame):
         *,
         is_open: bool = False,
         width: int = 230,
-        handlers: Dict[str, Callable],
+        handlers: dict[str, Callable],
         **kwargs,
     ):
         super().__init__(parent, width=width, is_open=is_open, **kwargs)
 
         self.loc_section = "ui.help_panel"
-        self.handlers: Dict[str, Callable] = handlers
-        self.ui: Dict[str, ctk.CTkBaseClass] = {}
+        self.handlers: dict[str, Callable] = handlers
+        self.ui: dict[str, ctk.CTkBaseClass] = {}
         self._setup_ui()
         self.init_localization()
 
@@ -40,7 +40,7 @@ class HelpFrame(ToogleFrame):
         for key, widget in self.ui.items():
             setattr(self, key, widget)
 
-    def _setup_help_buttons(self) -> Dict[str, ctk.CTkBaseClass]:
+    def _setup_help_buttons(self) -> dict[str, ctk.CTkBaseClass]:
         """
         Defines button configurations and generates them via _buttons_pack.
         Returns a dictionary of created button objects.
