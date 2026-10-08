@@ -1,6 +1,5 @@
 import io
 import logging
-from typing import List
 
 from pypdf import PageObject, PdfReader, PdfWriter, Transformation
 
@@ -80,7 +79,7 @@ class PdfMerger(BaseService):
     ) -> bytes:
         """Merges multiple files into a single PDF and returns original bytes if it is single PDF."""
 
-        pdf_data_list: List[BytePdfDocument] = conversion_rep.documents
+        pdf_data_list: list[BytePdfDocument] = conversion_rep.documents
         self._files_count = len(pdf_data_list)
 
         stage_name = "merging"
@@ -121,8 +120,8 @@ class PdfMerger(BaseService):
                             writer=writer,
                             target_page_format=target_page_format,
                         )
-                except Exception as e:
-                    logger.error(f"Failed to process {filename}: {e}", exc_info=True)
+                except Exception:
+                    logger.exception("Failed to process %s!", filename)
                     failed += 1
                     self._show_callback(
                         "status",

@@ -1,7 +1,7 @@
 import io
 import logging
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 from pypdf import PdfReader, PdfWriter
 
@@ -49,24 +49,20 @@ class PageExtractor(BaseService):
                         writer.add_page(reader.pages[p_idx])
                         self.callback(
                             "progress",
-                            **{
-                                "stage": stage_name,
-                                "mode": "determinate",
-                                "current": i,
-                                "total": total,
-                                "filename": f"page {p_num}",
-                            },
+                            stage=stage_name,
+                            mode="determinate",
+                            current=i,
+                            total=total,
+                            filename=f"page {p_num}",
                         )
                     except IndexError as e:
                         logger.error(f"Page {p_num} is out of range for {input_path}")
                         self.callback(
                             "status",
-                            **{
-                                "key": f"{stage_name}.error",
-                                "status": "error",
-                                "page_number": p_num,
-                                "error": e,
-                            },
+                            key=f"{stage_name}.error",
+                            status="error",
+                            page_number=p_num,
+                            error=e,
                         )
             with io.BytesIO() as buffer:
                 writer.write(buffer)
@@ -74,11 +70,9 @@ class PageExtractor(BaseService):
 
             self.callback(
                 "status",
-                **{
-                    "key": f"{stage_name}.done",
-                    "status": "info",
-                    "path": str(output_file),
-                },
+                key=f"{stage_name}.done",
+                status="info",
+                path=str(output_file),
             )
             return data
 
@@ -93,7 +87,7 @@ class PageExtractor(BaseService):
         self,
         *,
         input_path: Path,
-        pages_to_extract: list[int]|None,
+        pages_to_extract: list[int] | None,
     ) -> None:
         """
         Validates if the provided page numbers exist within the source PDF.
