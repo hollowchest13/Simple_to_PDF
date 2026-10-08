@@ -82,17 +82,17 @@ class PDFMergerGUI(BaseWindow):
 
     def _poll_ui_queue(self):
         try:
-            while True:
-                func, args, kwargs = self._ui_queue.get_nowait()
-                try:
-                    func(*args, **kwargs)
-                except Exception:
-                    logger.exception(
-                        "UI task failed: %s", getattr(func, "__name__", func)
-                    )
+            max_tasks_per_frame = 20
+            count = 0
+
+            while count < max_tasks_per_frame:
+                task, args, kwargs = self._ui_queue.get_nowait()
+                task(*args, **kwargs)
+                count += 1
         except queue.Empty:
             pass
-        self.after(50, self._poll_ui_queue)
+        finally:
+            self.after(16, self._poll_ui_queue)
 
     def apply_settings(self) -> None:
         self.settings_panel.setup()
