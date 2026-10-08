@@ -1,5 +1,12 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from simple_to_pdf.app_gui.main_frame import MainFrame
 import logging
 import tkinter as tk
+from collections.abc import Callable
 from typing import Literal
 
 from simple_to_pdf.core.config import ThemeKeys
@@ -10,21 +17,22 @@ logger = logging.getLogger(__name__)
 
 
 class GUICallback(ThemeProviderMixin, LocalizationMixin):
-    def __init__(self, main_frame):
+    def __init__(self, main_frame: MainFrame, schedule: Callable[..., Any]):
         self.main_frame = main_frame
+        self._schedule_task = schedule
 
     def safe_callback(
         self, event_type: Literal["status", "progress"], **params
     ) -> None:
         """Can be called from any thread; hands the event over to the UI thread."""
-        self.main_frame.schedule_ui_task(self._handle_event, event_type, **params)
+        self._schedule_task(self._handle_event, event_type, **params)
 
     def _handle_event(
         self, event_type: Literal["status", "progress"], **params
     ) -> None:
         """Routes GUI events. Always runs in the main (UI) thread."""
         if event_type == "progress":
-            self.progress_bar_update(
+            self._progress_bar_update(
                 stage=params.get("stage", "processing"),
                 mode=params.get("mode", "indeterminate"),
                 current=params.get("current", 0),
@@ -36,12 +44,12 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
             status_params = params.copy()
             status_key = status_params.pop("key")
             status_type = status_params.pop("status", "info")
-            self.set_status(key=status_key, status=status_type, **status_params)
+            self._set_status(key=status_key, status=status_type, **status_params)
 
         else:
             logger.warning("Unknown GUI event type: %s", event_type)
 
-    def progress_bar_update(
+    def _progress_bar_update(
         self,
         *,
         stage: Literal["processing", "converting", "merging"] = "processing",
@@ -92,7 +100,7 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
 
         pl.configure(text=progress_text)
 
-    def set_status(self, key: str, status: str = "info", **kwargs) -> None:
+    def _set_status(self, key: str, status: str = "info", **kwargs) -> None:
         """Appends a status message with an icon to the text console."""
         icons = {"success": "✔", "error": "✘", "warning": "⚠", "info": "ⓘ"}
         icon = icons.get(status, "ⓘ")

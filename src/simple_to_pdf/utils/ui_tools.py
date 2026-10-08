@@ -30,8 +30,6 @@ def change_state(
                 f"Could not set '{state}' for widget '{name}'"
                 f"({type(widget).__name__}): {e}"
             )
-            # Skip if widget doesn't have a state parameter (e.g., Frame)
-            pass
 
 
 def threaded_task(func):
@@ -54,14 +52,20 @@ def threaded_task(func):
             self.clear_console()
         self.toggle_ui(active=False)  # lock in main thread
 
+        def _unlock_ui():
+            self.thread_running = False
+            self.toggle_ui(active=True)
+
         def run():
             try:
                 self.thread_running = True
                 func(self, *args, **kwargs)  # run in background thread
             finally:
-                # unlock in main thread
-                self.after(0, lambda: self.toggle_ui(active=True))
-                self.thread_running = False
+                if hasattr(self, "schedule_ui_task"):
+                    self.schedule_ui_task(_unlock_ui)
+                else:
+                    self.after(0, _unlock_ui)
+
                 logger.info(f"Thread {func.__name__} ended work")
 
         threading.Thread(target=run, daemon=False).start()

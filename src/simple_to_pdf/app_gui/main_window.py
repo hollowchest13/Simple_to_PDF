@@ -130,7 +130,9 @@ class PDFMergerGUI(BaseWindow):
 
     def init_connections(self) -> None:
         """Attach callbacks to processing components."""
-        self.callback = GUICallback(main_frame=self.main_panel)
+        self.callback = GUICallback(
+            main_frame=self.main_panel, schedule=self.schedule_ui_task
+        )
         self.conversion_service.callback = self.callback.safe_callback
         self.merger.callback = self.callback.safe_callback
         self.page_extractor.callback = self.callback.safe_callback
@@ -598,7 +600,9 @@ class PDFMergerGUI(BaseWindow):
                     ),
                 )
             else:
-                self.callback.set_status(key="extract.error", status="error", error=e)
+                self.callback.safe_callback(
+                    "status", key="extract.error", status="error", error=e
+                )
                 logger.exception(error_msg)
                 self.schedule_ui_task(self.main_panel.progress_bar_reset)
             return
@@ -617,7 +621,7 @@ class PDFMergerGUI(BaseWindow):
             )
             self.after(1000, self._wait_for_thread_finish)
         else:
-            logger.info("Background thread finished. Closing the application.")
+            logger.info("Closing the application.")
             self._save_and_destroy()
 
     def _manage_services(self, *, action: Literal["stop", "reset"]):
