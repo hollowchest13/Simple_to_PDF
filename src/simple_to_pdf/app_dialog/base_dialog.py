@@ -26,6 +26,7 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         title_key="window_title",
         scrollable_content: bool = False,
         loc_section: str,
+        size: str,
     ):
         super().__init__(parent)
 
@@ -36,7 +37,9 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         self._scrollable_content: bool = scrollable_content
         self.ui = {}
 
-        self.resizable(False, False)
+        if size:
+            self.geometry(size)
+            self.resizable(False, False)
         self.transient(parent)
 
         self._init_layout()

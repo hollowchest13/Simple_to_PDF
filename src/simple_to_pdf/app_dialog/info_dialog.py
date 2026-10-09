@@ -29,7 +29,10 @@ class InfoDialog(BaseDialog):
     ):
         group = scenario_key.split(".")[0] if "." in scenario_key else "info"
         super().__init__(
-            parent, title_key=f"{group}.__title__", loc_section="notifications"
+            parent,
+            title_key=f"{group}.__title__",
+            loc_section="notifications",
+            size=size,
         )
 
         self.scenario = scenario_key
@@ -41,10 +44,6 @@ class InfoDialog(BaseDialog):
         self.raw_text = msg
         self.footer_text = self.get_text(f"{scenario_key}.footer", **kwargs)
         self.current_icon = self._load_icon(with_icon=with_icon, window_type=group)
-
-        if size:
-            self.geometry(size)
-
         self.with_footer = with_footer
         self._setup_dialog_ui(text_font, font_size)
         self.refresh_localization(**kwargs)

@@ -16,10 +16,8 @@ class PageSelectionDialog(BaseDialog):
             parent,
             loc_section="dialogs.page_selection_dialog",
             title_key="window_title",
+            size="400x380",
         )
-
-        self.geometry("400x380")
-        self.resizable(False, False)
         self.result = None
         self._setup_dialog_ui()
         self.refresh_localization()

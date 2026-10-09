@@ -15,14 +15,10 @@ class AboutDialog(BaseDialog):
     def __init__(self, parent, version: str, engine_name: str, size: str = "400x450"):
         """Initialize BaseDialog with translation section 'ui.about_dialog"""
 
-        super().__init__(parent, loc_section="dialogs.about_dialog")
+        super().__init__(parent, loc_section="dialogs.about_dialog", size=size)
 
         self.version = version
         self.engine_name = engine_name
-
-        if size:
-            self.geometry(size)
-
         self._setup_dialog_ui()
 
         self.refresh_localization()
