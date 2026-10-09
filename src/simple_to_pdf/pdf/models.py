@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
-from typing import NamedTuple
 from pathlib import Path
+from typing import NamedTuple
 
 
 class PageFormat(NamedTuple):

@@ -414,8 +414,14 @@ class PDFMergerGUI(BaseWindow):
         )
         if not out:
             return
-
-        self._run_merge_worker(files=files, output_path=out)
+        need_compress: bool = self.settings_panel.compress_selector.get()
+        target_format = self._get_page_format()
+        self._run_merge_worker(
+            files=files,
+            output_path=out,
+            need_compress=need_compress,
+            target_format=target_format,
+        )
 
     def schedule_ui_task(self, func, *args, **kwargs):
         self._ui_queue.put((func, args, kwargs))
@@ -469,7 +475,11 @@ class PDFMergerGUI(BaseWindow):
 
     @threaded_task
     def _run_merge_worker(
-        self, files: list[tuple[int, Path]], output_path: str
+        self,
+        files: list[tuple[int, Path]],
+        output_path: str,
+        need_compress: bool,
+        target_format: PageFormat | None,
     ) -> None:
         """Merge the selected files, optionally compress the result, and save it."""
 
@@ -481,11 +491,9 @@ class PDFMergerGUI(BaseWindow):
         )
         try:
             conversion_res = self.conversion_service.get_pdfs_data(files=files)
-            target_format = self._get_page_format()
             data = self.merger.merge_to_pdf(
                 conversion_rep=conversion_res, target_page_format=target_format
             )
-            need_compress: bool = self.settings_panel.compress_selector.get()
             if need_compress:
                 data = self.compressor.compress(pdf_bytes=data)
             if data:
