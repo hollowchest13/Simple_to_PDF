@@ -72,18 +72,20 @@ class PDFCompressor(BaseService):
 
             pix_info = self._get_pix_info(pix)
 
-            with Image.frombytes(
-                "RGB", (pix_info.width, pix_info.height), pix_info.samples
-            ) as pil_img:
-                with io.BytesIO() as buffer:
-                    pil_img.save(
-                        buffer,
-                        format="JPEG",
-                        quality=quality,
-                        optimize=True,
-                        progressive=True,
-                    )
-                    compressed_jpeg_bytes = buffer.getvalue()
+            with (
+                Image.frombytes(
+                    "RGB", (pix_info.width, pix_info.height), pix_info.samples
+                ) as pil_img,
+                io.BytesIO() as buffer,
+            ):
+                pil_img.save(
+                    buffer,
+                    format="JPEG",
+                    quality=quality,
+                    optimize=True,
+                    progressive=True,
+                )
+                compressed_jpeg_bytes = buffer.getvalue()
 
             if len(compressed_jpeg_bytes) < len(orig_bytes):
                 page.replace_image(xref, stream=compressed_jpeg_bytes)
@@ -95,8 +97,8 @@ class PDFCompressor(BaseService):
                     f"Skipped image {xref}: compressed size is larger than original"
                 )
 
-        except Exception as e:
-            logger.debug(f"Image compressing failed {xref}: {e}")
+        except Exception:
+            logger.exception(f"Image compressing failed {xref}!")
         finally:
             if pix is not None:
                 del pix
@@ -124,6 +126,7 @@ class PDFCompressor(BaseService):
         try:
             image_list = page.get_images(full=True)
         except Exception:
+            logger.exception("page.get_image error!")
             image_list = []
 
         for img in image_list:
@@ -161,10 +164,8 @@ class PDFCompressor(BaseService):
 
         self.callback(
             "progress",
-            **{
-                "stage": current_stage,
-                "mode": "indeterminate",
-            },
+            stage=current_stage,
+            mode="indeterminate",
         )
         try:
             with pymupdf.open(stream=pdf_bytes, filetype="pdf") as doc:
@@ -186,22 +187,18 @@ class PDFCompressor(BaseService):
                     )
                     self.callback(
                         "progress",
-                        **{
-                            "stage": current_stage,
-                            "mode": "determinate",
-                            "current": idx + 1,
-                            "total": total_pages,
-                        },
+                        stage=current_stage,
+                        mode="determinate",
+                        current=idx + 1,
+                        total=total_pages,
                     )
 
                 current_stage = "processing"
                 compressed_stream = io.BytesIO()
                 self.callback(
                     "progress",
-                    **{
-                        "stage": current_stage,
-                        "mode": "indeterminate",
-                    },
+                    stage=current_stage,
+                    mode="indeterminate",
                 )
                 doc.save(
                     compressed_stream,
@@ -212,30 +209,26 @@ class PDFCompressor(BaseService):
 
                 self.callback(
                     "status",
-                    **{
-                        "key": f"{stage_name}.done",
-                        "status": "info",
-                    },
+                    key=f"{stage_name}.done",
+                    status="info",
                 )
                 return compressed_stream.getvalue()
         except InterruptedError:
             logger.info(f"{stage_name} process was interrupted by user.")
             raise
-        except Exception as e:
-            logger.error(f"Compressing error: {e}", exc_info=True)
+        except Exception:
+            logger.exception("Compressing error!")
             self.callback(
                 "status",
-                **{
-                    "key": "compressing.error.crirical",
-                    "status": "error",
-                },
+                key="compressing.error.crirical",
+                status="error",
             )
             return pdf_bytes
 
     def is_hard_page(self, *, page) -> bool:
         try:
             drawings = page.get_drawings()
-            return True if len(drawings) > 1000 else False
-        except Exception as e:
-            logger.error(f"Page parsing error:{e}", exc_info=True)
+            return len(drawings) > 1000
+        except Exception:
+            logger.exception("Page parsing error!")
             return False

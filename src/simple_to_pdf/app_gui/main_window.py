@@ -735,13 +735,23 @@ class PDFMergerGUI(BaseWindow):
         return False
 
     def _kill_executor(self) -> None:
-        """Forcefully terminates all active child processes in the pool."""
-        if self.process_executor:
-            processes = getattr(self.process_executor, "_processes", {})
-            for pid, process in list(processes.items()):
-                if process.is_alive():
-                    process.terminate()
+        """Force terminate background process pool and underlying child processes."""
+        if self.process_executor is None:
+            return
+
+        try:
+            processes = getattr(self.process_executor, "_processes", {}) or {}
+
+            if isinstance(processes, dict):
+                for pid, process in list(processes.items()):
+                    if process and process.is_alive():
+                        process.terminate()
+
             self.process_executor.shutdown(wait=False, cancel_futures=True)
+        except Exception:
+            logger.exception("Error while killing process executor!")
+        finally:
+            self.process_executor = None
 
     def _get_executor(self) -> ProcessPoolExecutor:
         """Returns an active ProcessPoolExecutor, creating a new one if needed."""
