@@ -44,6 +44,8 @@ def threaded_task(func):
 
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
+        if hasattr(self, "_clear_ui_queue"):
+            self._clear_ui_queue()
         if getattr(self, "thread_running", False):
             return
         if hasattr(self, "_manage_services"):

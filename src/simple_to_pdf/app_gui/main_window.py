@@ -70,7 +70,8 @@ class PDFMergerGUI(BaseWindow):
         self._poll_ui_queue()
         self.workers = 2
         self.process_executor = ProcessPoolExecutor(max_workers=self.workers)
-        self.mp_queue: mp.Queue[Any] = mp.Queue()
+        self.mp_manager = mp.Manager()
+        self.mp_queue = self.mp_manager.Queue()
 
         self.protocol("WM_DELETE_WINDOW", self._on_closing)
         self.thread_running: bool = False
@@ -512,7 +513,7 @@ class PDFMergerGUI(BaseWindow):
                 "progress", stage="merging", mode="indeterminate"
             )
             data: bytes = execute_in_process(
-                executor=self.process_executor,
+                executor=self._get_executor(),
                 mp_queue=self.mp_queue,
                 ui_callback=self.callback,
                 service_cls=PdfMerger,
@@ -531,7 +532,7 @@ class PDFMergerGUI(BaseWindow):
                     "progress", stage="compressing", mode="indeterminate"
                 )
                 data = execute_in_process(
-                    executor=self.process_executor,
+                    executor=self._get_executor(),
                     mp_queue=self.mp_queue,
                     ui_callback=self.callback,
                     service_cls=PDFCompressor,
@@ -630,14 +631,31 @@ class PDFMergerGUI(BaseWindow):
         """Run the page-extraction worker and report progress or errors."""
         try:
             self.schedule_ui_task(self.main_panel.progress_bar_reset)
-            data = self.page_extractor.extract_pages(
-                input_path=input_path,
-                pages_to_extract=pages,
-                output_path=output_path,
+            data: bytes = execute_in_process(
+                executor=self._get_executor(),
+                mp_queue=self.mp_queue,
+                ui_callback=self.callback,
+                service_cls=PageExtractor,
+                method_name="extract_pages",
+                method_kwargs={
+                    "input_path": input_path,
+                    "pages_to_extract": pages,
+                    "output_path": output_path,
+                },
             )
             need_compress: bool = self.settings_panel.compress_selector.get()
             if need_compress:
-                data = self.compressor.compress(pdf_bytes=data)
+                self.callback.safe_callback(
+                    "progress", stage="compressing", mode="indeterminate"
+                )
+                data = execute_in_process(
+                    executor=self._get_executor(),
+                    mp_queue=self.mp_queue,
+                    ui_callback=self.callback,
+                    service_cls=PDFCompressor,
+                    method_name="compress",
+                    method_kwargs={"pdf_bytes": data},
+                )
             if data:
                 self.save_result(data=data, output_path=output_path)
         except InterruptedError:
@@ -667,11 +685,9 @@ class PDFMergerGUI(BaseWindow):
 
     def _on_closing(self) -> None:
         """Handle window close requests and wait for background work if needed."""
-        self._manage_services(action="stop")
         self.protocol("WM_DELETE_WINDOW", lambda: None)
+        self.cancel_processing()
         self._wait_for_thread_finish()
-        logger.info("Closing the application.")
-        self._save_and_destroy()
 
     def _wait_for_thread_finish(self) -> None:
         """Poll until any background work finishes before closing the window."""
@@ -680,6 +696,16 @@ class PDFMergerGUI(BaseWindow):
                 "Waiting for background thread to finish... (re-checking in 1s)"
             )
             self.after(1000, self._wait_for_thread_finish)
+        else:
+            logger.info("Closing the application.")
+            self._save_and_destroy()
+
+    def _save_and_destroy(self) -> None:
+        """Persist current settings and destroy the main window."""
+        settings: dict[str, str] = self.settings_panel.collect_data()
+        self.settings_manager.save_settings(settings=settings)
+        self._close_manager()
+        self.destroy()
 
     def _manage_services(self, *, action: Literal["stop", "reset"]):
         for service in self.services:
@@ -690,19 +716,11 @@ class PDFMergerGUI(BaseWindow):
                     case "reset":
                         service.stop_event.clear()
 
-    def _save_and_destroy(self) -> None:
-        """Persist current settings and destroy the main window."""
-        settings: dict[str, str] = self.settings_panel.collect_data()
-        self.settings_manager.save_settings(settings=settings)
-        self.destroy()
-
     def cancel_processing(self) -> None:
         """Called when the 'Cancel' button is clicked.."""
         self._manage_services(action="stop")
-
-        if self.process_executor:
-            self.process_executor.shutdown(wait=False, cancel_futures=True)
-            self.process_executor = ProcessPoolExecutor(max_workers=self.workers)
+        self._kill_executor()
+        self._clear_ui_queue()
 
     def _is_cancelled(self) -> bool:
         """Checks whether a cancellation or stop signal has been issued."""
@@ -715,3 +733,34 @@ class PDFMergerGUI(BaseWindow):
             ):
                 return True
         return False
+
+    def _kill_executor(self) -> None:
+        """Forcefully terminates all active child processes in the pool."""
+        if self.process_executor:
+            processes = getattr(self.process_executor, "_processes", {})
+            for pid, process in list(processes.items()):
+                if process.is_alive():
+                    process.terminate()
+            self.process_executor.shutdown(wait=False, cancel_futures=True)
+
+    def _get_executor(self) -> ProcessPoolExecutor:
+        """Returns an active ProcessPoolExecutor, creating a new one if needed."""
+        if self.process_executor is None or getattr(
+            self.process_executor, "_shutdown", False
+        ):
+            self.process_executor = ProcessPoolExecutor(max_workers=self.workers)
+        return self.process_executor
+
+    def _clear_ui_queue(self) -> None:
+        """Clears stale UI update tasks."""
+        if hasattr(self, "_ui_queue"):
+            with self._ui_queue.mutex:
+                self._ui_queue.queue.clear()
+
+    def _close_manager(self) -> None:
+        """Shutdown the multiprocessing manager to release process resources."""
+        if hasattr(self, "mp_manager") and self.mp_manager:
+            try:
+                self.mp_manager.shutdown()
+            except Exception:
+                logger.exception("Shutdown multiprocessing error!")
