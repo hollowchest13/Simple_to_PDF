@@ -1,8 +1,9 @@
 import logging
 import platform
 import shutil
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, List
+
 from simple_to_pdf.converters.base_converter import BaseConverter
 
 logger = logging.getLogger(__name__)
@@ -76,8 +77,8 @@ class ConverterFactory:
 
     def get_converter(self) -> BaseConverter:
         os_name = platform.system()
-        logger.info(f"Operating System detected: {os_name}")
-        strategies: List[Callable[[], BaseConverter]] = []
+        logger.info("Operating System detected: %s", os_name)
+        strategies: list[Callable[[], BaseConverter]] = []
         if os_name == "Windows":
             strategies = [
                 lambda: self._try_ms_office(chunk_size=self.chunk_size),
@@ -89,10 +90,10 @@ class ConverterFactory:
         for strategy in strategies:
             try:
                 converter: BaseConverter = strategy()
-                logger.info(f"Using converter: {converter.__class__.__name__}")
+                logger.info("Using converter: %s", converter.__class__.__name__)
                 return converter
-            except Exception as e:
-                logger.warning(f"Converter initialization failed: {e}", exc_info=True)
+            except Exception:
+                logger.exception("Converter initialization failed!")
         raise RuntimeError(
             "Could not initialize any converter. "
             "Please check if LibreOffice or MS Office is installed."

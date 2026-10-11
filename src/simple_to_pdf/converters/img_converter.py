@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class ImageConverter(BaseConverter):
-    SUPPORTED_FORMATS = {
+    SUPPORTED_FORMATS = {  # noqa: RUF012
         "image": {
             ".jpg",
             ".jpeg",
@@ -47,7 +47,7 @@ class ImageConverter(BaseConverter):
                 all_results.success.extend(chunk_res.success)
                 all_results.failed.extend(chunk_res.failed)
             except Exception:
-                logger.error("Chunk conversion error:", exc_info=True)
+                logger.exception("Chunk conversion error!")
                 continue
         return all_results
 
@@ -104,7 +104,7 @@ class ImageConverter(BaseConverter):
                     logger.warning(f"⚠️ [{idx}] File not found or empty: {path}")
                     res.failed.append((idx, path))
 
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.error(f"[{idx}] Error converting {path.name}: {e}")
                 res.failed.append((idx, path))
 

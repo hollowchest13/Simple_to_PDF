@@ -1,6 +1,7 @@
 import logging
-from pathlib import Path
 from abc import abstractmethod
+from pathlib import Path
+
 from simple_to_pdf.base_services.base import BaseService
 from simple_to_pdf.converters.models import ConversionResult
 
@@ -8,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class BaseConverter(BaseService):
-    SUPPORTED_FORMATS = {"pdf": {".pdf"}}
+    SUPPORTED_FORMATS = {"pdf": {".pdf"}}  # noqa: RUF012
 
     def __init__(self, *, chunk_size: int = 30):
         super().__init__()
