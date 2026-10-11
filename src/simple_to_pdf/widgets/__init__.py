@@ -15,7 +15,7 @@ __all__ = [
     "BaseProgress",
     "BaseScrollableFrame",
     "BaseTextBox",
-    "PrimaryButton",
     "CTkListbox",
+    "PrimaryButton",
     "ToogleFrame",
 ]

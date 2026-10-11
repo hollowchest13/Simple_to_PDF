@@ -1,6 +1,5 @@
 import logging
 from pathlib import Path
-from typing import Dict, Optional
 
 import customtkinter as ctk
 from customtkinter import CTkImage
@@ -9,7 +8,7 @@ from PIL import Image
 from simple_to_pdf.core.config import ROOT_PATH, ThemeKeys
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
-from simple_to_pdf.widgets import BaseFrame,BaseScrollableFrame
+from simple_to_pdf.widgets import BaseFrame, BaseScrollableFrame
 
 logger = logging.getLogger(__name__)
 
@@ -20,14 +19,21 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
     Handles centering, theme consistency, and standard layout.
     """
 
-    def __init__(self, parent, *, title_key="window_title",scrollable_content:bool=False, loc_section: str):
+    def __init__(
+        self,
+        parent,
+        *,
+        title_key="window_title",
+        scrollable_content: bool = False,
+        loc_section: str,
+    ):
         super().__init__(parent)
 
         """
         Setup base window configuration
         """
         self._title_key = title_key
-        self._scrollable_content:bool=scrollable_content
+        self._scrollable_content: bool = scrollable_content
         self.ui = {}
 
         self.resizable(False, False)
@@ -41,7 +47,6 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         self._center_window(parent)
         self.bind("<Map>", self._on_map)
-        
 
     def _init_layout(self):
         """Creates the structural frames: Header, Content, and Footer."""
@@ -89,7 +94,7 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
             translated_title = self.get_text(self._title_key)
             self.title(translated_title)
 
-    def _init_icons(self) -> Dict[str, str]:
+    def _init_icons(self) -> dict[str, str]:
         """
         Maps icon types to their respective file paths.
         """
@@ -103,6 +108,7 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
             "warning": str(base_path / "warning.png"),
             "confirmation": str(base_path / "confirmation.png"),
         }
+
     def _on_map(self, event):
         if getattr(self, "_map_handled", False):
             return
@@ -119,7 +125,7 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
 
     def _load_icon(
         self, *, with_icon: bool = False, window_type: str
-    ) -> Optional[CTkImage]:
+    ) -> CTkImage | None:
         """
         Loads and scales the icon for the header section.
         """
@@ -136,6 +142,6 @@ class BaseDialog(ctk.CTkToplevel, ThemeProviderMixin, LocalizationMixin):
                 return CTkImage(
                     light_image=Image.open(icon_path).convert("RGBA"), size=(60, 60)
                 )
-            except (IOError, SyntaxError) as e:
-                logger.error(f"Failed to load icon for '{window_type}' window: {e}")
+            except (OSError, SyntaxError) as e:
+                logger.error("Failed to load icon for '%s' window: %s", window_type, e)
         return None

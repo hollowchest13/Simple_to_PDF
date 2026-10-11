@@ -1,6 +1,8 @@
-from typing import Any, Callable, Dict
+from collections.abc import Callable
+from typing import Any
 
 import customtkinter as ctk
+
 from simple_to_pdf.core import config
 from simple_to_pdf.settings.settings_manager import SettingsManager
 from simple_to_pdf.widgets import BaseLabel, ToogleFrame
@@ -14,7 +16,7 @@ class SettingsFrame(ToogleFrame):
         *,
         is_open: bool = False,
         width: int = 230,
-        handlers: Dict[str, Callable],
+        handlers: dict[str, Callable],
         settings_manager: SettingsManager,
         **kwargs: Any,
     ) -> None:
@@ -27,7 +29,7 @@ class SettingsFrame(ToogleFrame):
         self.loc_section = "ui.settings_panel"
         self.handlers = handlers
 
-        self.ui: Dict[str, Any] = {}
+        self.ui: dict[str, Any] = {}
 
         self._setup_ui()
 
@@ -56,11 +58,11 @@ class SettingsFrame(ToogleFrame):
         for key, widget in self.ui.items():
             setattr(self, key, widget)
 
-    def _setup_settings_controls(self) -> Dict[str, Any]:
+    def _setup_settings_controls(self) -> dict[str, Any]:
         """
         Configures individual setting rows and returns a dict of widgets.
         """
-        widgets: Dict[str, Any] = {}
+        widgets: dict[str, Any] = {}
 
         option_width = 120
         lang_widgets = self._create_setting_row(
@@ -99,10 +101,10 @@ class SettingsFrame(ToogleFrame):
         label_text: str,
         widget_class: Any,
         **widget_kwargs: Any,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create a setting row with a label and a control widget.
-        Returns: Dict containing label and widget instances.
+        Returns: dict containing label and widget instances.
         """
         container = ctk.CTkFrame(parent, fg_color="transparent")
         container.pack(fill="x", padx=10, pady=8)
@@ -116,7 +118,7 @@ class SettingsFrame(ToogleFrame):
 
         return {f"{row_id}_label": label, f"{row_id}_selector": widget}
 
-    def collect_data(self) -> Dict[str, str]:
+    def collect_data(self) -> dict[str, str]:
         """
         Collect configuration data from settings widgets.
 
@@ -125,7 +127,7 @@ class SettingsFrame(ToogleFrame):
         cleaned by removing that suffix.
 
         Returns:
-            Dict[str, str]: A dictionary of configuration keys and their string-converted values.
+            dict[str, str]: A dictionary of configuration keys and their string-converted values.
         """
         data = {}
         for key, widget in self.ui.items():

@@ -43,10 +43,8 @@ class ConversionService:
             stage_name = "converting"
             self.callback(
                 "progress",
-                **{
-                    "stage": stage_name,
-                    "mode": "indeterminate",
-                },
+                stage=stage_name,
+                mode="indeterminate",
             )
             paths_by_idx = {file_idx: path for file_idx, path in files}
             try:
@@ -69,30 +67,24 @@ class ConversionService:
             pdf_data_list.extend(converted_docs)
             self.callback(
                 "progress",
-                **{
-                    "stage": stage_name,
-                    "mode": "determinate",
-                    "current": 1,
-                    "total": 1,
-                },
+                stage=stage_name,
+                mode="determinate",
+                current=1,
+                total=1,
             )
             self.callback(
                 "status",
-                **{
-                    "key": f"{stage_name}.done",
-                    "status": "info" if failed == 0 else "warning",
-                    "success": success,
-                    "failed": failed,
-                },
+                key=f"{stage_name}.done",
+                status="info" if failed == 0 else "warning",
+                success=success,
+                failed=failed,
             )
             for failed_path in conversion_res.failed:
                 self.callback(
                     "status",
-                    **{
-                        "key": f"{stage_name}.error.unknown",
-                        "status": "error",
-                        "path": str(failed_path[1]),
-                        "error": "Office application failed to process this document",
-                    },
+                    key=f"{stage_name}.error.unknown",
+                    status="error",
+                    path=str(failed_path[1]),
+                    error="Office application failed to process this document",
                 )
         return ProcessingReport(documents=pdf_data_list, success=success, failed=failed)

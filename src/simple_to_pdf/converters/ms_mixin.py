@@ -42,5 +42,5 @@ class MSSetupMixin:
                     sheet.PageSetup.Orientation = ExcelOrientation.LANDSCAPE
                     sheet.PageSetup.FitToPagesWide = ExcelScaling.SINGLE_PAGE
                     sheet.PageSetup.FitToPagesTall = ExcelScaling.SINGLE_PAGE
-            except Exception as e:
-                logger.warning(f"Cannot setup PageSetup for {sheet.Name}: {e}")
+            except Exception as e:  # noqa: BLE001
+                logger.warning("Cannot setup PageSetup for %s : %s", sheet.Name, e)

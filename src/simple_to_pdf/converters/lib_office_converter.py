@@ -5,15 +5,16 @@ import tempfile
 from pathlib import Path
 
 import openpyxl
-from simple_to_pdf.converters.lib_mixin import LibreSetupMixin
+
 from simple_to_pdf.converters.img_converter import ImageConverter
+from simple_to_pdf.converters.lib_mixin import LibreSetupMixin
 from simple_to_pdf.converters.models import ConversionResult
 
 logger = logging.getLogger(__name__)
 
 
 class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
-    SUPPORTED_FORMATS = {
+    SUPPORTED_FORMATS = {  # noqa: RUF012
         "table": {".xlsx", ".xlsm", ".xltx", ".xltm", ".xls", ".xlsb", ".ods", ".csv"},
         "document": {".doc", ".docx", ".odt", ".rtf", ".txt"},
         "presentation": {".ppt", ".pptx", ".odp"},
@@ -90,14 +91,13 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
                 f"LibreOffice timed out after {timeout} seconds for {num_files} files: {[p.name for p in input_paths]}"
             )
         except subprocess.CalledProcessError as e:
-            logger.error(
-                f"LibreOffice conversion error for {[p.name for p in input_paths]}: {e.stderr.decode()}",
-                exc_info=True,
+            logger.exception(
+                "LibreOffice conversion error for %s : %s",
+                [p.name for p in input_paths],
+                e.stderr.decode(),
             )
-        except Exception as e:
-            logger.error(
-                f" Unexpected error during table conversion: {e}", exc_info=True
-            )
+        except Exception:
+            logger.exception(" Unexpected error during table conversion!")
 
     def _prepare_temp_files(
         self, *, chunk: list[tuple[int, Path]], tmp_path: Path
@@ -185,16 +185,16 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
             return True
         except subprocess.TimeoutExpired:
             logger.error(
-                f"LibreOffice timed out after {timeout} seconds for {num_files} files"
+                "LibreOffice timed out after %s seconds for %s files",
+                timeout,
+                num_files,
             )
             return False
-        except subprocess.CalledProcessError as e:
-            logger.error(f"LibreOffice error: {e}", exc_info=True)
+        except subprocess.CalledProcessError:
+            logger.exception("LibreOffice error!")
             return False
-        except Exception as e:
-            logger.error(
-                f"Unexpected error during table conversion: {e}", exc_info=True
-            )
+        except Exception:
+            logger.exception("Unexpected error during table conversion!")
             return False
 
     def _collect_results(

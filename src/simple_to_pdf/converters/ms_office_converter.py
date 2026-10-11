@@ -24,12 +24,12 @@ class OfficeApp(StrEnum):
 
 
 class MSOfficeConverter(ImageConverter, MSSetupMixin):
-    SUPPORTED_FORMATS = {
+    SUPPORTED_FORMATS = {  # noqa: RUF012
         "table": {".xls", ".xlsx", ".xlsm", ".xlsb"},
         "document": {".doc", ".docx", ".docm", ".rtf", ".txt"},
         "presentation": {".ppt", ".pptx", ".pptm", ".pps", ".ppsx"},
     }
-    OFFICE_CONFIG = {
+    OFFICE_CONFIG = {  # noqa: RUF012
         OfficeApp.EXCEL: {
             "visible": False,
             "display_alerts": False,
@@ -132,11 +132,9 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                 self._clear_cache()
                 return win32.DispatchEx(app_type)
 
-            except Exception as e_crit:
-                logger.error(
-                    f"Critical Error: Failed to create COM instance "
-                    f"for {app_type}: {e_crit}",
-                    exc_info=True,
+            except Exception:
+                logger.exception(
+                    "Critical Error: Failed to create COM instance for %s", app_type
                 )
                 return None
 
@@ -182,14 +180,14 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
         if "visible" in config and hasattr(app, "Visible"):
             try:
                 app.Visible = config["visible"]
-            except Exception as e:
-                logger.warning(f"Could not set Visible for {app_type}: {e}")
+            except Exception:  # noqa: BLE001
+                logger.warning("Could not set Visible for %s!", app_type)
 
         if "display_alerts" in config and hasattr(app, "DisplayAlerts"):
             try:
                 app.DisplayAlerts = config["display_alerts"]
-            except Exception as e:
-                logger.warning(f"Could not set DisplayAlerts for {app_type}: {e}")
+            except Exception as e:  # noqa: BLE001
+                logger.warning("Could not set DisplayAlerts for %s ! %s", app_type, e)
 
         logger.debug(
             f"Application {app_type.value} configured for background execution."
@@ -216,13 +214,13 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                     processor = self._get_processor(app_type=app_type)
                     pdf_data = processor(app=app, file_path=pf)
                     chunk_res.success.append((idx, pdf_data))
-                except Exception:
+                except Exception:  # noqa: BLE001
                     chunk_res.failed.append((idx, pf))
                     continue
         except InterruptedError:
             raise
-        except Exception as e:
-            logger.error(f"{app_type} chunk error: {e}", exc_info=True)
+        except Exception:
+            logger.exception("%s chunk error!", app_type)
             already_done = {item[0] for item in chunk_res.success} | {
                 item[0] for item in chunk_res.failed
             }
@@ -295,5 +293,5 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                 if hasattr(obj, "Quit"):
                     obj.Quit()
                 logger.info(f"{app_type} closed successfully.")
-            except Exception as e:
-                logger.warning(f"Could not close {app_type} gracefully: {e}")
+            except Exception as e:  # noqa: BLE001
+                logger.warning("Could not close %s gracefully: %s", app_type, e)

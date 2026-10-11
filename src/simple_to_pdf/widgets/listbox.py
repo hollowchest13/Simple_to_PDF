@@ -1,6 +1,6 @@
 import logging
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, List
 
 import customtkinter as ctk
 from PIL import Image
@@ -18,13 +18,13 @@ class CTkListbox(BaseScrollableFrame):
 
     def __init__(self, parent, **kwargs):
         """Initialize the listbox and its internal state containers."""
-       
-        super().__init__(parent,scr_frame_type="file_list",**kwargs)
+
+        super().__init__(parent, scr_frame_type="file_list", **kwargs)
 
         self._scroll_target = 0
         self._is_scrolling = False
 
-        self.all_rows: List[Path] = []
+        self.all_rows: list[Path] = []
         self.selected_data = {}
         self.all_widgets = {}
         self._icon_cache = {}
@@ -143,10 +143,9 @@ class CTkListbox(BaseScrollableFrame):
                 for i in reversed(sel_idxs):
                     items[i], items[i + 1] = items[i + 1], items[i]
 
-        elif direction == "up":
-            if sel_idxs[0] > 0:
-                for i in sel_idxs:
-                    items[i], items[i - 1] = items[i - 1], items[i]
+        elif direction == "up" and sel_idxs[0] > 0:
+            for i in sel_idxs:
+                items[i], items[i - 1] = items[i - 1], items[i]
 
         self._update_listbox()
 
@@ -171,7 +170,7 @@ class CTkListbox(BaseScrollableFrame):
 
     def remove_selected(self, *, callback: Callable):
         """Remove all currently selected files from the list and refresh it."""
-        for path in self.selected_data.keys():
+        for path in self.selected_data:
             self.all_rows.remove(path)
         self.selected_data.clear()
         self._update_listbox()
