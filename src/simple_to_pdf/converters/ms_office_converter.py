@@ -215,7 +215,9 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                 self.check_stop()
                 try:
                     processor = self._get_processor(app_type=app_type)
-                    pdf_path = processor(app=app, file_path=pf, out_dir=out_dir)
+                    output_path = out_dir / f"{pf.stem}.pdf"
+                    output_path = get_unique_path(output_path)
+                    pdf_path = processor(app=app, file_path=pf, output_path=output_path)
                     chunk_res.success.append((idx, pdf_path))
                 except Exception:
                     logger.exception("Failed to convert %s", pf)
@@ -240,14 +242,11 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
         return chunk_res
 
     def _run_conversion(
-        self, *, file_path: Path, conversion_func, out_dir: Path
+        self, *, file_path: Path, conversion_func, output_path: Path
     ) -> Path:
         """
         Universal wrapper for file conversion.
         """
-        out_dir.mkdir(parents=True, exist_ok=True)
-        output_path = out_dir / file_path.with_suffix(".pdf").name
-        output_path = get_unique_path(output_path)
         try:
             conversion_func(file_path.resolve(), output_path)
         except Exception:
@@ -255,7 +254,7 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
             raise
         return output_path
 
-    def _convert_pres_to_pdf(self, *, app, file_path: Path, out_dir: Path) -> Path:
+    def _convert_pres_to_pdf(self, *, app, file_path: Path, output_path: Path) -> Path:
         def action(input_path, output_path):
             pres = app.Presentations.Open(str(input_path), ReadOnly=True, WithWindow=0)
             try:
@@ -265,10 +264,10 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                 del pres
 
         return self._run_conversion(
-            file_path=file_path, conversion_func=action, out_dir=out_dir
+            file_path=file_path, conversion_func=action, output_path=output_path
         )
 
-    def _convert_table_to_pdf(self, *, app, file_path: Path, out_dir: Path) -> Path:
+    def _convert_table_to_pdf(self, *, app, file_path: Path, output_path: Path) -> Path:
         def action(input_path, output_path):
             wb = app.Workbooks.Open(str(input_path), ReadOnly=True)
             try:
@@ -279,10 +278,10 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                 del wb
 
         return self._run_conversion(
-            file_path=file_path, conversion_func=action, out_dir=out_dir
+            file_path=file_path, conversion_func=action, output_path=output_path
         )
 
-    def _convert_doc_to_pdf(self, *, app, file_path: Path, out_dir: Path) -> Path:
+    def _convert_doc_to_pdf(self, *, app, file_path: Path, output_path: Path) -> Path:
         def action(input_path, output_path):
             doc = app.Documents.Open(
                 str(input_path), ReadOnly=True, ConfirmConversions=False
@@ -294,7 +293,7 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                 del doc
 
         return self._run_conversion(
-            file_path=file_path, conversion_func=action, out_dir=out_dir
+            file_path=file_path, conversion_func=action, output_path=output_path
         )
 
     def _safe_release_com_object(self, *, obj, app_type: str = "Office App"):

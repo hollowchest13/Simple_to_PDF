@@ -69,79 +69,38 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
     def _run_libreoffice_format_conversion(
         self, *, input_paths: list[Path], out_dir: Path
     ):
-        """Convert tables to xlsx with unique output names."""
-        out_dir.mkdir(parents=True, exist_ok=True)
+        """All tables to xlsx conversion"""
+
+        command = [
+            self.soffice_path,
+            "--headless",
+            "--convert-to",
+            "xlsx",
+            "--outdir",
+            str(out_dir),
+        ] + [str(p) for p in input_paths]
+
         num_files = len(input_paths)
         timeout = 10 + num_files * 5
 
-        with tempfile.TemporaryDirectory() as tmp:
-            tmp_in = Path(tmp) / "in"
-            tmp_out = Path(tmp) / "out"
-            tmp_in.mkdir()
-            tmp_out.mkdir()
-
-            staged: dict[Path, Path] = {}
-            for i, p in enumerate(input_paths):
-                s = tmp_in / f"{i}_{p.name}"
-                shutil.copy2(p, s)
-                staged[s] = p
-
-            command = [
-                self.soffice_path,
-                "--headless",
-                "--convert-to",
-                "xlsx",
-                "--outdir",
-                str(tmp_out),
-                *map(str, staged),
-            ]
-
-            try:
-                subprocess.run(
-                    command, check=True, capture_output=True, timeout=timeout
-                )
-            except subprocess.TimeoutExpired:
-                logger.error(
-                    "LibreOffice timed out after %s seconds for %s files: %s",
-                    timeout,
-                    num_files,
-                    [p.name for p in input_paths],
-                )
-                return
-            except subprocess.CalledProcessError as e:
-                logger.error(
-                    "LibreOffice conversion error for %s : %s",
-                    [p.name for p in input_paths],
-                    e.stderr.decode(errors="replace"),
-                )
-                return
-            except Exception:
-                logger.exception("Unexpected error during table conversion!")
-                return
-
-            for s, original in staged.items():
-                result = tmp_out / s.with_suffix(".xlsx").name
-                if not result.exists():
-                    logger.error("No output produced for %s", original)
-                    continue
-                unique_path = get_unique_path(
-                    out_dir / original.with_suffix(".xlsx").name
-                )
-                shutil.move(str(result), unique_path)
-                original.unlink(missing_ok=True)
-
-    def _prepare_temp_files(
-        self, *, chunk: list[tuple[int, Path]], tmp_path: Path
-    ) -> list[Path]:
-        """Copy files in temporary directory with index prefix."""
-
-        paths: list[Path] = []
-        for idx, original_path in chunk:
-            temp_name = f"{idx}_{original_path.name}"
-            temp_file_path = tmp_path / temp_name
-            shutil.copy2(original_path, temp_file_path)
-            paths.append(temp_file_path)
-        return paths
+        try:
+            subprocess.run(command, check=True, capture_output=True, timeout=timeout)
+            # Deleting old xls
+            for p in input_paths:
+                if p.exists():
+                    p.unlink()
+        except subprocess.TimeoutExpired:
+            logger.error(
+                f"LibreOffice timed out after {timeout} seconds for {num_files} files: {[p.name for p in input_paths]}"
+            )
+        except subprocess.CalledProcessError as e:
+            logger.exception(
+                "LibreOffice conversion error for %s : %s",
+                [p.name for p in input_paths],
+                e.stderr.decode(),
+            )
+        except Exception:
+            logger.exception(" Unexpected error during table conversion!")
 
     def _convert_chunk(
         self, *, chunk: list[tuple[int, Path]], out_dir: Path
@@ -150,17 +109,17 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
 
         to_convert_exts: list[str] = [".xls", ".xlsb", ".ods", ".csv"]
         with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
+            tmp_dir = Path(tmp_dir)
 
             all_tmp_paths: list[Path] = self._prepare_temp_files(
-                chunk=chunk, tmp_path=tmp_path
+                chunk=chunk, tmp_dir=tmp_dir
             )
             xls_to_convert: list[Path] = [
                 p for p in all_tmp_paths if p.suffix.lower() in to_convert_exts
             ]
             if xls_to_convert:
                 self._run_libreoffice_format_conversion(
-                    input_paths=xls_to_convert, out_dir=tmp_path
+                    input_paths=xls_to_convert, out_dir=tmp_dir
                 )
                 all_tmp_paths = self._update_paths(
                     all_paths=all_tmp_paths, to_check_exts=to_convert_exts
@@ -176,7 +135,7 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
 
             chunk_res: ConversionResult = ConversionResult()
             if success:
-                chunk_res = self._collect_results(chunk=chunk, tmp_path=tmp_path)
+                chunk_res = self._collect_results(chunk=chunk, tmp_dir=out_dir)
             return chunk_res
 
     def _update_paths(
@@ -202,41 +161,48 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
         self, *, input_paths: list[str], out_dir: Path
     ) -> bool:
         """Run the LibreOffice conversion command."""
+        with tempfile.TemporaryDirectory() as temp_dir_str:
+            temp_dir = Path(temp_dir_str)
 
-        command = [
-            self.soffice_path,
-            "--headless",
-            "--convert-to",
-            "pdf",
-            "--outdir",
-            str(out_dir),
-        ] + input_paths
-        num_files = len(input_paths)
-        timeout = 10 + num_files * 5
-        try:
-            subprocess.run(command, check=True, capture_output=True, timeout=timeout)
-            return True
-        except subprocess.TimeoutExpired:
-            logger.error(
-                "LibreOffice timed out after %s seconds for %s files",
-                timeout,
-                num_files,
-            )
-            return False
-        except subprocess.CalledProcessError:
-            logger.exception("LibreOffice error!")
-            return False
-        except Exception:
-            logger.exception("Unexpected error during table conversion!")
-            return False
+            command = [
+                self.soffice_path,
+                "--headless",
+                "--convert-to",
+                "pdf",
+                "--outdir",
+                str(temp_dir),
+            ] + input_paths
+            num_files = len(input_paths)
+            timeout = 10 + num_files * 5
+            try:
+                subprocess.run(
+                    command, check=True, capture_output=True, timeout=timeout
+                )
+                for pdf_path in temp_dir.glob("*.pdf"):
+                    output_path = get_unique_path(out_dir / pdf_path.name)
+                    shutil.move(str(pdf_path), str(output_path))
+                return True
+            except subprocess.TimeoutExpired:
+                logger.error(
+                    "LibreOffice timed out after %s seconds for %s files",
+                    timeout,
+                    num_files,
+                )
+                return False
+            except subprocess.CalledProcessError:
+                logger.exception("LibreOffice error!")
+                return False
+            except Exception:
+                logger.exception("Unexpected error during table conversion!")
+                return False
 
     def _collect_results(
-        self, *, chunk: list[tuple[int, Path]], tmp_path: Path
+        self, *, chunk: list[tuple[int, Path]], tmp_dir: Path
     ) -> ConversionResult:
         """Reads created PDF files into memory."""
         res = ConversionResult()
         for idx, original_path in chunk:
-            expected_pdf = tmp_path / f"{idx}_{original_path.stem}.pdf"
+            expected_pdf = tmp_dir / f"{idx}_{original_path.stem}.pdf"
             if expected_pdf.exists():
                 res.success.append((idx, expected_pdf))
             else:

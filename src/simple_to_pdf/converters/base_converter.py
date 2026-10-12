@@ -1,4 +1,5 @@
 import logging
+import shutil
 from abc import abstractmethod
 from pathlib import Path
 
@@ -74,3 +75,16 @@ class BaseConverter(BaseService):
         }
         file_ext = file_path.suffix.lower()
         return file_ext in convertible_exts
+
+    def _prepare_temp_files(
+        self, *, chunk: list[tuple[int, Path]], tmp_dir: Path
+    ) -> list[Path]:
+        """Copy files in temporary directory with index prefix."""
+
+        paths: list[Path] = []
+        for idx, original_path in chunk:
+            temp_name = f"{idx}_{original_path.name}"
+            temp_file_path = tmp_dir / temp_name
+            shutil.copy2(original_path, temp_file_path)
+            paths.append(temp_file_path)
+        return paths

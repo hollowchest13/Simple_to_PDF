@@ -126,7 +126,6 @@ def get_unique_path(file_path: Path) -> Path:
     Returns a unique path.
     If the file already exists, adds (1), (2), etc. before expansion.
     """
-    # Гарантуємо, що директорія для цього файлу існує
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
     if not file_path.exists():
