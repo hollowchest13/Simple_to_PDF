@@ -433,7 +433,7 @@ class PDFMergerGUI(BaseWindow):
         target_format = self._get_page_format()
         self._run_merge_worker(
             files=files,
-            output_path=out,
+            output_path=Path(out),
             need_compress=need_compress,
             target_format=target_format,
         )
@@ -445,7 +445,7 @@ class PDFMergerGUI(BaseWindow):
         self,
         *,
         data: bytes,
-        output_path: str,
+        output_path: Path,
         stage: str = "saving",
         reset_ui_on_error: bool = True,
     ):
@@ -492,7 +492,7 @@ class PDFMergerGUI(BaseWindow):
     def _run_merge_worker(
         self,
         files: list[tuple[int, Path]],
-        output_path: str,
+        output_path: Path,
         need_compress: bool,
         target_format: PageFormat | None,
     ) -> None:
@@ -504,7 +504,9 @@ class PDFMergerGUI(BaseWindow):
         )
 
         try:
-            conversion_res = self.conversion_service.get_pdfs_data(files=files)
+            conversion_res = self.conversion_service.get_conversion_rep(
+                files=files, out_dir=output_path
+            )
 
             if self._is_cancelled():
                 raise InterruptedError()
@@ -621,12 +623,12 @@ class PDFMergerGUI(BaseWindow):
             return
 
         self._run_page_extractor_worker(
-            input_path=input_path, pages=pages, output_path=output_path
+            input_path=input_path, pages=pages, output_path=Path(output_path)
         )
 
     @threaded_task
     def _run_page_extractor_worker(
-        self, *, input_path: str, pages: list[int], output_path: str
+        self, *, input_path: str, pages: list[int], output_path: Path
     ) -> None:
         """Run the page-extraction worker and report progress or errors."""
         try:

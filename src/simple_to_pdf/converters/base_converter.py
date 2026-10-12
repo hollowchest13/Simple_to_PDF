@@ -16,7 +16,9 @@ class BaseConverter(BaseService):
         self.chunk_size = chunk_size
 
     @abstractmethod
-    def convert_to_pdf(self, *, files: list[tuple[int, Path]]) -> ConversionResult:
+    def convert_to_pdf(
+        self, *, files: list[tuple[int, Path]], out_dir: Path
+    ) -> ConversionResult:
         pass
 
     @staticmethod

@@ -2,7 +2,6 @@ import gc
 import logging
 import shutil
 import sys
-import tempfile
 from enum import StrEnum
 from pathlib import Path
 
@@ -13,6 +12,7 @@ from win32com.client import gencache  # pyright: ignore[reportMissingModuleSourc
 from simple_to_pdf.converters.img_converter import ImageConverter
 from simple_to_pdf.converters.models import ConversionResult
 from simple_to_pdf.converters.ms_mixin import MSSetupMixin
+from simple_to_pdf.utils.file_tools import get_unique_path
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,9 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
         super().__init__(chunk_size=chunk_size)
         self.SUPPORTED_FORMATS = self.get_supported_formats()
 
-    def convert_to_pdf(self, *, files: list[tuple[int, Path]]) -> ConversionResult:
+    def convert_to_pdf(
+        self, *, files: list[tuple[int, Path]], out_dir: Path
+    ) -> ConversionResult:
         """Categorize files by type, route to specific conversion services, and aggregate the results."""
         tables: list[tuple[int, Path]] = []
         docs: list[tuple[int, Path]] = []
@@ -69,31 +71,33 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
 
         if tables:
             tables_res: ConversionResult = self._convert_files_to_pdf(
-                files=tables, app_type=OfficeApp.EXCEL
+                files=tables, app_type=OfficeApp.EXCEL, out_dir=out_dir
             )
             final_results.success.extend(tables_res.success)
             final_results.failed.extend(tables_res.failed)
         if docs:
             docs_res: ConversionResult = self._convert_files_to_pdf(
-                files=docs, app_type=OfficeApp.WORD
+                files=docs, app_type=OfficeApp.WORD, out_dir=out_dir
             )
             final_results.success.extend(docs_res.success)
             final_results.failed.extend(docs_res.failed)
         if pres:
             pres_res: ConversionResult = self._convert_files_to_pdf(
-                files=pres, app_type=OfficeApp.POWERPOINT
+                files=pres, app_type=OfficeApp.POWERPOINT, out_dir=out_dir
             )
             final_results.success.extend(pres_res.success)
             final_results.failed.extend(pres_res.failed)
         if imgs:
-            imgs_res: ConversionResult = self._convert_images_to_pdf(files=imgs)
+            imgs_res: ConversionResult = self._convert_images_to_pdf(
+                files=imgs, out_dir=out_dir
+            )
             final_results.success.extend(imgs_res.success)
             final_results.failed.extend(imgs_res.failed)
 
         return final_results
 
     def _convert_files_to_pdf(
-        self, *, files: list[tuple[int, Path]], app_type: OfficeApp
+        self, *, files: list[tuple[int, Path]], app_type: OfficeApp, out_dir: Path
     ) -> ConversionResult:
         """Convert a list of files to PDF by routing to the appropriate processor based on the application type."""
         all_results: ConversionResult = ConversionResult()
@@ -103,7 +107,7 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
 
         for chunk in self.make_chunks(files, n=self.chunk_size):
             chunk_results: ConversionResult = self._process_chunk(
-                chunk=chunk, app_type=app_type
+                chunk=chunk, app_type=app_type, out_dir=out_dir
             )
             all_results.success.extend(chunk_results.success)
             all_results.failed.extend(chunk_results.failed)
@@ -194,7 +198,7 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
         )
 
     def _process_chunk(
-        self, *, chunk: list[tuple[int, Path]], app_type: OfficeApp
+        self, *, chunk: list[tuple[int, Path]], app_type: OfficeApp, out_dir: Path
     ) -> ConversionResult:
         chunk_res: ConversionResult = ConversionResult()
 
@@ -208,13 +212,13 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
             self._disable_visibility(app=app, app_type=app_type)
 
             for idx, pf in chunk:
-                pdf_data = None
                 self.check_stop()
                 try:
                     processor = self._get_processor(app_type=app_type)
-                    pdf_data = processor(app=app, file_path=pf)
-                    chunk_res.success.append((idx, pdf_data))
-                except Exception:  # noqa: BLE001
+                    pdf_path = processor(app=app, file_path=pf, out_dir=out_dir)
+                    chunk_res.success.append((idx, pdf_path))
+                except Exception:
+                    logger.exception("Failed to convert %s", pf)
                     chunk_res.failed.append((idx, pf))
                     continue
         except InterruptedError:
@@ -235,21 +239,23 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
 
         return chunk_res
 
-    def _run_conversion(self, *, file_path: Path, conversion_func) -> bytes:
+    def _run_conversion(
+        self, *, file_path: Path, conversion_func, out_dir: Path
+    ) -> Path:
         """
         Universal wrapper for file conversion.
-        Handles temporary file lifecycle and resource cleanup.
         """
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-            temp_pdf_path = Path(tmp.name)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        output_path = out_dir / file_path.with_suffix(".pdf").name
+        output_path = get_unique_path(output_path)
         try:
-            conversion_func(file_path.resolve(), temp_pdf_path)
-            return temp_pdf_path.read_bytes()
-        finally:
-            if temp_pdf_path.exists():
-                temp_pdf_path.unlink()
+            conversion_func(file_path.resolve(), output_path)
+        except Exception:
+            output_path.unlink(missing_ok=True)
+            raise
+        return output_path
 
-    def _convert_pres_to_pdf(self, *, app, file_path: Path) -> bytes:
+    def _convert_pres_to_pdf(self, *, app, file_path: Path, out_dir: Path) -> Path:
         def action(input_path, output_path):
             pres = app.Presentations.Open(str(input_path), ReadOnly=True, WithWindow=0)
             try:
@@ -258,9 +264,11 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                 pres.Close()
                 del pres
 
-        return self._run_conversion(file_path=file_path, conversion_func=action)
+        return self._run_conversion(
+            file_path=file_path, conversion_func=action, out_dir=out_dir
+        )
 
-    def _convert_table_to_pdf(self, *, app, file_path: Path) -> bytes:
+    def _convert_table_to_pdf(self, *, app, file_path: Path, out_dir: Path) -> Path:
         def action(input_path, output_path):
             wb = app.Workbooks.Open(str(input_path), ReadOnly=True)
             try:
@@ -270,9 +278,11 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                 wb.Close(SaveChanges=False)
                 del wb
 
-        return self._run_conversion(file_path=file_path, conversion_func=action)
+        return self._run_conversion(
+            file_path=file_path, conversion_func=action, out_dir=out_dir
+        )
 
-    def _convert_doc_to_pdf(self, *, app, file_path: Path) -> bytes:
+    def _convert_doc_to_pdf(self, *, app, file_path: Path, out_dir: Path) -> Path:
         def action(input_path, output_path):
             doc = app.Documents.Open(
                 str(input_path), ReadOnly=True, ConfirmConversions=False
@@ -283,7 +293,9 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
                 doc.Close(SaveChanges=0)
                 del doc
 
-        return self._run_conversion(file_path=file_path, conversion_func=action)
+        return self._run_conversion(
+            file_path=file_path, conversion_func=action, out_dir=out_dir
+        )
 
     def _safe_release_com_object(self, *, obj, app_type: str = "Office App"):
         """Safely closes the Office application and releases COM resources."""

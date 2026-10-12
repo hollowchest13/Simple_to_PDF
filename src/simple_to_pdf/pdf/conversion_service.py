@@ -3,7 +3,7 @@ from pathlib import Path
 
 from simple_to_pdf.converters import ConverterFactory
 from simple_to_pdf.converters.models import ConversionResult
-from simple_to_pdf.pdf.models import BytePdfDocument, ProcessingReport
+from simple_to_pdf.pdf.models import ConvertedFileItem, ProcessingReport
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +22,10 @@ class ConversionService:
     def callback(self, value):
         self._callback = value if value is not None else lambda *args, **kwargs: None
 
-    def get_pdfs_data(self, files: list[tuple[int, Path]]) -> ProcessingReport:
-        pdf_data_list: list[BytePdfDocument] = []
+    def get_conversion_rep(
+        self, files: list[tuple[int, Path]], out_dir: Path
+    ) -> ProcessingReport:
+        conversion_list: list[ConvertedFileItem] = []
         to_conversion = []
 
         success = 0
@@ -31,9 +33,9 @@ class ConversionService:
 
         for idx, path in files:
             if self.converter.is_pdf_file(file_path=path):
-                pdf_data_list.append(
-                    BytePdfDocument(
-                        index=idx, data=path.read_bytes(), original_path=path
+                conversion_list.append(
+                    ConvertedFileItem(
+                        index=idx, converted_path=path, original_path=path
                     )
                 )
             elif self.converter.needs_conversion(file_path=path):
@@ -49,7 +51,7 @@ class ConversionService:
             paths_by_idx = {file_idx: path for file_idx, path in files}
             try:
                 conversion_res: ConversionResult = self.converter.convert_to_pdf(
-                    files=to_conversion,
+                    files=to_conversion, out_dir=out_dir
                 )
             except InterruptedError:
                 logger.info(f"{stage_name} process was interrupted by user.")
@@ -59,12 +61,14 @@ class ConversionService:
             failed = len(conversion_res.failed)
 
             converted_docs = [
-                BytePdfDocument(
-                    index=idx, data=pdf_data, original_path=paths_by_idx[idx]
+                ConvertedFileItem(
+                    index=idx,
+                    converted_path=converted_path,
+                    original_path=paths_by_idx[idx],
                 )
-                for idx, pdf_data in conversion_res.success
+                for idx, converted_path in conversion_res.success
             ]
-            pdf_data_list.extend(converted_docs)
+            conversion_list.extend(converted_docs)
             self.callback(
                 "progress",
                 stage=stage_name,
@@ -87,4 +91,6 @@ class ConversionService:
                     path=str(failed_path[1]),
                     error="Office application failed to process this document",
                 )
-        return ProcessingReport(documents=pdf_data_list, success=success, failed=failed)
+        return ProcessingReport(
+            documents=conversion_list, success=success, failed=failed
+        )

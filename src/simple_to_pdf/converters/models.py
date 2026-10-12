@@ -4,7 +4,7 @@ from pathlib import Path
 
 @dataclass
 class ConversionResult:
-    success: list[tuple[int, bytes]] = field(default_factory=list)
+    success: list[tuple[int, Path]] = field(default_factory=list)
     failed: list[tuple[int, Path]] = field(default_factory=list)
 
 

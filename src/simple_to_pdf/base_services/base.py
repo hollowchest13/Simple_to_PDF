@@ -1,6 +1,6 @@
-from abc import ABC
 import logging
 import threading
+from abc import ABC
 
 logger = logging.getLogger(__name__)
 

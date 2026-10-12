@@ -119,3 +119,26 @@ def get_files(
 
     # For single selection, it's better to use dynamic filters instead of hardcoded PDF
     return filedialog.askopenfilename(filetypes=filters)
+
+
+def get_unique_path(file_path: Path) -> Path:
+    """
+    Returns a unique path.
+    If the file already exists, adds (1), (2), etc. before expansion.
+    """
+    # Гарантуємо, що директорія для цього файлу існує
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if not file_path.exists():
+        return file_path
+
+    stem = file_path.stem
+    suffix = file_path.suffix
+    parent = file_path.parent
+    counter = 1
+
+    while file_path.exists():
+        file_path = parent / f"{stem}({counter}){suffix}"
+        counter += 1
+
+    return file_path

@@ -1,4 +1,3 @@
-import io
 import logging
 from pathlib import Path
 
@@ -34,16 +33,20 @@ class ImageConverter(BaseConverter):
         super().__init__(chunk_size=chunk_size)
         self.SUPPORTED_FORMATS = self.get_supported_formats()
 
-    def convert_to_pdf(self, *, files: list[tuple[int, Path]]) -> ConversionResult:
-        return self._convert_images_to_pdf(files=files)
+    def convert_to_pdf(
+        self, *, files: list[tuple[int, Path]], out_dir: Path
+    ) -> ConversionResult:
+        return self._convert_images_to_pdf(files=files, out_dir=out_dir)
 
     def _convert_images_to_pdf(
-        self, *, files: list[tuple[int, Path]]
+        self, *, files: list[tuple[int, Path]], out_dir: Path
     ) -> ConversionResult:
         all_results: ConversionResult = ConversionResult()
         for chunk in self.make_chunks(files, self.chunk_size):
             try:
-                chunk_res: ConversionResult = self._convert_images_chunk(chunk=chunk)
+                chunk_res: ConversionResult = self._convert_images_chunk(
+                    chunk=chunk, out_dir=out_dir
+                )
                 all_results.success.extend(chunk_res.success)
                 all_results.failed.extend(chunk_res.failed)
             except Exception:
@@ -51,11 +54,13 @@ class ImageConverter(BaseConverter):
                 continue
         return all_results
 
-    def _convert_single_image(self, path: Path) -> bytes | None:
+    def _convert_single_image(self, path: Path, out_dir: Path) -> Path | None:
         """Convert a single image file (including multi-page images) to PDF data."""
         MAX_SIZE = 2500
         if not path.exists():
             return None
+
+        out_path = out_dir / f"{path.stem}.pdf"
 
         with Image.open(path) as img:
             img = ImageOps.exif_transpose(img)
@@ -73,21 +78,20 @@ class ImageConverter(BaseConverter):
             if not frames:
                 return None
 
-            with io.BytesIO() as buffer:
-                try:
-                    frames[0].save(
-                        buffer,
-                        format="PDF",
-                        save_all=True,
-                        append_images=frames[1:] if len(frames) > 1 else [],
-                    )
-                    return buffer.getvalue()
-                finally:
-                    for f in frames:
-                        f.close()
+            try:
+                frames[0].save(
+                    out_path,
+                    format="PDF",
+                    save_all=True,
+                    append_images=frames[1:] if len(frames) > 1 else [],
+                )
+                return out_path
+            finally:
+                for f in frames:
+                    f.close()
 
     def _convert_images_chunk(
-        self, *, chunk: list[tuple[int, Path]]
+        self, *, chunk: list[tuple[int, Path]], out_dir: Path
     ) -> ConversionResult:
         """Process a chunk using the single-image conversion method."""
         res = ConversionResult()
@@ -96,7 +100,7 @@ class ImageConverter(BaseConverter):
             path = Path(path)
             self.check_stop()
             try:
-                pdf_data = self._convert_single_image(path)
+                pdf_data = self._convert_single_image(path, out_dir)
 
                 if pdf_data:
                     res.success.append((idx, pdf_data))

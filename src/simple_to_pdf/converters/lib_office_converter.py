@@ -9,6 +9,7 @@ import openpyxl
 from simple_to_pdf.converters.img_converter import ImageConverter
 from simple_to_pdf.converters.lib_mixin import LibreSetupMixin
 from simple_to_pdf.converters.models import ConversionResult
+from simple_to_pdf.utils.file_tools import get_unique_path
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,9 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
         self.soffice_path = soffice_path
         self.SUPPORTED_FORMATS = self.get_supported_formats()
 
-    def convert_to_pdf(self, *, files: list[tuple[int, Path]]) -> ConversionResult:
+    def convert_to_pdf(
+        self, *, files: list[tuple[int, Path]], out_dir: Path
+    ) -> ConversionResult:
         """Categorize files by type, convert them to PDF, and aggregate the results."""
         docs: list[tuple[int, Path]] = []
         imgs: list[tuple[int, Path]] = []
@@ -42,8 +45,8 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
                 docs.append((idx, path))
             elif self.is_image_file(file_path=path):
                 imgs.append((idx, path))
-        docs_res = self._convert_docs_to_pdf(files=docs)
-        img_res = self._convert_images_to_pdf(files=imgs)
+        docs_res = self._convert_docs_to_pdf(files=docs, out_dir=out_dir)
+        img_res = self._convert_images_to_pdf(files=imgs, out_dir=out_dir)
 
         final_result.success.extend(docs_res.success)
         final_result.failed.extend(docs_res.failed)
@@ -52,13 +55,13 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
         return final_result
 
     def _convert_docs_to_pdf(
-        self, *, files: list[tuple[int, Path]]
+        self, *, files: list[tuple[int, Path]], out_dir: Path
     ) -> ConversionResult:
         """Convert documents to PDF in chunks and aggregate conversion results."""
         all_results = ConversionResult()
         for chunk in self.make_chunks(files, self.chunk_size):
             self.check_stop()
-            chunk_res = self._convert_chunk(chunk=chunk)
+            chunk_res = self._convert_chunk(chunk=chunk, out_dir=out_dir)
             all_results.success.extend(chunk_res.success)
             all_results.failed.extend(chunk_res.failed)
         return all_results
@@ -66,38 +69,66 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
     def _run_libreoffice_format_conversion(
         self, *, input_paths: list[Path], out_dir: Path
     ):
-        """All tables to xlsx conversion"""
-
-        command = [
-            self.soffice_path,
-            "--headless",
-            "--convert-to",
-            "xlsx",
-            "--outdir",
-            str(out_dir),
-        ] + [str(p) for p in input_paths]
-
+        """Convert tables to xlsx with unique output names."""
+        out_dir.mkdir(parents=True, exist_ok=True)
         num_files = len(input_paths)
         timeout = 10 + num_files * 5
 
-        try:
-            subprocess.run(command, check=True, capture_output=True, timeout=timeout)
-            # Deleting old xls
-            for p in input_paths:
-                if p.exists():
-                    p.unlink()
-        except subprocess.TimeoutExpired:
-            logger.error(
-                f"LibreOffice timed out after {timeout} seconds for {num_files} files: {[p.name for p in input_paths]}"
-            )
-        except subprocess.CalledProcessError as e:
-            logger.exception(
-                "LibreOffice conversion error for %s : %s",
-                [p.name for p in input_paths],
-                e.stderr.decode(),
-            )
-        except Exception:
-            logger.exception(" Unexpected error during table conversion!")
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_in = Path(tmp) / "in"
+            tmp_out = Path(tmp) / "out"
+            tmp_in.mkdir()
+            tmp_out.mkdir()
+
+            staged: dict[Path, Path] = {}
+            for i, p in enumerate(input_paths):
+                s = tmp_in / f"{i}_{p.name}"
+                shutil.copy2(p, s)
+                staged[s] = p
+
+            command = [
+                self.soffice_path,
+                "--headless",
+                "--convert-to",
+                "xlsx",
+                "--outdir",
+                str(tmp_out),
+                *map(str, staged),
+            ]
+
+            try:
+                subprocess.run(
+                    command, check=True, capture_output=True, timeout=timeout
+                )
+            except subprocess.TimeoutExpired:
+                logger.error(
+                    "LibreOffice timed out after %s seconds for %s files: %s",
+                    timeout,
+                    num_files,
+                    [p.name for p in input_paths],
+                )
+                return
+            except subprocess.CalledProcessError as e:
+                logger.error(
+                    "LibreOffice conversion error for %s : %s",
+                    [p.name for p in input_paths],
+                    e.stderr.decode(errors="replace"),
+                )
+                return
+            except Exception:
+                logger.exception("Unexpected error during table conversion!")
+                return
+
+            for s, original in staged.items():
+                result = tmp_out / s.with_suffix(".xlsx").name
+                if not result.exists():
+                    logger.error("No output produced for %s", original)
+                    continue
+                unique_path = get_unique_path(
+                    out_dir / original.with_suffix(".xlsx").name
+                )
+                shutil.move(str(result), unique_path)
+                original.unlink(missing_ok=True)
 
     def _prepare_temp_files(
         self, *, chunk: list[tuple[int, Path]], tmp_path: Path
@@ -112,7 +143,9 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
             paths.append(temp_file_path)
         return paths
 
-    def _convert_chunk(self, *, chunk: list[tuple[int, Path]]) -> ConversionResult:
+    def _convert_chunk(
+        self, *, chunk: list[tuple[int, Path]], out_dir: Path
+    ) -> ConversionResult:
         """Logic for processing one chunk of files."""
 
         to_convert_exts: list[str] = [".xls", ".xlsb", ".ods", ".csv"]
@@ -138,7 +171,7 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
             input_paths = [str(p) for p in all_tmp_paths]
 
             success = self._run_libreoffice_command(
-                input_paths=input_paths, out_dir=tmp_path
+                input_paths=input_paths, out_dir=out_dir
             )
 
             chunk_res: ConversionResult = ConversionResult()
@@ -205,7 +238,7 @@ class LibreOfficeConverter(ImageConverter, LibreSetupMixin):
         for idx, original_path in chunk:
             expected_pdf = tmp_path / f"{idx}_{original_path.stem}.pdf"
             if expected_pdf.exists():
-                res.success.append((idx, expected_pdf.read_bytes()))
+                res.success.append((idx, expected_pdf))
             else:
                 logger.warning(f"Failed conversion to pdf: {expected_pdf.name}")
                 res.failed.append((idx, original_path))
