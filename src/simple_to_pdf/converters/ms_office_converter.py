@@ -2,6 +2,7 @@ import gc
 import logging
 import shutil
 import sys
+import tempfile
 from enum import StrEnum
 from pathlib import Path
 
@@ -197,6 +198,33 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
             f"Application {app_type.value} configured for background execution."
         )
 
+    def _convert_chunk_files(
+        self,
+        *,
+        app,
+        app_type: OfficeApp,
+        chunk: list[tuple[int, Path]],
+        tmp_dir: Path,
+        out_dir: Path,
+        chunk_res: ConversionResult,
+    ) -> None:
+        """Creates temporary copies and converts them."""
+        temp_paths = self._prepare_temp_files(chunk=chunk, tmp_dir=tmp_dir)
+
+        for (idx, original_path), temp_file_path in zip(chunk, temp_paths):
+            self.check_stop()
+            try:
+                processor = self._get_processor(app_type=app_type)
+                output_path = get_unique_path(out_dir / f"{original_path.stem}.pdf")
+
+                pdf_path = processor(
+                    app=app, file_path=temp_file_path, output_path=output_path
+                )
+                chunk_res.success.append((idx, pdf_path))
+            except Exception:
+                logger.exception("Failed to convert %s", original_path)
+                chunk_res.failed.append((idx, original_path))
+
     def _process_chunk(
         self, *, chunk: list[tuple[int, Path]], app_type: OfficeApp, out_dir: Path
     ) -> ConversionResult:
@@ -206,23 +234,21 @@ class MSOfficeConverter(ImageConverter, MSSetupMixin):
         app = None
         try:
             app = self._get_app_instance(app_type=app_type)
-
             if app is None:
                 raise RuntimeError(f"Could not initialize {app_type}.")
+
             self._disable_visibility(app=app, app_type=app_type)
 
-            for idx, pf in chunk:
-                self.check_stop()
-                try:
-                    processor = self._get_processor(app_type=app_type)
-                    output_path = out_dir / f"{pf.stem}.pdf"
-                    output_path = get_unique_path(output_path)
-                    pdf_path = processor(app=app, file_path=pf, output_path=output_path)
-                    chunk_res.success.append((idx, pdf_path))
-                except Exception:
-                    logger.exception("Failed to convert %s", pf)
-                    chunk_res.failed.append((idx, pf))
-                    continue
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                self._convert_chunk_files(
+                    app=app,
+                    app_type=app_type,
+                    chunk=chunk,
+                    tmp_dir=Path(tmp_dir),
+                    out_dir=out_dir,
+                    chunk_res=chunk_res,
+                )
+
         except InterruptedError:
             raise
         except Exception:
