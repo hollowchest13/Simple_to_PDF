@@ -5,7 +5,7 @@ from pypdf import PageObject, PdfReader, PdfWriter, Transformation
 
 from simple_to_pdf.base_services.base import BaseService
 
-from .models import BytePdfDocument, PageFormat, ProcessingReport
+from .models import ConvertedFileItem, PageFormat, ProcessingReport
 
 logger = logging.getLogger(__name__)
 
@@ -79,8 +79,8 @@ class PdfMerger(BaseService):
     ) -> bytes:
         """Merges multiple files into a single PDF and returns original bytes if it is single PDF."""
 
-        pdf_data_list: list[BytePdfDocument] = conversion_rep.documents
-        self._files_count = len(pdf_data_list)
+        pdf_path_list: list[ConvertedFileItem] = conversion_rep.documents
+        self._files_count = len(pdf_path_list)
 
         stage_name = "merging"
 
@@ -92,26 +92,23 @@ class PdfMerger(BaseService):
             },
         )
 
-        if not pdf_data_list:
+        if not pdf_path_list:
             raise ValueError("No valid PDF data to merge")
 
-        pdf_data_list.sort(key=lambda doc: doc.index)
+        pdf_path_list.sort(key=lambda doc: doc.index)
 
         writer = PdfWriter()
-        active_streams: list[io.BytesIO] = []
         success = 0
         failed = conversion_rep.failed
-        total_to_merge = len(pdf_data_list)
+        total_to_merge = len(pdf_path_list)
         try:
-            for i, pdf_data in enumerate(pdf_data_list, start=1):
+            for i, doc_item in enumerate(pdf_path_list, start=1):
                 self.check_stop()
-                file_path = pdf_data.original_path
+                file_path = doc_item.converted_path
                 filename = file_path.name
 
                 try:
-                    pdf_stream = io.BytesIO(pdf_data.data)
-                    active_streams.append(pdf_stream)
-                    reader = PdfReader(pdf_stream)
+                    reader = PdfReader(file_path)
                     if target_page_format is None:
                         writer.append(reader)
                     else:
@@ -164,9 +161,6 @@ class PdfMerger(BaseService):
                     "failed": failed,
                 },
             )
-            for stream in active_streams:
-                stream.close()
-            active_streams.clear()
             writer.close()
 
     def _show_callback(self, event_type: str, data: dict, force: bool = False):
