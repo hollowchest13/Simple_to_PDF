@@ -644,9 +644,9 @@ class PDFMergerGUI(BaseWindow):
                 service_cls=PageExtractor,
                 method_name="extract_pages",
                 method_kwargs={
-                    "input_path": input_path,
+                    "input_file": input_path,
                     "pages_to_extract": pages,
-                    "output_path": output_path,
+                    "output_file": output_path,
                 },
             )
             need_compress: bool = self.settings_panel.compress_selector.get()

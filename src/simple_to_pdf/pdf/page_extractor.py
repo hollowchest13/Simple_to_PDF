@@ -62,8 +62,8 @@ class PageExtractor(BaseService):
                             page_number=p_num,
                             error=e,
                         )
-            output_path = get_unique_path(output_file)
-            writer.write(output_path)
+            output_file = get_unique_path(output_file)
+            writer.write(output_file)
 
             self.callback(
                 "status",
@@ -71,7 +71,7 @@ class PageExtractor(BaseService):
                 status="info",
                 path=str(output_file),
             )
-            return output_path
+            return output_file
 
         except InterruptedError:
             logger.info(f"{stage_name} successfully cancelled by the user.")
