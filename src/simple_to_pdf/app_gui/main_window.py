@@ -4,6 +4,7 @@ import os
 import queue
 import subprocess
 import sys
+import tempfile
 import webbrowser
 from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor
@@ -504,49 +505,51 @@ class PDFMergerGUI(BaseWindow):
         )
 
         try:
-            conversion_res = self.conversion_service.get_conversion_rep(
-                files=files, out_dir=output_path
-            )
-
-            if self._is_cancelled():
-                raise InterruptedError()
-
-            self.callback.safe_callback(
-                "progress", stage="merging", mode="indeterminate"
-            )
-            data: bytes = execute_in_process(
-                executor=self._get_executor(),
-                mp_queue=self.mp_queue,
-                ui_callback=self.callback,
-                service_cls=PdfMerger,
-                method_name="merge_to_pdf",
-                method_kwargs={
-                    "conversion_rep": conversion_res,
-                    "target_page_format": target_format,
-                },
-            )
-
-            if self._is_cancelled():
-                raise InterruptedError()
-
-            if need_compress and data:
-                self.callback.safe_callback(
-                    "progress", stage="compressing", mode="indeterminate"
+            with tempfile.TemporaryDirectory() as tmp_dir_str:
+                tmp_dir = Path(tmp_dir_str)
+                conversion_res = self.conversion_service.get_conversion_rep(
+                    files=files, out_dir=tmp_dir
                 )
-                data = execute_in_process(
+
+                if self._is_cancelled():
+                    raise InterruptedError()
+
+                self.callback.safe_callback(
+                    "progress", stage="merging", mode="indeterminate"
+                )
+                data: bytes = execute_in_process(
                     executor=self._get_executor(),
                     mp_queue=self.mp_queue,
                     ui_callback=self.callback,
-                    service_cls=PDFCompressor,
-                    method_name="compress",
-                    method_kwargs={"pdf_bytes": data},
+                    service_cls=PdfMerger,
+                    method_name="merge_to_pdf",
+                    method_kwargs={
+                        "conversion_rep": conversion_res,
+                        "target_page_format": target_format,
+                    },
                 )
 
-            if self._is_cancelled():
-                raise InterruptedError()
+                if self._is_cancelled():
+                    raise InterruptedError()
 
-            if data:
-                self.save_result(data=data, output_path=output_path)
+                if need_compress and data:
+                    self.callback.safe_callback(
+                        "progress", stage="compressing", mode="indeterminate"
+                    )
+                    data = execute_in_process(
+                        executor=self._get_executor(),
+                        mp_queue=self.mp_queue,
+                        ui_callback=self.callback,
+                        service_cls=PDFCompressor,
+                        method_name="compress",
+                        method_kwargs={"pdf_bytes": data},
+                    )
+
+                if self._is_cancelled():
+                    raise InterruptedError()
+
+                if data:
+                    self.save_result(data=data, output_path=output_path)
 
         except InterruptedError:
             self.callback.safe_callback(
