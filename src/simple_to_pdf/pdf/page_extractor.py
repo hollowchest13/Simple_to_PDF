@@ -1,4 +1,3 @@
-import io
 import logging
 from collections.abc import Callable
 from pathlib import Path
@@ -6,6 +5,7 @@ from pathlib import Path
 from pypdf import PdfReader, PdfWriter
 
 from simple_to_pdf.base_services.base import BaseService
+from simple_to_pdf.utils.file_tools import get_unique_path
 
 logger = logging.getLogger(__name__)
 
@@ -26,12 +26,10 @@ class PageExtractor(BaseService):
     def extract_pages(
         self,
         *,
-        input_path: str,
+        input_file: Path,
         pages_to_extract: list[int],
-        output_path: str | Path,
-    ) -> bytes:
-        input_file = Path(input_path)
-        output_file = Path(output_path).resolve()
+        output_file: Path,
+    ) -> Path:
         stage_name = "extracting"
 
         writer = PdfWriter()
@@ -56,7 +54,7 @@ class PageExtractor(BaseService):
                             filename=f"page {p_num}",
                         )
                     except IndexError as e:
-                        logger.error(f"Page {p_num} is out of range for {input_path}")
+                        logger.error(f"Page {p_num} is out of range for {input_file}")
                         self.callback(
                             "status",
                             key=f"{stage_name}.error",
@@ -64,9 +62,8 @@ class PageExtractor(BaseService):
                             page_number=p_num,
                             error=e,
                         )
-            with io.BytesIO() as buffer:
-                writer.write(buffer)
-                data = buffer.getvalue()
+            output_path = get_unique_path(output_file)
+            writer.write(output_path)
 
             self.callback(
                 "status",
@@ -74,7 +71,7 @@ class PageExtractor(BaseService):
                 status="info",
                 path=str(output_file),
             )
-            return data
+            return output_path
 
         except InterruptedError:
             logger.info(f"{stage_name} successfully cancelled by the user.")

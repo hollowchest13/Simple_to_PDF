@@ -430,11 +430,12 @@ class PDFMergerGUI(BaseWindow):
         )
         if not out:
             return
+        output_path = Path(out).resolve()
         need_compress: bool = self.settings_panel.compress_selector.get()
         target_format = self._get_page_format()
         self._run_merge_worker(
             files=files,
-            output_path=Path(out),
+            output_path=output_path,
             need_compress=need_compress,
             target_format=target_format,
         )

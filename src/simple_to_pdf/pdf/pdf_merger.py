@@ -1,9 +1,10 @@
-import io
 import logging
+from pathlib import Path
 
 from pypdf import PageObject, PdfReader, PdfWriter, Transformation
 
 from simple_to_pdf.base_services.base import BaseService
+from simple_to_pdf.utils.file_tools import get_unique_path
 
 from .models import ConvertedFileItem, PageFormat, ProcessingReport
 
@@ -76,8 +77,9 @@ class PdfMerger(BaseService):
         *,
         conversion_rep: ProcessingReport,
         target_page_format: PageFormat | None = None,
-    ) -> bytes:
-        """Merges multiple files into a single PDF and returns original bytes if it is single PDF."""
+        output_path: Path,
+    ) -> Path:
+        """Merges multiple files into a single PDF and saves it directly to the output path."""
 
         pdf_path_list: list[ConvertedFileItem] = conversion_rep.documents
         self._files_count = len(pdf_path_list)
@@ -142,12 +144,10 @@ class PdfMerger(BaseService):
             if len(writer.pages) == 0:
                 raise ValueError("No PDF data")
             self.check_stop()
-
-            with io.BytesIO() as pdf_buffer:
-                writer.write(pdf_buffer)
-                pdf_bytes = pdf_buffer.getvalue()
+            output_path = get_unique_path(output_path)
+            writer.write(output_path)
             success = total_to_merge - failed
-            return pdf_bytes
+            return output_path
         except InterruptedError:
             logger.info(f"{stage_name} successfully cancelled by the user.")
             raise

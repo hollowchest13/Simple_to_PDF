@@ -5,6 +5,7 @@ from pathlib import Path
 
 from simple_to_pdf.base_services.base import BaseService
 from simple_to_pdf.converters.models import ConversionResult
+from simple_to_pdf.utils.file_tools import get_unique_path
 
 logger = logging.getLogger(__name__)
 
@@ -82,9 +83,10 @@ class BaseConverter(BaseService):
         """Copy files in temporary directory with index prefix."""
 
         paths: list[Path] = []
-        for idx, original_path in chunk:
-            temp_name = f"{idx}_{original_path.name}"
+        for _, original_path in chunk:
+            temp_name = f"{original_path.name}"
             temp_file_path = tmp_dir / temp_name
+            temp_file_path = get_unique_path(temp_file_path)
             shutil.copy2(original_path, temp_file_path)
             paths.append(temp_file_path)
         return paths
