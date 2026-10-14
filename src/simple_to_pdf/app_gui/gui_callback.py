@@ -28,31 +28,40 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
         self._schedule_task(self._handle_event, event_type, **params)
 
     def _handle_event(
-        self, event_type: Literal["status", "progress"], **params
+        self, event_type: Literal["status", "progress", "progress_reset"], **params
     ) -> None:
         """Routes GUI events. Always runs in the main (UI) thread."""
-        if event_type == "progress":
-            self._progress_bar_update(
-                stage=params.get("stage", "processing"),
-                mode=params.get("mode", "indeterminate"),
-                current=params.get("current", 0),
-                total=params.get("total", 0),
-                filename=params.get("filename", ""),
-            )
+        match event_type:
+            case "progress":
+                self._progress_bar_update(
+                    stage=params.get("stage", "processing"),
+                    mode=params.get("mode", "indeterminate"),
+                    current=params.get("current", 0),
+                    total=params.get("total", 0),
+                    filename=params.get("filename", ""),
+                )
 
-        elif event_type == "status":
-            status_params = params.copy()
-            status_key = status_params.pop("key")
-            status_type = status_params.pop("status", "info")
-            self._set_status(key=status_key, status=status_type, **status_params)
+            case "status":
+                status_params = params.copy()
+                status_key = status_params.pop("key")
+                status_type = status_params.pop("status", "info")
+                self._set_status(key=status_key, status=status_type, **status_params)
 
-        else:
-            logger.warning("Unknown GUI event type: %s", event_type)
+            case "progress_reset":
+                self._progress_bar_update(
+                    stage="ready",
+                    mode="determinate",
+                    current=0,
+                    total=0,
+                )
+
+            case _:
+                logger.warning("Unknown GUI event type: %s", event_type)
 
     def _progress_bar_update(
         self,
         *,
-        stage: Literal["processing", "converting", "merging"] = "processing",
+        stage: Literal["processing", "converting", "merging", "ready"] = "processing",
         mode: Literal["indeterminate", "determinate"] = "indeterminate",
         current: int = 0,
         total: int = 0,
@@ -67,36 +76,35 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
         active_color = self.get_color(ThemeKeys.PROGRESS_COLOR)
         stage_text = self.get_text(f"stage.{stage}", section=LOC_SECTION)
 
-        if mode == "indeterminate":
-            if pb.cget("mode") != "indeterminate":
-                pb.configure(mode="indeterminate", progress_color=active_color)
-                pb.start()
-            progress_text = self.get_text(
-                "indeterminate", section=LOC_SECTION, stage=stage_text
-            )
-        else:
-            if pb.cget("mode") == "indeterminate":
-                pb.stop()
-                pb.configure(mode="determinate")
+        match mode:
+            case "indeterminate":
+                if pb.cget("mode") != "indeterminate":
+                    pb.configure(mode="indeterminate", progress_color=active_color)
+                    pb.start()
+                progress_text = self.get_text(
+                    "indeterminate", section=LOC_SECTION, stage=stage_text
+                )
+            case _:
+                if pb.cget("mode") == "indeterminate":
+                    pb.stop()
+                    pb.configure(mode="determinate")
 
-            progress_float = (current / total) if total > 0 else 0
-            pb.configure(
-                progress_color=active_color if progress_float > 0 else idle_color
-            )
-            pb.set(progress_float)
+        progress_float = (current / total) if total > 0 else 0
+        pb.configure(progress_color=active_color if progress_float > 0 else idle_color)
+        pb.set(progress_float)
 
-            percent = int(progress_float * 100)
-            display_name = (filename[:27] + "...") if len(filename) > 30 else filename
+        percent = int(progress_float * 100)
+        display_name = (filename[:27] + "...") if len(filename) > 30 else filename
 
-            progress_text = self.get_text(
-                "detailed",
-                section=LOC_SECTION,
-                stage=stage_text,
-                filename=display_name,
-                current=current,
-                total=total,
-                percent=percent,
-            )
+        progress_text = self.get_text(
+            "detailed",
+            section=LOC_SECTION,
+            stage=stage_text,
+            filename=display_name,
+            current=current,
+            total=total,
+            percent=percent,
+        )
 
         pl.configure(text=progress_text)
 

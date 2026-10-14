@@ -415,8 +415,7 @@ class PDFMergerGUI(BaseWindow):
         output_path = Path(out).resolve()
         need_compress: bool = self.settings_panel.compress_selector.get()
         target_format = self._get_page_format()
-        self._run_worker(
-            self.workflow_manager.merge_files,
+        self._run_merge_worker(
             files=files,
             output_path=output_path,
             need_compress=need_compress,
@@ -434,10 +433,51 @@ class PDFMergerGUI(BaseWindow):
         return config.PAGE_FORMATS.get(page_format_name, None)
 
     @threaded_task
-    def _run_worker(self, task_func, *args, **kwargs) -> None:
-        """A universal worker for any thread tasks."""
+    def _run_merge_worker(
+        self,
+        *,
+        files: list[tuple[int, Path]],
+        output_path: Path,
+        need_compress: bool,
+        target_format: PageFormat | None,
+    ) -> None:
         try:
-            task_func(*args, **kwargs)
+            self.workflow_manager.merge_files(
+                files=files,
+                output_path=output_path,
+                need_compress=need_compress,
+                target_format=target_format,
+            )
+        except ValueError as e:
+            self._notify_error(scenario_key="merge_error", details=e)
+        finally:
+            self.schedule_ui_task(self.main_panel.progress_bar_reset)
+
+    def _notify_error(self, scenario_key: str, **kwargs) -> None:
+        self.schedule_ui_task(
+            lambda: self.notifier.error(scenario_key=scenario_key, **kwargs)
+        )
+
+    @threaded_task
+    def _run_extraction_worker(
+        self,
+        input_path: Path,
+        pages: list[int],
+        output_path: Path,
+    ) -> None:
+        try:
+            self.workflow_manager.extract_pages(
+                input_path=input_path,
+                pages=pages,
+                output_path=output_path,
+            )
+        except ValueError:
+            self.schedule_ui_task(
+                lambda: self.notifier.error(
+                    scenario_key="page_extraction_error",
+                    file_name=input_path,
+                )
+            )
         finally:
             self.schedule_ui_task(self.main_panel.progress_bar_reset)
 
@@ -498,9 +538,7 @@ class PDFMergerGUI(BaseWindow):
 
         if not output_path:
             return
-
-        self._run_worker(
-            self.workflow_manager.page_extraction,
+        self._run_extraction_worker(
             input_path=input_path,
             pages=pages,
             output_path=Path(output_path),
@@ -509,7 +547,7 @@ class PDFMergerGUI(BaseWindow):
     def _on_closing(self) -> None:
         """Handle window close requests and wait for background work if needed."""
         self.protocol("WM_DELETE_WINDOW", lambda: None)
-        self._cancel_processing()
+        self.cancel_processing()
         self._wait_for_thread_finish()
 
     def _wait_for_thread_finish(self) -> None:
@@ -536,7 +574,7 @@ class PDFMergerGUI(BaseWindow):
             with self._ui_queue.mutex:
                 self._ui_queue.queue.clear()
 
-    def _cancel_processing(self) -> None:
+    def cancel_processing(self) -> None:
         """Called when the 'Cancel' button is clicked.."""
         self.workflow_manager.manage_services(action="stop")
         self.workflow_manager.kill_executor()

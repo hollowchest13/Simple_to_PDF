@@ -48,6 +48,7 @@ class WorkflowManager:
 
     def merge_files(
         self,
+        *,
         files: list[tuple[int, Path]],
         output_path: Path,
         need_compress: bool,
@@ -115,7 +116,7 @@ class WorkflowManager:
                 status="error",
             )
         finally:
-            self.schedule_ui_task(self.main_panel.progress_bar_reset)
+            self.callback("progress_reset")
 
     def _is_cancelled(self) -> bool:
         """Checks whether a cancellation or stop signal has been issued."""
@@ -138,7 +139,7 @@ class WorkflowManager:
             processes = getattr(self.process_executor, "_processes", {}) or {}
 
             if isinstance(processes, dict):
-                for pid, process in list(processes.items()):
+                for _, process in list(processes.items()):
                     if process and process.is_alive():
                         process.terminate()
 
@@ -173,12 +174,17 @@ class WorkflowManager:
                     case "reset":
                         service.stop_event.clear()
 
-    def page_extraction(
-        self, *, input_path: str, pages: list[int], output_path: Path
+    def extract_pages(
+        self,
+        *,
+        input_path: Path,
+        pages: list[int],
+        output_path: Path,
+        need_compress: bool = False,
     ) -> None:
         """Run the page-extraction worker and report progress or errors."""
         try:
-            self.schedule_ui_task(self.main_panel.progress_bar_reset)
+            self.callback("progress_reset")
             data: bytes = execute_in_process(
                 executor=self._get_executor(),
                 mp_queue=self.mp_queue,
@@ -191,7 +197,7 @@ class WorkflowManager:
                     "output_file": output_path,
                 },
             )
-            need_compress: bool = self.settings_panel.compress_selector.get()
+
             if need_compress:
                 self.callback("progress", stage="compressing", mode="indeterminate")
                 data = execute_in_process(
@@ -208,19 +214,14 @@ class WorkflowManager:
                 key="processing.cancel",
                 status="info",
             )
-            self.schedule_ui_task(self.main_panel.progress_bar_reset)
+            self.callback("progress_reset")
             return
         except Exception as e:
             error_msg = f"Error during page extraction: {e}"
             if isinstance(e, ValueError):
-                self.schedule_ui_task(
-                    lambda: self.notifier.error(
-                        scenario_key="page_extraction_error",
-                        file_name=input_path,
-                    ),
-                )
+                raise
             else:
                 self.callback("status", key="extract.error", status="error", error=e)
                 logger.exception(error_msg)
-                self.schedule_ui_task(self.main_panel.progress_bar_reset)
+                self.callback("progress_reset")
             return
