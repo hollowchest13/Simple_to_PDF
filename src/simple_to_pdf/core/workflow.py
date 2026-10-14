@@ -109,6 +109,7 @@ class WorkflowManager:
                 self.callback(
                     "status", key="saving.done", status="info", path=output_path
                 )
+                # TODO Коректно перехоптити помилку при скасуванні!
 
                 if self._is_cancelled():
                     raise InterruptedError()

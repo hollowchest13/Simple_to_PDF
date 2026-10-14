@@ -1,5 +1,4 @@
 import logging
-from collections.abc import Callable
 from pathlib import Path
 
 from pypdf import PdfReader, PdfWriter
@@ -13,15 +12,6 @@ logger = logging.getLogger(__name__)
 class PageExtractor(BaseService):
     def __init__(self):
         super().__init__()
-        self.callback = None
-
-    @property
-    def callback(self) -> Callable:
-        return self._callback
-
-    @callback.setter
-    def callback(self, value):
-        self._callback = value if value is not None else lambda *args, **kwargs: None
 
     def extract_pages(
         self,

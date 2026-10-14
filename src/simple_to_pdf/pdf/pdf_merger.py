@@ -14,15 +14,6 @@ logger = logging.getLogger(__name__)
 class PdfMerger(BaseService):
     def __init__(self):
         super().__init__()
-        self.callback = None
-
-    @property
-    def callback(self):
-        return self._callback
-
-    @callback.setter
-    def callback(self, value):
-        self._callback = value if value is not None else lambda *args, **kwargs: None
 
     def _scale_and_append(
         self,
@@ -162,10 +153,3 @@ class PdfMerger(BaseService):
                 },
             )
             writer.close()
-
-    def _show_callback(self, event_type: str, data: dict, force: bool = False):
-        if force or self.should_show_callback():
-            self.callback(event_type, **data)
-
-    def should_show_callback(self) -> bool:
-        return self._files_count > 1

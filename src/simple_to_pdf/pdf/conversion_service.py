@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 
+from simple_to_pdf.base_services.base import BaseService
 from simple_to_pdf.converters import ConverterFactory
 from simple_to_pdf.converters.models import ConversionResult
 from simple_to_pdf.pdf.models import ConvertedFileItem, ProcessingReport
@@ -8,19 +9,10 @@ from simple_to_pdf.pdf.models import ConvertedFileItem, ProcessingReport
 logger = logging.getLogger(__name__)
 
 
-class ConversionService:
+class ConversionService(BaseService):
     def __init__(self):
         factory = ConverterFactory()
         self.converter = factory.get_converter()
-        self.callback = None
-
-    @property
-    def callback(self):
-        return self._callback
-
-    @callback.setter
-    def callback(self, value):
-        self._callback = value if value is not None else lambda *args, **kwargs: None
 
     def get_conversion_rep(
         self, files: list[tuple[int, Path]], out_dir: Path

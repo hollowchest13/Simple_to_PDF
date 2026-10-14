@@ -39,15 +39,6 @@ class PDFCompressor(BaseService):
         self.garbage_level = garbage_level
         self.deflate = deflate
         self.clean = clean
-        self.callback = None
-
-    @property
-    def callback(self):
-        return self._callback
-
-    @callback.setter
-    def callback(self, value):
-        self._callback = value if value is not None else lambda *args, **kwargs: None
 
     def _get_pix_info(self, pix: pymupdf.Pixmap) -> PixInfo:
         if pix.n != 3 or pix.alpha != 0:
@@ -164,10 +155,8 @@ class PDFCompressor(BaseService):
             logger.warning("Received empty bytes for compression")
             return input_pdf_path
 
-        self.callback(
-            "progress",
-            stage=current_stage,
-            mode="indeterminate",
+        self._show_callback(
+            "progress", {"stage": current_stage, "mode": "indeterminate"}, force=True
         )
         try:
             with pymupdf.open(input_pdf_path) as doc:
@@ -189,19 +178,22 @@ class PDFCompressor(BaseService):
                     self._set_page_images_quality(
                         page, doc=doc, quality=quality, processed_xrefs=processed_xrefs
                     )
-                    self.callback(
+                    self._show_callback(
                         "progress",
-                        stage=current_stage,
-                        mode="determinate",
-                        current=idx + 1,
-                        total=total_pages,
+                        {
+                            "stage": current_stage,
+                            "mode": "determinate",
+                            "current": idx + 1,
+                            "total": total_pages,
+                        },
+                        force=True,
                     )
 
                 current_stage = "processing"
-                self.callback(
+                self._show_callback(
                     "progress",
-                    stage=current_stage,
-                    mode="indeterminate",
+                    {"stage": current_stage, "mode": "indeterminate"},
+                    force=True,
                 )
                 doc.save(
                     output_path,
@@ -210,10 +202,10 @@ class PDFCompressor(BaseService):
                     clean=self.clean,
                 )
 
-                self.callback(
+                self._show_callback(
                     "status",
-                    key=f"{stage_name}.done",
-                    status="info",
+                    {"key": f"{stage_name}.done", "status": "info"},
+                    force=True,
                 )
                 return output_path
         except InterruptedError:
@@ -221,10 +213,10 @@ class PDFCompressor(BaseService):
             raise
         except Exception:
             logger.exception("Compressing error!")
-            self.callback(
+            self._show_callback(
                 "status",
-                key="compressing.error.crirical",
-                status="error",
+                {"key": "compressing.error.crirical", "status": "error"},
+                force=True,
             )
             return input_pdf_path
 
