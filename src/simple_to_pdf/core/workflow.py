@@ -131,30 +131,30 @@ class WorkflowManager:
 
     def kill_executor(self) -> None:
         """Force terminate background process pool and underlying child processes."""
-        if self.process_executor is None:
+        if self._process_executor is None:
             return
 
         try:
-            processes = getattr(self.process_executor, "_processes", {}) or {}
+            processes = getattr(self._process_executor, "_processes", {}) or {}
 
             if isinstance(processes, dict):
                 for _, process in list(processes.items()):
                     if process and process.is_alive():
                         process.terminate()
 
-            self.process_executor.shutdown(wait=False, cancel_futures=True)
+            self._process_executor.shutdown(wait=False, cancel_futures=True)
         except Exception:
             logger.exception("Error while killing process executor!")
         finally:
-            self.process_executor = None
+            self._process_executor = None
 
     def _get_executor(self) -> ProcessPoolExecutor:
         """Returns an active ProcessPoolExecutor, creating a new one if needed."""
-        if self.process_executor is None or getattr(
-            self.process_executor, "_shutdown", False
+        if self._process_executor is None or getattr(
+            self._process_executor, "_shutdown", False
         ):
-            self.process_executor = ProcessPoolExecutor(max_workers=self._workers)
-        return self.process_executor
+            self._process_executor = ProcessPoolExecutor(max_workers=self._workers)
+        return self._process_executor
 
     def close_mp_manager(self) -> None:
         """Shutdown the multiprocessing manager to release process resources."""
@@ -179,7 +179,7 @@ class WorkflowManager:
         input_path: Path,
         pages: list[int],
         output_path: Path,
-        need_compress: bool = False,
+        need_compress: bool,
     ) -> None:
         """Run the page-extraction worker and report progress or errors."""
         try:
@@ -239,10 +239,10 @@ class WorkflowManager:
             Executed in a GUI background thread.
         Launches the task within the process and reads notifications from the `mp_queue` into the UI queue until completion.
         """
-        if self.process_executor is None:
-            self.process_executor = self._get_executor()
+        if self._process_executor is None:
+            self._process_executor = self._get_executor()
         try:
-            future: Future[T] = self.process_executor.submit(
+            future: Future[T] = self._process_executor.submit(
                 run_service_method_in_process,
                 service_cls=service_cls,
                 method_name=method_name,

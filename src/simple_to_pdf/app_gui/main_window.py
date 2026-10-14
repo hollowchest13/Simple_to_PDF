@@ -460,16 +460,14 @@ class PDFMergerGUI(BaseWindow):
 
     @threaded_task
     def _run_extraction_worker(
-        self,
-        input_path: Path,
-        pages: list[int],
-        output_path: Path,
+        self, input_path: Path, pages: list[int], output_path: Path, need_compress: bool
     ) -> None:
         try:
             self.workflow_manager.extract_pages(
                 input_path=input_path,
                 pages=pages,
                 output_path=output_path,
+                need_compress=need_compress,
             )
         except ValueError as e:
             self._notify_error(scenario_key="merge_error", error=e)
@@ -533,10 +531,12 @@ class PDFMergerGUI(BaseWindow):
 
         if not output_path:
             return
+        need_compress: bool = self.settings_panel.compress_selector.get()
         self._run_extraction_worker(
             input_path=input_path,
             pages=pages,
             output_path=Path(output_path),
+            need_compress=need_compress,
         )
 
     def _on_closing(self) -> None:
