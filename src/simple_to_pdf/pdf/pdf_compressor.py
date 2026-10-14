@@ -1,5 +1,6 @@
 import io
 import logging
+from pathlib import Path
 
 import pymupdf
 from PIL import Image
@@ -9,6 +10,10 @@ from simple_to_pdf.base_services.base import BaseService
 from .models import PixInfo
 
 logger = logging.getLogger(__name__)
+
+
+class CompressingError(Exception):
+    """Exception thrown when the PDF failed to compress."""
 
 
 class PDFCompressor(BaseService):
@@ -140,9 +145,9 @@ class PDFCompressor(BaseService):
     def compress(
         self,
         *,
-        pdf_bytes: bytes,
+        input_pdf_path: Path,
         quality: int = 20,
-    ) -> bytes:
+    ) -> Path:
         """Main method that accepts PDF bytes, compresses the PDF, and returns new bytes.
 
         Args:
@@ -158,9 +163,9 @@ class PDFCompressor(BaseService):
         stage_name: str = "compressing"
         current_stage: str = stage_name
 
-        if not pdf_bytes:
+        if not input_pdf_path:
             logger.warning("Received empty bytes for compression")
-            return pdf_bytes
+            return input_pdf_path
 
         self.callback(
             "progress",
@@ -168,11 +173,13 @@ class PDFCompressor(BaseService):
             mode="indeterminate",
         )
         try:
-            with pymupdf.open(stream=pdf_bytes, filetype="pdf") as doc:
+            with pymupdf.open(input_pdf_path) as doc:
                 total_pages = len(doc)
 
                 if total_pages == 0:
-                    return pdf_bytes
+                    raise ValueError(
+                        f"The PDF file contains no pages: {input_pdf_path}"
+                    )
 
                 processed_xrefs = set()
 
@@ -194,14 +201,13 @@ class PDFCompressor(BaseService):
                     )
 
                 current_stage = "processing"
-                compressed_stream = io.BytesIO()
                 self.callback(
                     "progress",
                     stage=current_stage,
                     mode="indeterminate",
                 )
                 doc.save(
-                    compressed_stream,
+                    input_pdf_path,
                     garbage=self.garbage_level,
                     deflate=self.deflate,
                     clean=self.clean,
@@ -212,7 +218,7 @@ class PDFCompressor(BaseService):
                     key=f"{stage_name}.done",
                     status="info",
                 )
-                return compressed_stream.getvalue()
+                return input_pdf_path
         except InterruptedError:
             logger.info(f"{stage_name} process was interrupted by user.")
             raise
@@ -223,7 +229,7 @@ class PDFCompressor(BaseService):
                 key="compressing.error.crirical",
                 status="error",
             )
-            return pdf_bytes
+            return input_pdf_path
 
     def is_hard_page(self, *, page) -> bool:
         try:

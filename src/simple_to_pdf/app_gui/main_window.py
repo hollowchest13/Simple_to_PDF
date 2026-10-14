@@ -449,7 +449,7 @@ class PDFMergerGUI(BaseWindow):
                 target_format=target_format,
             )
         except ValueError as e:
-            self._notify_error(scenario_key="merge_error", details=e)
+            self._notify_error(scenario_key="merge_error", error=e)
         finally:
             self.schedule_ui_task(self.main_panel.progress_bar_reset)
 
@@ -471,13 +471,8 @@ class PDFMergerGUI(BaseWindow):
                 pages=pages,
                 output_path=output_path,
             )
-        except ValueError:
-            self.schedule_ui_task(
-                lambda: self.notifier.error(
-                    scenario_key="page_extraction_error",
-                    file_name=input_path,
-                )
-            )
+        except ValueError as e:
+            self._notify_error(scenario_key="merge_error", error=e)
         finally:
             self.schedule_ui_task(self.main_panel.progress_bar_reset)
 

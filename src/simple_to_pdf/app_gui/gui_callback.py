@@ -28,7 +28,7 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
         self._schedule_task(self._handle_event, event_type, **params)
 
     def _handle_event(
-        self, event_type: Literal["status", "progress", "progress_reset"], **params
+        self, event_type: Literal["status", "progress"], **params
     ) -> None:
         """Routes GUI events. Always runs in the main (UI) thread."""
         match event_type:
@@ -46,14 +46,6 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
                 status_key = status_params.pop("key")
                 status_type = status_params.pop("status", "info")
                 self._set_status(key=status_key, status=status_type, **status_params)
-
-            case "progress_reset":
-                self._progress_bar_update(
-                    stage="ready",
-                    mode="determinate",
-                    current=0,
-                    total=0,
-                )
 
             case _:
                 logger.warning("Unknown GUI event type: %s", event_type)
