@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class PdfMerger(BaseService):
     def __init__(self):
         super().__init__()
-        self._callback = lambda *args, **kwargs: None
+        self.callback = None
 
     @property
     def callback(self):

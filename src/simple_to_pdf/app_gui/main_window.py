@@ -131,10 +131,7 @@ class PDFMergerGUI(BaseWindow):
         self.callback = GUICallback(
             main_frame=self.main_panel, schedule=self.schedule_ui_task
         )
-        self.conversion_service.callback = self.callback.safe_callback
-        self.merger.callback = self.callback.safe_callback
-        self.page_extractor.callback = self.callback.safe_callback
-        self.compressor.callback = self.callback.safe_callback
+        self.workflow_manager.callback = self.callback.safe_callback
         self.settings_panel.callback = self._update_merge_button
 
     def toggle_ui(self, *, active: bool) -> None:

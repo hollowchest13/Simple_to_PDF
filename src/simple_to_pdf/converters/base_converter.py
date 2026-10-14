@@ -83,8 +83,8 @@ class BaseConverter(BaseService):
         """Copy files in temporary directory with index prefix."""
 
         paths: list[Path] = []
-        for _, original_path in chunk:
-            temp_name = f"{original_path.name}"
+        for idx, original_path in chunk:
+            temp_name = f"{idx}_{original_path.name}"
             temp_file_path = tmp_dir / temp_name
             temp_file_path = get_unique_path(temp_file_path)
             shutil.copy2(original_path, temp_file_path)

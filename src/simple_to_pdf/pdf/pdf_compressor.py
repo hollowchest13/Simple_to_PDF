@@ -39,7 +39,7 @@ class PDFCompressor(BaseService):
         self.garbage_level = garbage_level
         self.deflate = deflate
         self.clean = clean
-        self._callback = lambda *args, **kwargs: None
+        self.callback = None
 
     @property
     def callback(self):
@@ -143,10 +143,7 @@ class PDFCompressor(BaseService):
                 processed_xrefs.add(xref)
 
     def compress(
-        self,
-        *,
-        input_pdf_path: Path,
-        quality: int = 20,
+        self, *, input_pdf_path: Path, quality: int = 20, output_path: Path
     ) -> Path:
         """Main method that accepts PDF bytes, compresses the PDF, and returns new bytes.
 
@@ -207,7 +204,7 @@ class PDFCompressor(BaseService):
                     mode="indeterminate",
                 )
                 doc.save(
-                    input_pdf_path,
+                    output_path,
                     garbage=self.garbage_level,
                     deflate=self.deflate,
                     clean=self.clean,
@@ -218,7 +215,7 @@ class PDFCompressor(BaseService):
                     key=f"{stage_name}.done",
                     status="info",
                 )
-                return input_pdf_path
+                return output_path
         except InterruptedError:
             logger.info(f"{stage_name} process was interrupted by user.")
             raise

@@ -12,11 +12,11 @@ logger = logging.getLogger(__name__)
 
 class PageExtractor(BaseService):
     def __init__(self):
-        self._callback: Callable = lambda *args, **kwargs: None
         super().__init__()
+        self.callback = None
 
     @property
-    def callback(self):
+    def callback(self) -> Callable:
         return self._callback
 
     @callback.setter

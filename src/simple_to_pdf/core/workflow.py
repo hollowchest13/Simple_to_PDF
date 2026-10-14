@@ -44,11 +44,14 @@ class WorkflowManager:
             self.converter,
             self.extractor,
         ]
-        self._callback = lambda *args, **kwargs: None
 
     @property
     def callback(self) -> Callable:
         return self._callback
+
+    @callback.setter
+    def callback(self, value):
+        self._callback = value if value is not None else lambda *args, **kwargs: None
 
     def merge_files(
         self,
@@ -76,29 +79,36 @@ class WorkflowManager:
                     raise InterruptedError()
 
                 self.callback("progress", stage="merging", mode="indeterminate")
-                processed_pdf_path: Path = self.execute_in_process(
+                merged_pdf_path: Path = self.execute_in_process(
                     ui_callback=self.callback,
                     service_cls=PdfMerger,
                     method_name="merge_to_pdf",
                     method_kwargs={
                         "conversion_rep": conversion_res,
                         "target_page_format": target_format,
-                        "output_path": tmp_dir,
+                        "output_path": tmp_dir / "merged.pdf",
                     },
                 )
 
                 if self._is_cancelled():
                     raise InterruptedError()
-
-                if need_compress and processed_pdf_path:
+                compressed_pdf_path = tmp_dir / "compressed.pdf"
+                if need_compress and merged_pdf_path:
                     self.callback("progress", stage="compressing", mode="indeterminate")
-                    processed_pdf_path = self.execute_in_process(
+                    merged_pdf_path = self.execute_in_process(
                         ui_callback=self.callback,
                         service_cls=PDFCompressor,
                         method_name="compress",
-                        method_kwargs={"input_pdf_path": processed_pdf_path},
+                        method_kwargs={
+                            "input_pdf_path": merged_pdf_path,
+                            "output_path": compressed_pdf_path,
+                        },
                     )
-                shutil.move(processed_pdf_path, output_path)
+
+                shutil.move(compressed_pdf_path, output_path)
+                self.callback(
+                    "status", key="saving.done", status="info", path=output_path
+                )
 
                 if self._is_cancelled():
                     raise InterruptedError()
@@ -185,7 +195,6 @@ class WorkflowManager:
         try:
             with tempfile.TemporaryDirectory() as tmp_dir_str:
                 tmp_dir = Path(tmp_dir_str)
-                extracted_pdf_path = tmp_dir / "extracted.pdf"
                 extracted_pdf_path: Path = self.execute_in_process(
                     ui_callback=self.callback,
                     service_cls=PageExtractor,
@@ -193,7 +202,7 @@ class WorkflowManager:
                     method_kwargs={
                         "input_file": input_path,
                         "pages_to_extract": pages,
-                        "output_file": extracted_pdf_path,
+                        "output_file": tmp_dir / "extracted.pdf",
                     },
                 )
 
@@ -206,6 +215,9 @@ class WorkflowManager:
                         method_kwargs={"input_pdf_path": extracted_pdf_path},
                     )
                 shutil.move(extracted_pdf_path, output_path)
+                self.callback(
+                    "status", key="saving.done", status="info", path=output_path
+                )
 
         except InterruptedError:
             self.callback(

@@ -12,7 +12,7 @@ class ConversionService:
     def __init__(self):
         factory = ConverterFactory()
         self.converter = factory.get_converter()
-        self._callback = lambda *args, **kwargs: None
+        self.callback = None
 
     @property
     def callback(self):
@@ -25,6 +25,7 @@ class ConversionService:
     def get_conversion_rep(
         self, files: list[tuple[int, Path]], out_dir: Path
     ) -> ProcessingReport:
+        logger.info("files=%s", [(i, str(p), p.suffix) for i, p in files])
         conversion_list: list[ConvertedFileItem] = []
         to_conversion = []
 
@@ -91,6 +92,9 @@ class ConversionService:
                     path=str(failed_path[1]),
                     error="Office application failed to process this document",
                 )
+        logger.info(
+            "documents=%d success=%d failed=%d", len(conversion_list), success, failed
+        )
         return ProcessingReport(
             documents=conversion_list, success=success, failed=failed
         )
