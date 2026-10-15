@@ -109,24 +109,15 @@ class WorkflowManager:
                 self.callback(
                     "status", key="saving.done", status="info", path=output_path
                 )
-                # TODO Коректно перехоптити помилку при скасуванні!
-
                 if self._is_cancelled():
                     raise InterruptedError()
 
         except InterruptedError:
-            self.callback(
-                "status",
-                key="processing.cancel",
-                status="info",
-            )
+            logger.warning("File merge canceled by user!")
+            raise
         except Exception:
             logger.exception("Merge stage failed!")
-            self.callback(
-                "status",
-                key="processing.error",
-                status="error",
-            )
+            raise
 
     def _is_cancelled(self) -> bool:
         """Checks whether a cancellation or stop signal has been issued."""
@@ -221,13 +212,11 @@ class WorkflowManager:
                 )
 
         except InterruptedError:
-            self.callback(
-                "status",
-                key="processing.cancel",
-                status="info",
-            )
-            self.callback("progress_reset")
-            return
+            logger.warning("Page extraction canceled by user!")
+            raise
+
+        except ValueError:
+            raise
         except Exception as e:
             error_msg = f"Error during page extraction: {e}"
             if isinstance(e, ValueError):

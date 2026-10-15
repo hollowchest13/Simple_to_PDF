@@ -447,6 +447,18 @@ class PDFMergerGUI(BaseWindow):
             )
         except ValueError as e:
             self._notify_error(scenario_key="merge_error", error=e)
+        except InterruptedError:
+            self.callback.safe_callback(
+                "status",
+                key="processing.cancel",
+                status="info",
+            )
+        except Exception:  # noqa: BLE001
+            self.callback.safe_callback(
+                "status",
+                key="processing.error",
+                status="error",
+            )
         finally:
             self.schedule_ui_task(self.main_panel.progress_bar_reset)
 
@@ -468,6 +480,14 @@ class PDFMergerGUI(BaseWindow):
             )
         except ValueError as e:
             self._notify_error(scenario_key="merge_error", error=e)
+        except InterruptedError:
+            self.callback.safe_callback(
+                "status",
+                key="processing.cancel",
+                status="info",
+            )
+            self.callback.safe_callback("progress_reset")
+
         finally:
             self.schedule_ui_task(self.main_panel.progress_bar_reset)
 
