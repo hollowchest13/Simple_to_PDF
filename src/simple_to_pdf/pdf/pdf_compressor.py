@@ -126,6 +126,8 @@ class PDFCompressor(BaseService):
             image_list = []
 
         for img in image_list:
+            self.check_stop()
+
             xref = img[0]
             if xref not in processed_xrefs:
                 self._compress_single_image(
@@ -145,7 +147,7 @@ class PDFCompressor(BaseService):
             quality (int): Desired image quality after compression (1 to 100). Default: 75.
 
         Returns:
-            bytes: Bytes of the compressed PDF (or original bytes if failed).
+            Path: Path to the compressed PDF (or input_path if failed).
         """
         total_pages: int = 0
         stage_name: str = "compressing"
@@ -215,7 +217,7 @@ class PDFCompressor(BaseService):
             logger.exception("Compressing error!")
             self._show_callback(
                 "status",
-                {"key": "compressing.error.crirical", "status": "error"},
+                {"key": "compressing.error.critical", "status": "error"},
                 force=True,
             )
             return input_pdf_path

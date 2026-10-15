@@ -456,7 +456,7 @@ class PDFMergerGUI(BaseWindow):
         except Exception:  # noqa: BLE001
             self.callback.safe_callback(
                 "status",
-                key="merging.error",
+                key="merging.error.unknown",
                 status="error",
             )
         finally:
@@ -488,16 +488,17 @@ class PDFMergerGUI(BaseWindow):
             )
         except Exception as e:  # noqa: BLE001
             self.callback.safe_callback(
-                "status", key="extracting.error", status="error", error=e
+                "status", key="extracting.error.unknown", status="error", error=e
             )
         finally:
             self.callback.safe_callback("progress_reset")
 
     def prompt_pages_to_remove(self) -> None:
         """Prompt the user to select a PDF and choose pages for extraction."""
-        input_path = get_files(filetypes=[("PDF files", "*.pdf")], multiple=False)
-        if not input_path:
+        raw_input_path = get_files(filetypes=[("PDF files", "*.pdf")], multiple=False)
+        if not raw_input_path:
             return
+        input_path = Path(raw_input_path)
 
         self.update()
 
@@ -507,13 +508,13 @@ class PDFMergerGUI(BaseWindow):
         if raw_input:
             self.on_confirm(raw_input=raw_input, input_path=input_path)
 
-    def on_confirm(self, *, raw_input: str, input_path) -> None:
+    def on_confirm(self, *, raw_input: str, input_path: Path) -> None:
         """Validate page selection input and launch the extraction workflow."""
         PAGE_LIMIT = 10000
         try:
             pages = get_selected_pages(raw=raw_input.strip(), page_limit=PAGE_LIMIT)
             self.page_extractor.validate_pages(
-                input_path=Path(input_path), pages_to_extract=pages
+                input_path=input_path, pages_to_extract=pages
             )
         except InvalidPageInputError:
             self.notifier.warning(scenario_key="wrong_page_format")
@@ -539,22 +540,23 @@ class PDFMergerGUI(BaseWindow):
 
         clean_tag = raw_input.strip()
         short_tag = clean_tag[:30] + "..." if len(clean_tag) > 30 else clean_tag
-        suggested_name = f"pages_{short_tag}_from_{Path(input_path).stem}.pdf"
+        suggested_name = f"pages_{short_tag}_from_{input_path.stem}.pdf"
 
-        output_path = filedialog.asksaveasfilename(
+        raw_output_path = filedialog.asksaveasfilename(
             defaultextension=".pdf",
             filetypes=[("PDF files", "*.pdf")],
             initialfile=suggested_name,
             title="Save PDF",
         )
 
-        if not output_path:
+        if not raw_output_path:
             return
+        output_path = Path(raw_output_path)
         need_compress: bool = self.settings_panel.compress_selector.get()
         self._run_extraction_worker(
             input_path=input_path,
             pages=pages,
-            output_path=Path(output_path),
+            output_path=output_path,
             need_compress=need_compress,
         )
 
@@ -562,6 +564,7 @@ class PDFMergerGUI(BaseWindow):
         """Handle window close requests and wait for background work if needed."""
         self.protocol("WM_DELETE_WINDOW", lambda: None)
         self.cancel_processing()
+        self.workflow_manager.kill_executor()
         self._wait_for_thread_finish()
 
     def _wait_for_thread_finish(self) -> None:
@@ -591,5 +594,5 @@ class PDFMergerGUI(BaseWindow):
     def cancel_processing(self) -> None:
         """Called when the 'Cancel' button is clicked.."""
         self.workflow_manager.manage_services(action="stop")
-        self.workflow_manager.kill_executor()
+
         self._clear_ui_queue()

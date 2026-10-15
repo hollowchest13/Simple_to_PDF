@@ -48,10 +48,13 @@ def threaded_task(func):
             self._clear_ui_queue()
         if getattr(self, "thread_running", False):
             return
-        if hasattr(self, "_manage_services"):
-            self._manage_services(action="reset")
+        if hasattr(self, "workflow_manager"):
+            self.workflow_manager.manage_services(action="reset")
         if hasattr(self, "clear_console"):
             self.clear_console()
+        if hasattr(self, "_manage_services"):
+            # Тут можна скинути стан або через manage_services, або напряму через workflow_manager
+            self._manage_services(action="reset")
         self.toggle_ui(active=False)  # lock in main thread
 
         def _unlock_ui():
