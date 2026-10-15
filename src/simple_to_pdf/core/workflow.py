@@ -214,18 +214,12 @@ class WorkflowManager:
         except InterruptedError:
             logger.warning("Page extraction canceled by user!")
             raise
-
         except ValueError:
             raise
         except Exception as e:
             error_msg = f"Error during page extraction: {e}"
-            if isinstance(e, ValueError):
-                raise
-            else:
-                self.callback("status", key="extract.error", status="error", error=e)
-                logger.exception(error_msg)
-                self.callback("progress_reset")
-            return
+            logger.exception(error_msg)
+            raise
 
     def execute_in_process(
         self,

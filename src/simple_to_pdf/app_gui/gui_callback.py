@@ -22,13 +22,13 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
         self._schedule_task = schedule
 
     def safe_callback(
-        self, event_type: Literal["status", "progress"], **params
+        self, event_type: Literal["status", "progress", "progress_reset"], **params
     ) -> None:
         """Can be called from any thread; hands the event over to the UI thread."""
         self._schedule_task(self._handle_event, event_type, **params)
 
     def _handle_event(
-        self, event_type: Literal["status", "progress"], **params
+        self, event_type: Literal["status", "progress", "progress_reset"], **params
     ) -> None:
         """Routes GUI events. Always runs in the main (UI) thread."""
         match event_type:
@@ -47,13 +47,22 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
                 status_type = status_params.pop("status", "info")
                 self._set_status(key=status_key, status=status_type, **status_params)
 
+            case "progress_reset":
+                self.main_frame.set_progress_determinate()
+                self.main_frame.progress_bar.set(0)
+                self.main_frame.progress_bar.configure(
+                    progress_color=self.main_frame.progress_bar.cget("fg_color")
+                )
+                self.main_frame.progress_label.configure(
+                    text=self.get_text(key="main_panel.progress_label", section="ui")
+                )
             case _:
                 logger.warning("Unknown GUI event type: %s", event_type)
 
     def _progress_bar_update(
         self,
         *,
-        stage: Literal["processing", "converting", "merging", "ready"] = "processing",
+        stage: Literal["processing", "converting", "merging"] = "processing",
         mode: Literal["indeterminate", "determinate"] = "indeterminate",
         current: int = 0,
         total: int = 0,

@@ -456,11 +456,11 @@ class PDFMergerGUI(BaseWindow):
         except Exception:  # noqa: BLE001
             self.callback.safe_callback(
                 "status",
-                key="processing.error",
+                key="merging.error",
                 status="error",
             )
         finally:
-            self.schedule_ui_task(self.main_panel.progress_bar_reset)
+            self.callback.safe_callback("progress_reset")
 
     def _notify_error(self, scenario_key: str, **kwargs) -> None:
         self.schedule_ui_task(
@@ -486,10 +486,12 @@ class PDFMergerGUI(BaseWindow):
                 key="processing.cancel",
                 status="info",
             )
-            self.callback.safe_callback("progress_reset")
-
+        except Exception as e:  # noqa: BLE001
+            self.callback.safe_callback(
+                "status", key="extracting.error", status="error", error=e
+            )
         finally:
-            self.schedule_ui_task(self.main_panel.progress_bar_reset)
+            self.callback.safe_callback("progress_reset")
 
     def prompt_pages_to_remove(self) -> None:
         """Prompt the user to select a PDF and choose pages for extraction."""
