@@ -49,3 +49,9 @@ release_notes = """
    - Fixed: An issue with processing large files with vector graphix.
    - Fixed an issue where the page extraction dialog would crash or block the interface upon closing.
 """
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+]
