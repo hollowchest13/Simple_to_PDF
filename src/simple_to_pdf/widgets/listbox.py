@@ -9,6 +9,7 @@ from simple_to_pdf.core.config import ICONS_PATH, ThemeKeys
 from simple_to_pdf.utils.file_tools import get_file_category
 from simple_to_pdf.widgets import BaseFrame, BaseLabel
 from simple_to_pdf.widgets.base_widgets import BaseScrollableFrame
+from simple_to_pdf.widgets.tooltip import ToolTip
 
 logger = logging.getLogger(__name__)
 
@@ -94,9 +95,15 @@ class CTkListbox(BaseScrollableFrame):
         icon_label.pack(side="left", padx=(10, 5), pady=5)
 
         path_label = BaseLabel(
-            row, text=str(file_path), label_type="content", anchor="w", justify="left"
+            row,
+            text=str(file_path.name),
+            label_type="content",
+            anchor="w",
+            justify="left",
         )
         path_label.pack(side="left", fill="x", expand=True, padx=(10, 10), pady=5)
+
+        ToolTip(row, text=str(file_path.parent))
 
         self.all_widgets[file_path] = {
             "frame": row,
