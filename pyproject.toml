@@ -24,6 +24,7 @@ dependencies = [
     "customtkinter==5.2.2",
     "pywin32==311; sys_platform == 'win32'",
     "pymupdf==1.27.2.3",
+    "tkinterdnd2>=0.6.4",
 ]
 [project.urls]
 # External links for the project

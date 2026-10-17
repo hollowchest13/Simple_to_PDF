@@ -625,6 +625,7 @@ dependencies = [
     { name = "pywin32", marker = "sys_platform == 'win32'" },
     { name = "requests" },
     { name = "tendo" },
+    { name = "tkinterdnd2" },
 ]
 
 [package.dev-dependencies]
@@ -644,6 +645,7 @@ requires-dist = [
     { name = "pywin32", marker = "sys_platform == 'win32'", specifier = "==311" },
     { name = "requests", specifier = "==2.34.2" },
     { name = "tendo", specifier = "==0.3.0" },
+    { name = "tkinterdnd2", specifier = ">=0.6.4" },
 ]
 
 [package.metadata.requires-dev]
@@ -671,6 +673,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b9/a1/714b2bee108ccfdc160d74ca81459feb8d08753921200637f890eab79545/tendo-0.3.0.tar.gz", hash = "sha256:68392d686eb6ece71c14ff0fe24340e83c4362525c8b26f144c84f3122ae9e77", size = 34368, upload-time = "2022-10-09T20:02:38.899Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ce/3f/761077d55732b0b1a673b15d4fdaa947a7c1eb5c9a23b7142df557019823/tendo-0.3.0-py3-none-any.whl", hash = "sha256:026b70b355ea4c9da7c2123fa2d5c280c8983c1b34e329ff49260e2e78b93be7", size = 25344, upload-time = "2022-10-09T20:02:36.374Z" },
+]
+
+[[package]]
+name = "tkinterdnd2"
+version = "0.6.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/c7/bf/4e82bd618ceaba774b6a5bba225ca26675dde04e6f2c1d50ea517d217ac5/tkinterdnd2-0.6.4.tar.gz", hash = "sha256:790d1adabec647cfe18f5c2cc7ddda98b636aac539c45aa6503d234abde3c8e3", size = 736413, upload-time = "2026-10-11T10:45:39.169Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/73/a6/72313c930c923406bd55fd7d389f6fcab2064ccd76be3590ef9d584cf2cf/tkinterdnd2-0.6.4-py3-none-any.whl", hash = "sha256:4b11e0ac6febd8609faf154851d782eca4068bfa68a88ca3d3dded8294367f80", size = 816938, upload-time = "2026-10-11T10:45:37.276Z" },
 ]
 
 [[package]]

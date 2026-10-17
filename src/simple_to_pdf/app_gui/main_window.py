@@ -11,6 +11,7 @@ from tkinter import filedialog
 from typing import Any
 
 import customtkinter as ctk
+from tkinterdnd2 import DND_FILES
 
 from simple_to_pdf.app_dialog import (
     AboutDialog,
@@ -77,6 +78,17 @@ class PDFMergerGUI(BaseWindow):
         self.init_connections()
         self.build_gui()
         self.apply_settings()
+        self.drop_target_register(DND_FILES)
+        self.dnd_bind("<<Drop>>", self.handle_drop)
+
+    def handle_drop(self, event) -> str:
+        files = list(self.tk.splitlist(event.data))
+        if not files:
+            return event.action
+
+        self.main_panel.progress_bar_reset()
+        self.main_panel.filebox.add_new_files(file_list=files)
+        return event.action
 
     def _poll_ui_queue(self):
         try:
