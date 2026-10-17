@@ -163,7 +163,7 @@ class MainFrame(BaseFrame):
 
     def remove_files(self) -> None:
         """Handles removal of selected files with confirmation dialogs."""
-        all_files = self.filebox.all_rows
+        all_files = self.filebox.all_paths
         sel_files = self.filebox.get_selected_paths()
 
         if not all_files:

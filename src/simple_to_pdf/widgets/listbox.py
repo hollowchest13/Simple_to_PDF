@@ -25,7 +25,7 @@ class CTkListbox(BaseScrollableFrame):
         self._scroll_target = 0
         self._is_scrolling = False
 
-        self.all_rows: list[Path] = []
+        self.all_paths: list[Path] = []
         self.selected_data = {}
         self.all_widgets = {}
         self._icon_cache = {}
@@ -39,22 +39,22 @@ class CTkListbox(BaseScrollableFrame):
         """Append new file paths to the list and refresh the rendered rows."""
         new_paths = [Path(p) for p in file_list]
 
-        existing = set(self.all_rows)
+        existing = set(self.all_paths)
 
         for path in new_paths:
             if path not in existing:
-                self.all_rows.append(path)
+                self.all_paths.append(path)
                 existing.add(path)
         self._update_listbox()
 
     def _update_listbox(self):
         """Synchronize the rendered widget rows with the current data model."""
         for registered_path in list(self.all_widgets.keys()):
-            if registered_path not in self.all_rows:
+            if registered_path not in self.all_paths:
                 widget_data = self.all_widgets.pop(registered_path)
                 widget_data["frame"].destroy()
 
-        for path in self.all_rows:
+        for path in self.all_paths:
             if path not in self.all_widgets:
                 self._create_file_row(file_path=path)
 
@@ -133,7 +133,7 @@ class CTkListbox(BaseScrollableFrame):
     def _curselection(self) -> tuple[int, ...]:
         """Return the indices of all currently selected rows."""
         return tuple(
-            idx for idx, path in enumerate(self.all_rows) if path in self.selected_data
+            idx for idx, path in enumerate(self.all_paths) if path in self.selected_data
         )
 
     def move(self, *, direction: str, callback):
@@ -142,7 +142,7 @@ class CTkListbox(BaseScrollableFrame):
         if not sel_idxs:
             return
 
-        items = self.all_rows
+        items = self.all_paths
         n = len(items)
 
         if direction == "down":
@@ -165,7 +165,7 @@ class CTkListbox(BaseScrollableFrame):
             widgets["frame"].destroy()
         self.all_widgets.clear()
         self.selected_data.clear()
-        self.all_rows.clear()
+        self.all_paths.clear()
         callback()
 
     def clear_selection(self):
@@ -178,7 +178,7 @@ class CTkListbox(BaseScrollableFrame):
     def remove_selected(self, *, callback: Callable):
         """Remove all currently selected files from the list and refresh it."""
         for path in self.selected_data:
-            self.all_rows.remove(path)
+            self.all_paths.remove(path)
         self.selected_data.clear()
         self._update_listbox()
 

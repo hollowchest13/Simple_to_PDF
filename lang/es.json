@@ -124,6 +124,11 @@
         "header": "Error de lectura",
         "message": "Compruebe la integridad y el acceso al archivo en la ruta {path}.",
         "btn": "Entendido"
+      },
+      "empty_file_drop": {
+        "header": "¡No se han añadido archivos!",
+        "message": "¡Los archivos que intentas añadir no son compatibles!\n\nFormatos compatibles:\n\n{supported_ext}.",
+        "btn": "Aceptar"
       }
     },
     "error": {
@@ -194,6 +199,11 @@
         "unknown": "Error: No se pudo guardar el archivo en la ruta:\n{path}\nMotivo: {error}",
         "permission": "Error de acceso a la carpeta"
       }
+    },
+    "adding": {
+      "done": "Archivos añadidos: {added_count}",
+      "partial": "Añadidos: {added_count}; omitidos (formato no compatible): {skipped_count}",
+      "none": "No hay archivos para añadir"
     }
   },
   "progress": {

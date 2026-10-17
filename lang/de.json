@@ -116,14 +116,19 @@
         "btn": "Verstanden"
       },
       "file_not_found": {
-        "header": "Nicht gefunden",
+        "header": "Nicht gefunden!",
         "message": "Datei {file_name} wurde nicht gefunden.",
         "btn": "Verstanden"
       },
       "file_read_error": {
-        "header": "Lesefehler",
+        "header": "Lesefehler!",
         "message": "Überprüfen Sie die Integrität und den Zugriff auf die Datei unter {path}.",
         "btn": "Verstanden"
+      },
+      "empty_file_drop": {
+        "header": "Keine Dateien hinzugefügt!",
+        "message": "Die Dateien, die Sie hinzufügen möchten, werden nicht unterstützt!\n\nUnterstützte Formate:\n\n{supported_ext}.",
+        "btn": "OK"
       }
     },
     "error": {
@@ -194,6 +199,11 @@
         "unknown": "Fehler: Datei konnte nicht gespeichert werden unter:\n{path}\nGrund: {error}",
         "permission": "Zugriffsfehler auf den Ordner"
       }
+    },
+    "adding": {
+      "done": "Hinzugefügte Dateien: {added_count}",
+      "partial": "Hinzugefügt: {added_count}; übersprungen (nicht unterstütztes Format): {skipped_count}",
+      "none": "Keine Dateien zum Hinzufügen"
     }
   },
   "progress": {

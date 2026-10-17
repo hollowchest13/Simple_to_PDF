@@ -26,6 +26,12 @@ from simple_to_pdf.app_gui.main_frame import MainFrame
 from simple_to_pdf.app_gui.settings_frame import SettingsFrame
 from simple_to_pdf.cli.logger import get_log_dir
 from simple_to_pdf.core import config
+from simple_to_pdf.core.file_intake import (
+    expand_paths,
+    filter_new,
+    format_extensions,
+    split_supported,
+)
 from simple_to_pdf.core.models import App_Mode
 from simple_to_pdf.core.version import VersionController
 from simple_to_pdf.core.workflow import WorkflowManager
@@ -87,31 +93,22 @@ class PDFMergerGUI(BaseWindow):
         return {ext.lower() for group in formats.values() for ext in group} | {".pdf"}
 
     def handle_drop(self, event) -> str:
-        supported_exts = self._supported_extensions()
+        dropped = expand_paths(self.tk.splitlist(event.data))
+        supported, unsupported_count = split_supported(
+            dropped, self._supported_extensions()
+        )
+        new_files, duplicate_count = filter_new(
+            supported, self.main_panel.filebox.all_paths
+        )
 
-        files: list[Path] = []
-        for item in self.tk.splitlist(event.data):
-            path = Path(item)
-            if path.is_dir():
-                files.extend(p for p in path.iterdir() if p.is_file())
-            elif path.is_file():
-                files.append(path)
-
-        supported = [p for p in files if p.suffix.lower() in supported_exts]
-        skipped_count = len(files) - len(supported)
-
-        if supported:
+        self._report_adding(
+            added=new_files,
+            skipped_count=unsupported_count + duplicate_count,
+            had_supported=bool(supported),
+        )
+        if new_files:
             self.main_panel.progress_bar_reset()
-            self.main_panel.filebox.add_new_files(file_list=[str(p) for p in supported])
-            self.callback.safe_callback(
-                "status",
-                key="adding.partial" if skipped_count else "adding.done",
-                added_count=len(supported),
-                skipped_count=skipped_count,
-            )
-        else:
-            self.callback.safe_callback("status", status="adding.none")
-
+            self.main_panel.filebox.add_new_files(file_list=[str(p) for p in new_files])
         return event.action
 
     def _poll_ui_queue(self):
@@ -127,6 +124,23 @@ class PDFMergerGUI(BaseWindow):
             pass
         finally:
             self.after(16, self._poll_ui_queue)
+
+    def _report_adding(
+        self, *, added: list[Path], skipped_count: int, had_supported: bool
+    ) -> None:
+        """Show a status only when there is something meaningful to report."""
+        if added:
+            self.callback.safe_callback(
+                "status",
+                key="adding.partial" if skipped_count else "adding.done",
+                added_count=len(added),
+                skipped_count=skipped_count,
+            )
+        elif not had_supported:
+            self.notifier.warning(
+                scenario_key="empty_file_drop",
+                supported_ext=format_extensions(self._supported_extensions_set),
+            )
 
     def apply_settings(self) -> None:
         self.settings_panel.setup()
@@ -270,7 +284,7 @@ class PDFMergerGUI(BaseWindow):
         merging a single PDF without compression). Triggers a UI update
         after the state change.
         """
-        file_paths = self.main_panel.filebox.all_rows
+        file_paths = self.main_panel.filebox.all_paths
         file_num = len(file_paths)
         need_compress = self.settings_panel.compress_selector.get()
 
@@ -431,7 +445,7 @@ class PDFMergerGUI(BaseWindow):
     def on_merge(self) -> None:
         """Start the merge workflow and ask the user where to save the result."""
         files: list[tuple[int, Path]] = [
-            (i, path) for i, path in enumerate(self.main_panel.filebox.all_rows)
+            (i, path) for i, path in enumerate(self.main_panel.filebox.all_paths)
         ]
         if not files:
             self.notifier.warning(scenario_key="no_file_to_merge")
