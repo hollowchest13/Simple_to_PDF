@@ -1,6 +1,7 @@
 import logging
 import sys
 import traceback
+import warnings
 
 import customtkinter as ctk
 from tendo import singleton
@@ -13,6 +14,8 @@ from simple_to_pdf.core.workflow import WorkflowManager
 from simple_to_pdf.localization.localization_mixin import LocalizationMixin
 from simple_to_pdf.pdf import ConversionService, PageExtractor, PDFCompressor, PdfMerger
 from simple_to_pdf.settings.settings_manager import SettingsManager
+
+warnings.filterwarnings("ignore", message="Annotation sizes differ")
 
 logger = logging.getLogger(__name__)
 

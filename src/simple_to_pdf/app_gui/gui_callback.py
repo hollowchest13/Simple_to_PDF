@@ -82,9 +82,13 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
                 if pb.cget("mode") != "indeterminate":
                     pb.configure(mode="indeterminate", progress_color=active_color)
                     pb.start()
+
                 progress_text = self.get_text(
                     "indeterminate", section=LOC_SECTION, stage=stage_text
                 )
+                pl.configure(text=progress_text)
+                return
+
             case _:
                 if pb.cget("mode") == "indeterminate":
                     pb.stop()

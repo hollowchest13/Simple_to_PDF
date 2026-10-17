@@ -109,7 +109,6 @@ class WorkflowManager:
                         },
                     )
 
-                shutil.move(compressed_pdf_path, output_path)
                 self.callback(
                     "status", key="saving.done", status="info", path=output_path
                 )
@@ -122,6 +121,43 @@ class WorkflowManager:
         except Exception:
             logger.exception("Merge stage failed!")
             raise
+
+    def _save_to_dest_dir(self, *, input_path: Path, output_path: Path) -> bool:
+        """Saves (moves) the processed file to the destination directory."""
+        self.callback("progress", stage="saving", mode="indeterminate")
+        self.callback(
+            "status",
+            key="saving_file",
+            status="info",
+            filename=output_path.name,
+        )
+
+        try:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(input_path), str(output_path))
+            logger.debug(
+                f"Successfully saved {output_path.name} to {output_path.parent}"
+            )
+
+            self.callback("progress_reset")
+            self.callback(
+                "status",
+                key="save_success",
+                status="success",
+                filename=output_path.name,
+            )
+            return True
+
+        except Exception:
+            logger.exception(f"Failed to save file to {output_path}")
+            self.callback("progress_reset")
+            self.callback(
+                "status",
+                key="save_error",
+                status="error",
+                filename=output_path.name,
+            )
+            return False
 
     def _is_cancelled(self) -> bool:
         """Checks whether a cancellation or stop signal has been issued."""
