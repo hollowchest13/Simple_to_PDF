@@ -80,14 +80,38 @@ class PDFMergerGUI(BaseWindow):
         self.apply_settings()
         self.drop_target_register(DND_FILES)
         self.dnd_bind("<<Drop>>", self.handle_drop)
+        self._supported_extensions_set = self._supported_extensions()
+
+    def _supported_extensions(self) -> set[str]:
+        formats = self.conversion_service.converter.get_supported_formats()
+        return {ext.lower() for group in formats.values() for ext in group} | {".pdf"}
 
     def handle_drop(self, event) -> str:
-        files = list(self.tk.splitlist(event.data))
-        if not files:
-            return event.action
+        supported_exts = self._supported_extensions()
 
-        self.main_panel.progress_bar_reset()
-        self.main_panel.filebox.add_new_files(file_list=files)
+        files: list[Path] = []
+        for item in self.tk.splitlist(event.data):
+            path = Path(item)
+            if path.is_dir():
+                files.extend(p for p in path.iterdir() if p.is_file())
+            elif path.is_file():
+                files.append(path)
+
+        supported = [p for p in files if p.suffix.lower() in supported_exts]
+        skipped_count = len(files) - len(supported)
+
+        if supported:
+            self.main_panel.progress_bar_reset()
+            self.main_panel.filebox.add_new_files(file_list=[str(p) for p in supported])
+            self.callback.safe_callback(
+                "status",
+                key="adding.partial" if skipped_count else "adding.done",
+                added_count=len(supported),
+                skipped_count=skipped_count,
+            )
+        else:
+            self.callback.safe_callback("status", status="adding.none")
+
         return event.action
 
     def _poll_ui_queue(self):
