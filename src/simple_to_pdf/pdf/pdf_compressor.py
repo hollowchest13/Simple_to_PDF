@@ -40,15 +40,22 @@ class PDFCompressor(BaseService):
         self.deflate = deflate
         self.clean = clean
 
-    def _get_pix_info(self, pix: pymupdf.Pixmap) -> PixInfo:
-        if pix.n != 3 or pix.alpha != 0:
-            pix_rgb = pymupdf.Pixmap(pymupdf.csRGB, pix)
-            samples = pix_rgb.samples
-            width, height = pix_rgb.width, pix_rgb.height
-            del pix_rgb
-        else:
-            samples = pix.samples
-            width, height = pix.width, pix.height
+    def _get_pix_info(self, pix: pymupdf.Pixmap) -> PixInfo | None:
+        if pix.colorspace is None:
+            return None
+
+        try:
+            if pix.n != 3 or pix.alpha != 0:
+                pix_rgb = pymupdf.Pixmap(pymupdf.csRGB, pix)
+                samples = pix_rgb.samples
+                width, height = pix_rgb.width, pix_rgb.height
+                del pix_rgb
+            else:
+                samples = pix.samples
+                width, height = pix.width, pix.height
+        except Exception:
+            logger.warning("Could not convert pixmap to RGB colorspace")
+            raise
 
         return PixInfo(samples=samples, width=width, height=height)
 
@@ -67,6 +74,8 @@ class PDFCompressor(BaseService):
                 return
 
             pix_info = self._get_pix_info(pix)
+            if pix_info is None:
+                return
 
             with (
                 Image.frombytes(
