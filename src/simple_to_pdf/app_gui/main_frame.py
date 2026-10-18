@@ -1,6 +1,7 @@
 import logging
 import tkinter as tk
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 import customtkinter as ctk
@@ -150,16 +151,15 @@ class MainFrame(BaseFrame):
             formatted_types.append((label, pattern))
         return formatted_types
 
-    def add_files(self) -> None:
-        """Opens file dialog and adds files to the listbox."""
+    def add_files(self) -> tuple[list[Path], int] | None:
         types = self._get_formatted_filetypes()
-        new_files_paths: list[str] = list(get_files(filetypes=types, multiple=True))
-
-        if not new_files_paths:
-            return
+        selected = [Path(p) for p in get_files(filetypes=types, multiple=True)]
+        if not selected:
+            return None
 
         self.progress_bar_reset()
-        self.filebox.add_new_files(file_list=new_files_paths)
+        added = self.filebox.add_new_files(file_list=selected)
+        return added, len(selected)
 
     def remove_files(self) -> None:
         """Handles removal of selected files with confirmation dialogs."""

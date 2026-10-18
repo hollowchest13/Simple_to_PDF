@@ -35,17 +35,20 @@ class CTkListbox(BaseScrollableFrame):
         self.selected_row_color = self.get_color(ThemeKeys.TEXT_PRIMARY)
         self.selected_text_color = self.get_color(ThemeKeys.TEXT_ON_ACCENT)
 
-    def add_new_files(self, file_list: list[str]) -> None:
-        """Append new file paths to the list and refresh the rendered rows."""
-        new_paths = [Path(p) for p in file_list]
-
+    def add_new_files(self, file_list: list[Path]) -> list[Path]:
+        """Append new file paths to the list and return those actually added."""
         existing = set(self.all_paths)
+        added: list[Path] = []
 
-        for path in new_paths:
+        for path in file_list:
             if path not in existing:
                 self.all_paths.append(path)
                 existing.add(path)
-        self._update_listbox()
+                added.append(path)
+
+        if added:
+            self._update_listbox()
+        return added
 
     def _update_listbox(self):
         """Synchronize the rendered widget rows with the current data model."""

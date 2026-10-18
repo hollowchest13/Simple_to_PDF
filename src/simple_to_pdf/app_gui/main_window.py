@@ -108,7 +108,7 @@ class PDFMergerGUI(BaseWindow):
         )
         if new_files:
             self.main_panel.progress_bar_reset()
-            self.main_panel.filebox.add_new_files(file_list=[str(p) for p in new_files])
+            self.main_panel.filebox.add_new_files(file_list=[p for p in new_files])
         return event.action
 
     def _poll_ui_queue(self):
@@ -126,7 +126,7 @@ class PDFMergerGUI(BaseWindow):
             self.after(16, self._poll_ui_queue)
 
     def _report_adding(
-        self, *, added: list[Path], skipped_count: int, had_supported: bool
+        self, *, added: list[Path], skipped_count: int = 0, had_supported: bool = True
     ) -> None:
         """Show a status only when there is something meaningful to report."""
         if added:
@@ -315,8 +315,15 @@ class PDFMergerGUI(BaseWindow):
         self.btns_panel.update_conditional_button()
 
     @update_ui_after("_update_merge_button")
-    def add_files(self):
-        self.main_panel.add_files()
+    def add_files(self) -> None:
+        result = self.main_panel.add_files()
+        if result is None:
+            return
+        added, requested = result
+        self._report_adding(
+            added=added,
+            skipped_count=requested - len(added),
+        )
 
     @update_ui_after("_update_merge_button")
     def remove_files(self):
