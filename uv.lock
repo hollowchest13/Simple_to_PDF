@@ -613,7 +613,7 @@ wheels = [
 
 [[package]]
 name = "simple-to-pdf"
-version = "1.0.3"
+version = "1.0.5"
 source = { editable = "." }
 dependencies = [
     { name = "customtkinter" },

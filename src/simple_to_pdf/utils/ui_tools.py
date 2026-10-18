@@ -53,7 +53,6 @@ def threaded_task(func):
         if hasattr(self, "clear_console"):
             self.clear_console()
         if hasattr(self, "_manage_services"):
-            # Тут можна скинути стан або через manage_services, або напряму через workflow_manager
             self._manage_services(action="reset")
         self.toggle_ui(active=False)  # lock in main thread
 
@@ -64,7 +63,7 @@ def threaded_task(func):
         def run():
             try:
                 self.thread_running = True
-                func(self, *args, **kwargs)  # run in background thread
+                func(self, *args, **kwargs)
             finally:
                 if hasattr(self, "schedule_ui_task"):
                     self.schedule_ui_task(_unlock_ui)
