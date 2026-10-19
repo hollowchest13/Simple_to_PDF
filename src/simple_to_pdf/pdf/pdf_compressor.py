@@ -45,14 +45,14 @@ class PDFCompressor(BaseService):
             return None
 
         try:
-            if pix.n != 3 or pix.alpha != 0:
-                pix_rgb = pymupdf.Pixmap(pymupdf.csRGB, pix)
-                samples = pix_rgb.samples
-                width, height = pix_rgb.width, pix_rgb.height
-                del pix_rgb
-            else:
-                samples = pix.samples
-                width, height = pix.width, pix.height
+            if pix.alpha:
+                pix = pymupdf.Pixmap(pix, 0)
+
+            if pix.n != 3:
+                pix = pymupdf.Pixmap(pymupdf.csRGB, pix)
+
+            samples = pix.samples
+            width, height = pix.width, pix.height
         except Exception:
             logger.warning("Could not convert pixmap to RGB colorspace")
             raise

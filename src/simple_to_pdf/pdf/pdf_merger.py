@@ -92,7 +92,8 @@ class PdfMerger(BaseService):
 
         writer = PdfWriter()
         success = 0
-        failed = conversion_rep.failed
+        failed = conversion_rep.failed  # загальна кількість невдач, для звіту
+        merge_failed = 0  # лише помилки цього етапу
         total_to_merge = len(pdf_path_list)
         try:
             for i, doc_item in enumerate(pdf_path_list, start=1):
@@ -113,6 +114,7 @@ class PdfMerger(BaseService):
                 except Exception:
                     logger.exception("Failed to process %s!", filename)
                     failed += 1
+                    merge_failed += 1
                     self._show_callback(
                         "status",
                         {
@@ -137,7 +139,7 @@ class PdfMerger(BaseService):
             self.check_stop()
             output_path = get_unique_path(output_path)
             writer.write(output_path)
-            success = total_to_merge - failed
+            success = total_to_merge - merge_failed
             return output_path
         except InterruptedError:
             logger.info(f"{stage_name} successfully cancelled by the user.")

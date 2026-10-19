@@ -90,13 +90,10 @@ class PageExtractor(BaseService):
             actual_total = len(reader.pages)
 
         invalid = [
-            p_num + 1 for p_num in pages_to_extract if p_num < 1 or p_num > actual_total
+            p_num for p_num in pages_to_extract if p_num < 1 or p_num > actual_total
         ]
 
         if invalid:
             raise ValueError(
                 f"Invalid page numbers: {invalid}. File has only {actual_total} pages."
             )
-
-        if not pages_to_extract:
-            raise ValueError("No pages selected for extraction.")
