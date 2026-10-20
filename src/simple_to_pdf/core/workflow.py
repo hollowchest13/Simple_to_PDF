@@ -96,8 +96,8 @@ class WorkflowManager:
 
                 if self._is_cancelled():
                     raise InterruptedError()
-                compressed_pdf_path = tmp_dir / "compressed.pdf"
                 if need_compress and merged_pdf_path:
+                    compressed_pdf_path = tmp_dir / "compressed.pdf"
                     self.callback("progress", stage="compressing", mode="indeterminate")
                     merged_pdf_path = self.execute_in_process(
                         ui_callback=self.callback,
@@ -131,31 +131,25 @@ class WorkflowManager:
             Exception: Whatever shutil.move / mkdir raised, after notifying the UI.
         """
         self.callback("progress", stage="saving", mode="indeterminate")
-        self.callback(
-            "status",
-            key="saving_file",
-            status="info",
-            filename=output_path.name,
-        )
-
         try:
             output_path.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(input_path), str(output_path))
         except Exception:
+            logger.exception("Error moving file from %s to %s", input_path, output_path)
             self.callback("progress_reset")
             self.callback(
                 "status",
-                key="save_error",
+                key="saving.error",
                 status="error",
-                filename=output_path.name,
+                path=output_path,
             )
             raise
         self.callback("progress_reset")
         self.callback(
             "status",
-            key="save_success",
+            key="saving.error",
             status="success",
-            filename=output_path.name,
+            path=output_path,
         )
 
     def _is_cancelled(self) -> bool:
@@ -238,9 +232,9 @@ class WorkflowManager:
                         "output_file": tmp_dir / "extracted.pdf",
                     },
                 )
-                compressed_pdf: Path = tmp_dir / "compressed.pdf"
 
                 if need_compress:
+                    compressed_pdf: Path = tmp_dir / "compressed.pdf"
                     self.callback("progress", stage="compressing", mode="indeterminate")
                     extracted_pdf_path = self.execute_in_process(
                         ui_callback=self.callback,
@@ -253,7 +247,7 @@ class WorkflowManager:
                         },
                     )
                 self._save_to_dest_dir(
-                    input_path=compressed_pdf, output_path=output_path
+                    input_path=extracted_pdf_path, output_path=output_path
                 )
 
         except InterruptedError:
