@@ -4,9 +4,10 @@ from unittest.mock import MagicMock, call, patch
 
 import pytest
 
+from simple_to_pdf.pdf.conversion_service import ConversionService
+
 MODULE = "simple_to_pdf.pdf.conversion_service"
 
-from simple_to_pdf.pdf.conversion_service import ConversionService
 
 PDF_SUFFIXES = {".pdf"}
 OFFICE_SUFFIXES = {".docx", ".xlsx", ".pptx"}

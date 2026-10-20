@@ -46,6 +46,7 @@ class WorkflowManager:
             self.converter,
             self.extractor,
         ]
+        self.callback = None
 
     @property
     def callback(self) -> Callable:
@@ -109,11 +110,12 @@ class WorkflowManager:
                         },
                     )
 
-                self.callback(
-                    "status", key="saving.done", status="info", path=output_path
-                )
                 if self._is_cancelled():
                     raise InterruptedError()
+
+                self._save_to_dest_dir(
+                    input_path=merged_pdf_path, output_path=output_path
+                )
 
         except InterruptedError:
             logger.warning("File merge canceled by user!")
@@ -122,8 +124,12 @@ class WorkflowManager:
             logger.exception("Merge stage failed!")
             raise
 
-    def _save_to_dest_dir(self, *, input_path: Path, output_path: Path) -> bool:
-        """Saves (moves) the processed file to the destination directory."""
+    def _save_to_dest_dir(self, *, input_path: Path, output_path: Path) -> None:
+        """Moves the processed file to the destination.
+
+        Raises:
+            Exception: Whatever shutil.move / mkdir raised, after notifying the UI.
+        """
         self.callback("progress", stage="saving", mode="indeterminate")
         self.callback(
             "status",
@@ -135,21 +141,7 @@ class WorkflowManager:
         try:
             output_path.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(input_path), str(output_path))
-            logger.debug(
-                f"Successfully saved {output_path.name} to {output_path.parent}"
-            )
-
-            self.callback("progress_reset")
-            self.callback(
-                "status",
-                key="save_success",
-                status="success",
-                filename=output_path.name,
-            )
-            return True
-
         except Exception:
-            logger.exception(f"Failed to save file to {output_path}")
             self.callback("progress_reset")
             self.callback(
                 "status",
@@ -157,7 +149,14 @@ class WorkflowManager:
                 status="error",
                 filename=output_path.name,
             )
-            return False
+            raise
+        self.callback("progress_reset")
+        self.callback(
+            "status",
+            key="save_success",
+            status="success",
+            filename=output_path.name,
+        )
 
     def _is_cancelled(self) -> bool:
         """Checks whether a cancellation or stop signal has been issued."""
@@ -200,7 +199,7 @@ class WorkflowManager:
 
     def close_mp_manager(self) -> None:
         """Shutdown the multiprocessing manager to release process resources."""
-        if hasattr(self, "mp_manager") and self._mp_manager:
+        if getattr(self, "_mp_manager", None):
             try:
                 self._mp_manager.shutdown()
             except Exception:
@@ -253,9 +252,8 @@ class WorkflowManager:
                             "output_path": compressed_pdf,
                         },
                     )
-                shutil.move(extracted_pdf_path, output_path)
-                self.callback(
-                    "status", key="saving.done", status="info", path=output_path
+                self._save_to_dest_dir(
+                    input_path=compressed_pdf, output_path=output_path
                 )
 
         except InterruptedError:
