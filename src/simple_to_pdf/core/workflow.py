@@ -232,6 +232,8 @@ class WorkflowManager:
                         "output_file": tmp_dir / "extracted.pdf",
                     },
                 )
+                if self._is_cancelled():
+                    raise InterruptedError()
 
                 if need_compress:
                     compressed_pdf: Path = tmp_dir / "compressed.pdf"
