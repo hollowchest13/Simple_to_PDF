@@ -16,9 +16,6 @@ A4_W, A4_H = 595, 842
 PAGE_HEIGHT = 200
 
 
-# --------------------------------------------------------------------------
-# Helpers and fixtures
-# --------------------------------------------------------------------------
 def make_pdf(path: Path, widths: list[float], height: float = PAGE_HEIGHT) -> Path:
     """A PDF where page N has a width of widths[N] (so it's easy to tell them apart)."""
     writer = PdfWriter()
@@ -73,7 +70,6 @@ def merger(monkeypatch) -> PdfMerger:
     m._show_callback = MagicMock()
     m.check_stop = MagicMock()
 
-    # By default, get_unique_path returns the path unchanged.
     module = sys.modules[PdfMerger.__module__]
     monkeypatch.setattr(module, "get_unique_path", lambda p: p)
     return m
@@ -92,9 +88,6 @@ def merge_spy(monkeypatch) -> list:
     return captured
 
 
-# --------------------------------------------------------------------------
-# _scale_and_append
-# --------------------------------------------------------------------------
 class TestScaleAndAppend:
     def run(
         self, merger: PdfMerger, pdf: Path, fmt: SimpleNamespace | None = A4
@@ -231,9 +224,6 @@ def sizes_of(writer: PdfWriter) -> list[tuple[int, int]]:
     ]
 
 
-# --------------------------------------------------------------------------
-# merge_to_pdf — successful scenarios
-# --------------------------------------------------------------------------
 class TestMergeToPdf:
     @pytest.fixture
     def three_files(self, tmp_path) -> list[SimpleNamespace]:
@@ -386,9 +376,6 @@ class TestMergeToPdf:
         assert closed == [True]
 
 
-# --------------------------------------------------------------------------
-# merge_to_pdf — errors and cancellations
-# --------------------------------------------------------------------------
 class TestMergeToPdfFailures:
     @pytest.fixture
     def broken(self, tmp_path) -> Path:

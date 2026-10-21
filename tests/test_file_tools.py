@@ -22,9 +22,6 @@ def dialog(monkeypatch) -> MagicMock:
     return mock
 
 
-# --------------------------------------------------------------------------- #
-# FileToolKit
-# --------------------------------------------------------------------------- #
 class TestFileToolKit:
     def test_write_bytes_creates_parents_and_returns_resolved_path(self, tmp_path):
         target = tmp_path / "a" / "b" / "out.bin"
@@ -39,9 +36,6 @@ class TestFileToolKit:
             ft.FileToolKit.read_text_file(file_path=tmp_path / "nope.txt")
 
 
-# --------------------------------------------------------------------------- #
-# get_file_category
-# --------------------------------------------------------------------------- #
 class TestFileCategory:
     @pytest.mark.parametrize(
         ("name", "expected"),
@@ -69,9 +63,6 @@ class TestFileCategory:
                 seen[ext] = category
 
 
-# --------------------------------------------------------------------------- #
-# get_text
-# --------------------------------------------------------------------------- #
 class TestGetText:
     def test_returns_file_content(self, tmp_path, msgbox):
         f = tmp_path / "c.txt"
@@ -103,9 +94,6 @@ class TestGetText:
         assert message.startswith("Failed to read Config")
 
 
-# --------------------------------------------------------------------------- #
-# get_files
-# --------------------------------------------------------------------------- #
 class TestGetFiles:
     def test_multiple_uses_askopenfilenames(self, dialog):
         dialog.askopenfilenames.return_value = ("a.pdf", "b.pdf")
@@ -134,9 +122,6 @@ class TestGetFiles:
         assert dialog.askopenfilename.call_args.kwargs["filetypes"] is custom
 
 
-# --------------------------------------------------------------------------- #
-# get_unique_path
-# --------------------------------------------------------------------------- #
 class TestGetUniquePath:
     def test_free_path_is_returned_and_parent_created(self, tmp_path):
         target = tmp_path / "x" / "file.pdf"

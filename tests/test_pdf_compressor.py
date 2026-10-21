@@ -10,13 +10,9 @@ import pymupdf
 import pytest
 from PIL import Image
 
-# ВАЖЛИВО: виправте шлях імпорту під структуру вашого проєкту.
 from simple_to_pdf.pdf.pdf_compressor import PDFCompressor
 
 
-# --------------------------------------------------------------------------
-# Helpers and fixtures
-# --------------------------------------------------------------------------
 def noisy_png(seed: int = 0, size: int = 200) -> bytes:
     """PNGwith random noise: PNG is large and JPEG q=20 is noticeably smaller."""
     raw = random.Random(seed).randbytes(size * size * 3)
@@ -74,9 +70,6 @@ def rgb_info():
     )
 
 
-# --------------------------------------------------------------------------
-# __init__
-# --------------------------------------------------------------------------
 class TestInit:
     def test_defaults(self):
         comp = PDFCompressor()
@@ -93,9 +86,6 @@ class TestInit:
         assert comp.clean is False
 
 
-# --------------------------------------------------------------------------
-# _get_pix_info
-# --------------------------------------------------------------------------
 class TestGetPixInfo:
     WIDTH, HEIGHT = 4, 2
 
@@ -156,9 +146,6 @@ class TestGetPixInfo:
         assert "Could not convert pixmap" in caplog.text
 
 
-# --------------------------------------------------------------------------
-# _compress_single_image
-# --------------------------------------------------------------------------
 class TestCompressSingleImage:
     @pytest.fixture
     def page(self):
@@ -190,7 +177,6 @@ class TestCompressSingleImage:
         page.replace_image.assert_called_once()
         args, kwargs = page.replace_image.call_args
         assert args == (7,)
-        # The result is a true JPEG
         assert kwargs["stream"][:2] == b"\xff\xd8"
         assert len(kwargs["stream"]) < 100_000
 
@@ -276,9 +262,6 @@ class TestCompressSingleImage:
         assert "Image compressing failed 5" in caplog.text
 
 
-# --------------------------------------------------------------------------
-# _set_page_images_quality
-# --------------------------------------------------------------------------
 class TestSetPageImagesQuality:
     @pytest.fixture
     def spy(self, compressor):
@@ -370,9 +353,6 @@ class TestSetPageImagesQuality:
         spy.assert_not_called()
 
 
-# --------------------------------------------------------------------------
-# is_hard_page
-# --------------------------------------------------------------------------
 class TestIsHardPage:
     def test_many_drawings_is_hard(self, compressor):
         page = MagicMock()
@@ -406,9 +386,6 @@ class TestIsHardPage:
             compressor.is_hard_page(MagicMock())
 
 
-# --------------------------------------------------------------------------
-# compress — integration tests on real PDFs
-# --------------------------------------------------------------------------
 class TestCompressIntegration:
     def test_reduces_file_size(self, compressor, tmp_path):
         src = make_pdf(tmp_path / "in.pdf", pages=2)
@@ -475,7 +452,6 @@ class TestCompressIntegration:
         compressor.compress(input_pdf_path=src, output_path=tmp_path / "out.pdf")
 
         progress = payloads(compressor, "progress")
-        # 1) indeterminate start -> 2) by pages -> 3) processing
         assert progress[0] == {"stage": "compressing", "mode": "indeterminate"}
         assert progress[1:4] == [
             {"stage": "compressing", "mode": "determinate", "current": i, "total": 3}
@@ -582,9 +558,6 @@ class TestCompressFailures:
         assert payloads(compressor, "status") == [ERROR_STATUS]
 
 
-# --------------------------------------------------------------------------
-# compress —orchestration (with wet pymupdf)
-# --------------------------------------------------------------------------
 class TestCompressOrchestration:
     def test_save_called_with_configured_options(self, tmp_path, monkeypatch):
         comp = PDFCompressor(garbage_level=2, deflate=False, clean=False)

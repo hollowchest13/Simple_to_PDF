@@ -10,9 +10,6 @@ import simple_to_pdf.core.workflow as wm
 from simple_to_pdf.core.workflow import WorkflowManager
 
 
-# --------------------------------------------------------------------------- #
-# Fixtures and helpers
-# --------------------------------------------------------------------------- #
 def _make_service() -> MagicMock:
     service = MagicMock()
     service.stop_event = threading.Event()
@@ -71,9 +68,6 @@ def _progress_stages(callback: MagicMock) -> list[str]:
     ]
 
 
-# --------------------------------------------------------------------------- #
-# Abolition: manage_services / _is_cancelled
-# --------------------------------------------------------------------------- #
 class TestStopHandling:
     def test_stop_sets_event_and_shares_it_with_services(self, manager):
         manager.manage_services(action="stop")
@@ -97,9 +91,6 @@ class TestStopHandling:
         assert manager._is_cancelled() is True
 
 
-# --------------------------------------------------------------------------- #
-# _save_to_dest_dir
-# --------------------------------------------------------------------------- #
 class TestSaveToDestDir:
     def test_moves_file_and_creates_parent_dirs(self, manager, tmp_path):
         src = tmp_path / "src.pdf"
@@ -143,9 +134,6 @@ class TestSaveToDestDir:
         assert last.kwargs["path"] == dst
 
 
-# --------------------------------------------------------------------------- #
-# merge_files
-# --------------------------------------------------------------------------- #
 class TestMergeFiles:
     @pytest.fixture
     def files(self):
@@ -264,9 +252,6 @@ class TestMergeFiles:
             )
 
 
-# --------------------------------------------------------------------------- #
-# extract_pages
-# --------------------------------------------------------------------------- #
 class TestExtractPages:
     def test_extract_without_compress(self, manager, fake_execute, tmp_path):
         out = tmp_path / "res" / "extracted.pdf"
@@ -357,9 +342,6 @@ class TestExtractPages:
         assert "Error during page extraction" in caplog.text
 
 
-# --------------------------------------------------------------------------- #
-# execute_in_process
-# --------------------------------------------------------------------------- #
 class TestExecuteInProcess:
     @staticmethod
     def _run(manager, ui_callback, **overrides):

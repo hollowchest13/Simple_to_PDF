@@ -203,7 +203,6 @@ def test_mixed_files_pdf_first_then_converted(service, converter, out_dir):
 
     report = service.get_conversion_rep(files=files, out_dir=out_dir)
 
-    # only office files get into the converter
     converter.convert_to_pdf.assert_called_once_with(
         files=[(0, Path("a.docx")), (3, Path("d.xlsx"))], out_dir=out_dir
     )

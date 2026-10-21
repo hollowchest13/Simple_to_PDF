@@ -12,9 +12,6 @@ WIN_PF = r"C:\Program Files\LibreOffice\program\soffice.exe"
 WIN_PF86 = r"C:\Program Files (x86)\LibreOffice\program\soffice.exe"
 
 
-# --------------------------------------------------------------------------- #
-# Fixtures and helpers
-# --------------------------------------------------------------------------- #
 def _set_os(monkeypatch, name: str) -> None:
     monkeypatch.setattr(cf.platform, "system", lambda: name)
 
@@ -51,9 +48,6 @@ def strategies(factory, monkeypatch) -> SimpleNamespace:
     return mocks
 
 
-# --------------------------------------------------------------------------- #
-# get_converter:strategy selection and failure cascade
-# --------------------------------------------------------------------------- #
 class TestGetConverter:
     def test_windows_prefers_ms_office(self, factory, strategies, monkeypatch):
         _set_os(monkeypatch, "Windows")
@@ -117,7 +111,6 @@ class TestGetConverter:
         with pytest.raises(RuntimeError, match="Could not initialize any converter"):
             factory.get_converter()
 
-        # перепробувано всі стратегії, а не зупинено на першій
         strategies.ms.assert_called_once()
         strategies.libre.assert_called_once()
         strategies.image.assert_called_once()
@@ -131,9 +124,6 @@ class TestGetConverter:
         strategies.libre.assert_called_once_with(chunk_size=7)
 
 
-# --------------------------------------------------------------------------- #
-# _find_soffice_windows
-# --------------------------------------------------------------------------- #
 class TestFindSofficeWindows:
     def test_prefers_path_over_standard_folders(self, factory, monkeypatch):
         monkeypatch.setattr(cf.shutil, "which", lambda name: r"D:\tools\soffice.exe")
@@ -167,9 +157,6 @@ class TestFindSofficeWindows:
             factory._find_soffice_windows()
 
 
-# --------------------------------------------------------------------------- #
-# _get_libre_path
-# --------------------------------------------------------------------------- #
 class TestGetLibrePath:
     def test_custom_path_has_priority(self, factory, monkeypatch):
         which = MagicMock()
@@ -204,9 +191,6 @@ class TestGetLibrePath:
         assert factory._get_libre_path() is None
 
 
-# --------------------------------------------------------------------------- #
-# _try_libre_office
-# --------------------------------------------------------------------------- #
 class TestTryLibreOffice:
     def test_raises_when_soffice_not_found(self, factory, monkeypatch):
         monkeypatch.setattr(factory, "_get_libre_path", lambda **kw: None)

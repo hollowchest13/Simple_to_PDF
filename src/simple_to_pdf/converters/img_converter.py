@@ -63,17 +63,14 @@ class ImageConverter(BaseConverter):
         out_path = out_dir / f"{path.stem}.pdf"
 
         with Image.open(path) as img:
-            img = ImageOps.exif_transpose(img)
-            if max(img.size) > MAX_SIZE:
-                img.thumbnail((MAX_SIZE, MAX_SIZE), Image.Resampling.LANCZOS)
-            img.load()
-            frames = []
             n_frames = getattr(img, "n_frames", 1)
-
+            frames = []
             for i in range(n_frames):
                 img.seek(i)
-                frame_rgb = img.convert("RGB")
-                frames.append(frame_rgb)
+                frame = ImageOps.exif_transpose(img.copy())
+                if max(frame.size) > MAX_SIZE:
+                    frame.thumbnail((MAX_SIZE, MAX_SIZE), Image.Resampling.LANCZOS)
+                frames.append(frame.convert("RGB"))
 
             if not frames:
                 return None

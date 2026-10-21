@@ -37,15 +37,11 @@ def extractor(monkeypatch) -> PageExtractor:
     ext.callback = MagicMock()
     ext.check_stop = MagicMock()
 
-    # By default, get_unique_path returns the path unchanged.
     module = sys.modules[PageExtractor.__module__]
     monkeypatch.setattr(module, "get_unique_path", lambda p: p)
     return ext
 
 
-# --------------------------------------------------------------------------
-# extract_pages
-# --------------------------------------------------------------------------
 class TestExtractPages:
     def test_extracts_requested_pages_in_given_order(
         self, extractor, source_pdf, tmp_path
@@ -184,7 +180,6 @@ class TestExtractPages:
             output_file=out,
         )
 
-        # Valid pages are saved, non-existent ones are skipped
         assert widths(out) == [page_width(1), page_width(2)]
 
         error_calls = [
@@ -309,9 +304,6 @@ class TestExtractPages:
             assert len(PdfReader(out).pages) == 0
 
 
-# --------------------------------------------------------------------------
-# validate_pages
-# --------------------------------------------------------------------------
 class TestValidatePages:
     def test_valid_pages_do_not_raise(self, extractor, source_pdf):
         extractor.validate_pages(input_path=source_pdf, pages_to_extract=[1, 3, 5])
