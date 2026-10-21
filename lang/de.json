@@ -202,7 +202,7 @@
     },
     "adding": {
       "done": "Hinzugefügte Dateien: {added_count}",
-      "partial": "Hinzugefügt: {added_count}; übersprungen (nicht unterstütztes Format): {skipped_count}",
+      "partial": "Hinzugefügt: {added_count}; Übersprungen (nicht unterstütztes Format): {skipped_count}",
       "none": "Keine Dateien zum Hinzufügen"
     }
   },

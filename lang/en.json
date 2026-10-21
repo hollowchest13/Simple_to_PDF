@@ -202,7 +202,7 @@
     },
     "adding": {
       "done": "Files added: {added_count}",
-      "partial": "Added: {added_count}; skipped (unsupported format): {skipped_count}",
+      "partial": "Added: {added_count}; Skipped (unsupported format): {skipped_count}",
       "none": "No files to add"
     }
   },

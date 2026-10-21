@@ -11,7 +11,7 @@ from simple_to_pdf.core.workflow import WorkflowManager
 
 
 # --------------------------------------------------------------------------- #
-# Фікстури та хелпери
+# Fixtures and helpers
 # --------------------------------------------------------------------------- #
 def _make_service() -> MagicMock:
     service = MagicMock()
@@ -21,7 +21,7 @@ def _make_service() -> MagicMock:
 
 @pytest.fixture
 def executor_cls(monkeypatch) -> MagicMock:
-    """Мок класу ProcessPoolExecutor (щоб тайп-чекер не плутав його з реальним)."""
+    """Mock of the ProcessPoolExecutor class (so that the type checker does not confuse it with the real one)."""
     cls_mock = MagicMock(name="ProcessPoolExecutor")
     monkeypatch.setattr(wm, "ProcessPoolExecutor", cls_mock)
     return cls_mock
@@ -29,7 +29,7 @@ def executor_cls(monkeypatch) -> MagicMock:
 
 @pytest.fixture
 def manager(monkeypatch, executor_cls) -> WorkflowManager:
-    """WorkflowManager без реальних процесів і mp.Manager."""
+    """WorkflowManager without real processes and mp.Manager."""
     fake_mp = MagicMock()
     fake_mp.Manager.return_value.Event.return_value = threading.Event()
     fake_mp.Manager.return_value.Queue.return_value = queue.Queue()
@@ -47,7 +47,7 @@ def manager(monkeypatch, executor_cls) -> WorkflowManager:
 
 @pytest.fixture
 def fake_execute(manager, monkeypatch):
-    """Підміняє execute_in_process: створює вихідний файл і записує виклики."""
+    """Replaces execute_in_process: Creates an output file and records calls."""
     calls: list[dict] = []
 
     def _fake(**kwargs):
@@ -72,7 +72,7 @@ def _progress_stages(callback: MagicMock) -> list[str]:
 
 
 # --------------------------------------------------------------------------- #
-# Скасування: manage_services / _is_cancelled
+# Abolition: manage_services / _is_cancelled
 # --------------------------------------------------------------------------- #
 class TestStopHandling:
     def test_stop_sets_event_and_shares_it_with_services(self, manager):
@@ -200,7 +200,6 @@ class TestMergeFiles:
         ]
         compress_call = fake_execute[1]
         assert compress_call["method_name"] == "compress"
-        # на вхід компресора йде результат злиття
         assert compress_call["method_kwargs"]["input_pdf_path"].name == "merged.pdf"
         assert out.read_text() == "PDFCompressor"
         assert "compressing" in _progress_stages(manager.callback)
