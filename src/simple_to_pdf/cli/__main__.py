@@ -1,4 +1,5 @@
 import logging
+import multiprocessing
 import sys
 import traceback
 
@@ -80,4 +81,5 @@ def _run_gui(
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     main()
