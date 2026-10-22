@@ -13,7 +13,7 @@ a = Analysis(
         ('lang', 'lang'),
         ('icons', 'icons'),
     ],
-    hiddenimports=['PIL._tkinter_finder', 'customtkinter','tkinterdnd2'],
+    hiddenimports=['PIL._tkinter_finder', 'customtkinter'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
