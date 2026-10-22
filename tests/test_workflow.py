@@ -113,10 +113,16 @@ class TestSaveToDestDir:
             "progress", stage="saving", mode="indeterminate"
         )
         manager.callback.assert_any_call("progress_reset")
-        last = manager.callback.call_args_list[-1]
-        assert last.args == ("status",)
-        assert last.kwargs["status"] == "success"
-        assert last.kwargs["path"] == dst
+
+        status_calls = [
+            call
+            for call in manager.callback.call_args_list
+            if call.args
+            and call.args[0] == "status"
+            and call.kwargs.get("status") == "success"
+        ]
+        assert len(status_calls) == 1
+        assert status_calls[0].kwargs["path"] == dst
 
     def test_failure_notifies_ui_and_reraises(self, manager, tmp_path, monkeypatch):
         monkeypatch.setattr(
@@ -128,10 +134,16 @@ class TestSaveToDestDir:
             manager._save_to_dest_dir(input_path=tmp_path / "x.pdf", output_path=dst)
 
         manager.callback.assert_any_call("progress_reset")
-        last = manager.callback.call_args_list[-1]
-        assert last.args == ("status",)
-        assert last.kwargs["status"] == "error"
-        assert last.kwargs["path"] == dst
+
+        error_calls = [
+            call
+            for call in manager.callback.call_args_list
+            if call.args
+            and call.args[0] == "status"
+            and call.kwargs.get("status") == "error"
+        ]
+        assert len(error_calls) == 1
+        assert error_calls[0].kwargs["path"] == dst
 
 
 class TestMergeFiles:

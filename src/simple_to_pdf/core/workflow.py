@@ -134,23 +134,36 @@ class WorkflowManager:
         try:
             output_path.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(input_path), str(output_path))
-        except Exception:
-            logger.exception("Error moving file from %s to %s", input_path, output_path)
-            self.callback("progress_reset")
             self.callback(
                 "status",
-                key="saving.error",
+                key="saving.done",
+                status="success",
+                path=output_path,
+            )
+        except PermissionError:
+            logger.exception(
+                "Permission denied while moving file from %s to %s",
+                input_path,
+                output_path,
+            )
+            self.callback(
+                "status",
+                key="saving.error.permission",
                 status="error",
                 path=output_path,
             )
             raise
-        self.callback("progress_reset")
-        self.callback(
-            "status",
-            key="saving.error",
-            status="success",
-            path=output_path,
-        )
+        except Exception:
+            logger.exception("Error moving file from %s to %s", input_path, output_path)
+            self.callback(
+                "status",
+                key="saving.error.unknown",
+                status="error",
+                path=output_path,
+            )
+            raise
+        finally:
+            self.callback("progress_reset")
 
     def _is_cancelled(self) -> bool:
         """Checks whether a cancellation or stop signal has been issued."""
