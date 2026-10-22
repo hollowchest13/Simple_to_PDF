@@ -30,8 +30,6 @@ def change_state(
                 f"Could not set '{state}' for widget '{name}'"
                 f"({type(widget).__name__}): {e}"
             )
-            # Skip if widget doesn't have a state parameter (e.g., Frame)
-            pass
 
 
 def threaded_task(func):
@@ -46,22 +44,32 @@ def threaded_task(func):
 
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
+        if hasattr(self, "_clear_ui_queue"):
+            self._clear_ui_queue()
         if getattr(self, "thread_running", False):
             return
-        if hasattr(self, "_manage_services"):
-            self._manage_services(action="reset")
+        if hasattr(self, "workflow_manager"):
+            self.workflow_manager.manage_services(action="reset")
         if hasattr(self, "clear_console"):
             self.clear_console()
+        if hasattr(self, "_manage_services"):
+            self._manage_services(action="reset")
         self.toggle_ui(active=False)  # lock in main thread
+
+        def _unlock_ui():
+            self.thread_running = False
+            self.toggle_ui(active=True)
 
         def run():
             try:
                 self.thread_running = True
-                func(self, *args, **kwargs)  # run in background thread
+                func(self, *args, **kwargs)
             finally:
-                # unlock in main thread
-                self.after(0, lambda: self.toggle_ui(active=True))
-                self.thread_running = False
+                if hasattr(self, "schedule_ui_task"):
+                    self.schedule_ui_task(_unlock_ui)
+                else:
+                    self.after(0, _unlock_ui)
+
                 logger.info(f"Thread {func.__name__} ended work")
 
         threading.Thread(target=run, daemon=False).start()

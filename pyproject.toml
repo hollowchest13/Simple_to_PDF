@@ -6,14 +6,13 @@ build-backend = "setuptools.build_meta"
 [project]
 # Core project metadata (PEP 621)
 name = "simple-to-pdf"
-version = "1.0.3"
+version = "1.0.4"
 description = "Simple_to_PDF is a lightweight, local multi-format converter"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "hollowchest13", email = "hollowchest13@gmail.com" }]
 
-# Project dependencies to be installed via pip
 dependencies = [
     "openpyxl==3.1.5",
     "pypdf==6.11.0",
@@ -24,28 +23,37 @@ dependencies = [
     "customtkinter==5.2.2",
     "pywin32==311; sys_platform == 'win32'",
     "pymupdf==1.27.2.3",
+    "tkinterdnd2>=0.6.4",
 ]
+
+[dependency-groups]
+dev = ["pytest>=9.1.1", "pytest-cov>=7.1.0"]
+
+
 [project.urls]
-# External links for the project
 Homepage = "https://github.com/hollowchest13/Simple_to_PDF"
 
 [tool.setuptools]
-# Map the root package to the 'src' directory
 package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
-# Automatically discover packages in the 'src' folder
 where = ["src"]
 
 [project.scripts]
-# Console script entry point: command = module.submodule:function
 simple-pdf = "simple_to_pdf.main:main"
 
+[tool.coverage.run]
+source = ["simple_to_pdf"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
 [tool.app_metadata]
-# Custom section for application UI (About dialog, versioning, etc.)
-release_date = "2026-06-20"
+release_date = "2026-10-23"
 release_notes = """
-   - Added: Cancelation button.
-   - Fixed: An issue with processing large files with vector graphix.
-   - Fixed an issue where the page extraction dialog would crash or block the interface upon closing.
+    - Fixed minor bugs,
+    -Added drag & drop function for adding files,
+    - Added Tooltips for file list items.
 """

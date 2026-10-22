@@ -1,12 +1,12 @@
-import io
 import logging
-from typing import List
+from pathlib import Path
 
 from pypdf import PageObject, PdfReader, PdfWriter, Transformation
 
 from simple_to_pdf.base_services.base import BaseService
+from simple_to_pdf.utils.file_tools import get_unique_path
 
-from .models import BytePdfDocument, PageFormat, ProcessingReport
+from .models import ConvertedFileItem, PageFormat, ProcessingReport
 
 logger = logging.getLogger(__name__)
 
@@ -14,15 +14,6 @@ logger = logging.getLogger(__name__)
 class PdfMerger(BaseService):
     def __init__(self):
         super().__init__()
-        self._callback = lambda *args, **kwargs: None
-
-    @property
-    def callback(self):
-        return self._callback
-
-    @callback.setter
-    def callback(self, value):
-        self._callback = value if value is not None else lambda *args, **kwargs: None
 
     def _scale_and_append(
         self,
@@ -77,11 +68,12 @@ class PdfMerger(BaseService):
         *,
         conversion_rep: ProcessingReport,
         target_page_format: PageFormat | None = None,
-    ) -> bytes:
-        """Merges multiple files into a single PDF and returns original bytes if it is single PDF."""
+        output_path: Path,
+    ) -> Path:
+        """Merges multiple files into a single PDF and saves it directly to the output path."""
 
-        pdf_data_list: List[BytePdfDocument] = conversion_rep.documents
-        self._files_count = len(pdf_data_list)
+        pdf_path_list: list[ConvertedFileItem] = conversion_rep.documents
+        self._files_count = len(pdf_path_list)
 
         stage_name = "merging"
 
@@ -93,26 +85,24 @@ class PdfMerger(BaseService):
             },
         )
 
-        if not pdf_data_list:
+        if not pdf_path_list:
             raise ValueError("No valid PDF data to merge")
 
-        pdf_data_list.sort(key=lambda doc: doc.index)
+        pdf_path_list.sort(key=lambda doc: doc.index)
 
         writer = PdfWriter()
-        active_streams: list[io.BytesIO] = []
         success = 0
-        failed = conversion_rep.failed
-        total_to_merge = len(pdf_data_list)
+        failed = conversion_rep.failed  # загальна кількість невдач, для звіту
+        merge_failed = 0  # лише помилки цього етапу
+        total_to_merge = len(pdf_path_list)
         try:
-            for i, pdf_data in enumerate(pdf_data_list, start=1):
+            for i, doc_item in enumerate(pdf_path_list, start=1):
                 self.check_stop()
-                file_path = pdf_data.original_path
+                file_path = doc_item.converted_path
                 filename = file_path.name
 
                 try:
-                    pdf_stream = io.BytesIO(pdf_data.data)
-                    active_streams.append(pdf_stream)
-                    reader = PdfReader(pdf_stream)
+                    reader = PdfReader(file_path)
                     if target_page_format is None:
                         writer.append(reader)
                     else:
@@ -121,9 +111,10 @@ class PdfMerger(BaseService):
                             writer=writer,
                             target_page_format=target_page_format,
                         )
-                except Exception as e:
-                    logger.error(f"Failed to process {filename}: {e}", exc_info=True)
+                except Exception:
+                    logger.exception("Failed to process %s!", filename)
                     failed += 1
+                    merge_failed += 1
                     self._show_callback(
                         "status",
                         {
@@ -146,12 +137,10 @@ class PdfMerger(BaseService):
             if len(writer.pages) == 0:
                 raise ValueError("No PDF data")
             self.check_stop()
-
-            with io.BytesIO() as pdf_buffer:
-                writer.write(pdf_buffer)
-                pdf_bytes = pdf_buffer.getvalue()
-            success = total_to_merge - failed
-            return pdf_bytes
+            output_path = get_unique_path(output_path)
+            writer.write(output_path)
+            success = total_to_merge - merge_failed
+            return output_path
         except InterruptedError:
             logger.info(f"{stage_name} successfully cancelled by the user.")
             raise
@@ -165,14 +154,4 @@ class PdfMerger(BaseService):
                     "failed": failed,
                 },
             )
-            for stream in active_streams:
-                stream.close()
-            active_streams.clear()
             writer.close()
-
-    def _show_callback(self, event_type: str, data: dict, force: bool = False):
-        if force or self.should_show_callback():
-            self.callback(event_type, **data)
-
-    def should_show_callback(self) -> bool:
-        return self._files_count > 1

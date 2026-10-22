@@ -3,6 +3,7 @@ import logging
 import requests
 import tomllib
 from packaging import version
+
 from simple_to_pdf.core import config
 from simple_to_pdf.core.models import ReleaseInfo, UpdateCheckResult
 from simple_to_pdf.utils.network import fetch_remote_content
@@ -19,8 +20,8 @@ class VersionController:
         version_toml_url = f"https://raw.githubusercontent.com/{self._git_user}/{self._git_repo}/main/pyproject.toml"
         return version_toml_url
 
-    def _get_release_url(self):
-        return f"{self._git_repo}/releases"
+    def _get_release_url(self) -> str:
+        return f"https://github.com/{self._git_user}/{self._git_repo}/releases"
 
     def _get_release_info(
         self, *, version_toml_url: str, timeout: int = 5
@@ -38,7 +39,7 @@ class VersionController:
 
             return ReleaseInfo(
                 version=latest_version,
-                date=metadata.get("version", "No release date provided."),
+                date=metadata.get("release_date", "No release date provided."),
                 notes=metadata.get(
                     "release_notes", "Fixed minor bugs and improved stability."
                 ),
@@ -62,17 +63,16 @@ class VersionController:
             logger.error(
                 f"Version check failed: Permission denied for {config_toml_path}"
             )
-        except Exception as e:
-            logger.error(
-                f"Unexpected error reading version: {type(e).__name__} - {e}",
-                exc_info=True,
-            )
+        except Exception:
+            logger.exception("Unexpected error reading version!")
         return default_version
 
     def check_for_updates(self) -> UpdateCheckResult:
-        version_toml_url=self._get_version_toml_url()
+        version_toml_url = self._get_version_toml_url()
         try:
-            latest_release = self._get_release_info(version_toml_url=version_toml_url,timeout=5)
+            latest_release = self._get_release_info(
+                version_toml_url=version_toml_url, timeout=5
+            )
             current_version = self._get_current_version()
 
             if version.parse(latest_release.version) > version.parse(current_version):
@@ -81,5 +81,5 @@ class VersionController:
             return UpdateCheckResult(is_available=False)
 
         except Exception as e:
-            logger.error(f"Update check failed: {e}")
+            logger.exception("Update check failed!")
             return UpdateCheckResult(is_available=False, error_message=str(e))

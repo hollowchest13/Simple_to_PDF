@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 from enum import Enum
 
 
@@ -13,8 +12,8 @@ class ReleaseInfo:
 @dataclass
 class UpdateCheckResult:
     is_available: bool
-    release: Optional[ReleaseInfo] = None
-    error_message: Optional[str] = None
+    release: ReleaseInfo | None = None
+    error_message: str | None = None
 
 
 class App_Mode(Enum):

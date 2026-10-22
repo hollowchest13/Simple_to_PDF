@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from simple_to_pdf.widgets import BaseLabel, PrimaryButton
 from simple_to_pdf.widgets.base_widgets import BaseTextBox
@@ -24,7 +24,7 @@ class InfoDialog(BaseDialog):
         with_footer: bool = False,
         with_icon: bool = True,
         size: str = "450x450",
-        text: Optional[str] = None,
+        text: str | None = None,
         **kwargs,
     ):
         group = scenario_key.split(".")[0] if "." in scenario_key else "info"

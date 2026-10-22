@@ -17,12 +17,12 @@ def get_log_dir() -> Path:
         # Try to create Home directory
         log_dir.mkdir(parents=True, exist_ok=True)
         return log_dir
-    except Exception:
+    except Exception:  # noqa: BLE001
         log_dir = ROOT_PATH / "logs"
 
         try:
             log_dir.mkdir(parents=True, exist_ok=True)
-        except Exception:
+        except Exception:  # noqa: BLE001, S110
             # Last resort: just return whatever we have to avoid crash
             pass
 
@@ -58,4 +58,6 @@ def setup_logger():
     file_handler.setFormatter(formatter)
     root_logger.addHandler(file_handler)
 
-    root_logger.info(f"Logging initialized. OS: {platform.system()}. File: {log_file}")
+    root_logger.info(
+        "Logging initialized. OS: %s. File: %s", platform.system(), log_file
+    )

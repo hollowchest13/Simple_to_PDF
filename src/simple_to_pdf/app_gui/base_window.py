@@ -1,9 +1,11 @@
 import customtkinter as ctk
-from simple_to_pdf.widgets import BaseFrame
+from tkinterdnd2 import TkinterDnD
+
 from simple_to_pdf.utils.theme_provider import ThemeProviderMixin
+from simple_to_pdf.widgets import BaseFrame
 
 
-class BaseWindow(ctk.CTk, ThemeProviderMixin):
+class BaseWindow(ctk.CTk, TkinterDnD.DnDWrapper, ThemeProviderMixin):
     """
     Base class for the main application window.
     Focuses on layout structure and consistent theming.
@@ -14,6 +16,7 @@ class BaseWindow(ctk.CTk, ThemeProviderMixin):
         window_size = kwargs.pop("size", "1000x600")
 
         super().__init__(**kwargs)
+        self.TkdndVersion = TkinterDnD._require(self)
 
         self.title(window_title)
         self.geometry(window_size)

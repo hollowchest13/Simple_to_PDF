@@ -1,6 +1,6 @@
 import logging
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, List
 
 import customtkinter as ctk
 from PIL import Image
@@ -9,6 +9,7 @@ from simple_to_pdf.core.config import ICONS_PATH, ThemeKeys
 from simple_to_pdf.utils.file_tools import get_file_category
 from simple_to_pdf.widgets import BaseFrame, BaseLabel
 from simple_to_pdf.widgets.base_widgets import BaseScrollableFrame
+from simple_to_pdf.widgets.tooltip import ToolTip
 
 logger = logging.getLogger(__name__)
 
@@ -18,13 +19,13 @@ class CTkListbox(BaseScrollableFrame):
 
     def __init__(self, parent, **kwargs):
         """Initialize the listbox and its internal state containers."""
-       
-        super().__init__(parent,scr_frame_type="file_list",**kwargs)
+
+        super().__init__(parent, scr_frame_type="file_list", **kwargs)
 
         self._scroll_target = 0
         self._is_scrolling = False
 
-        self.all_rows: List[Path] = []
+        self.all_paths: list[Path] = []
         self.selected_data = {}
         self.all_widgets = {}
         self._icon_cache = {}
@@ -34,26 +35,29 @@ class CTkListbox(BaseScrollableFrame):
         self.selected_row_color = self.get_color(ThemeKeys.TEXT_PRIMARY)
         self.selected_text_color = self.get_color(ThemeKeys.TEXT_ON_ACCENT)
 
-    def add_new_files(self, file_list: list[str]) -> None:
-        """Append new file paths to the list and refresh the rendered rows."""
-        new_paths = [Path(p) for p in file_list]
+    def add_new_files(self, file_list: list[Path]) -> list[Path]:
+        """Append new file paths to the list and return those actually added."""
+        existing = set(self.all_paths)
+        added: list[Path] = []
 
-        existing = set(self.all_rows)
-
-        for path in new_paths:
+        for path in file_list:
             if path not in existing:
-                self.all_rows.append(path)
+                self.all_paths.append(path)
                 existing.add(path)
-        self._update_listbox()
+                added.append(path)
+
+        if added:
+            self._update_listbox()
+        return added
 
     def _update_listbox(self):
         """Synchronize the rendered widget rows with the current data model."""
         for registered_path in list(self.all_widgets.keys()):
-            if registered_path not in self.all_rows:
+            if registered_path not in self.all_paths:
                 widget_data = self.all_widgets.pop(registered_path)
                 widget_data["frame"].destroy()
 
-        for path in self.all_rows:
+        for path in self.all_paths:
             if path not in self.all_widgets:
                 self._create_file_row(file_path=path)
 
@@ -94,9 +98,15 @@ class CTkListbox(BaseScrollableFrame):
         icon_label.pack(side="left", padx=(10, 5), pady=5)
 
         path_label = BaseLabel(
-            row, text=str(file_path), label_type="content", anchor="w", justify="left"
+            row,
+            text=str(file_path.name),
+            label_type="content",
+            anchor="w",
+            justify="left",
         )
         path_label.pack(side="left", fill="x", expand=True, padx=(10, 10), pady=5)
+
+        ToolTip(row, text=str(file_path.parent))
 
         self.all_widgets[file_path] = {
             "frame": row,
@@ -126,7 +136,7 @@ class CTkListbox(BaseScrollableFrame):
     def _curselection(self) -> tuple[int, ...]:
         """Return the indices of all currently selected rows."""
         return tuple(
-            idx for idx, path in enumerate(self.all_rows) if path in self.selected_data
+            idx for idx, path in enumerate(self.all_paths) if path in self.selected_data
         )
 
     def move(self, *, direction: str, callback):
@@ -135,7 +145,7 @@ class CTkListbox(BaseScrollableFrame):
         if not sel_idxs:
             return
 
-        items = self.all_rows
+        items = self.all_paths
         n = len(items)
 
         if direction == "down":
@@ -143,10 +153,9 @@ class CTkListbox(BaseScrollableFrame):
                 for i in reversed(sel_idxs):
                     items[i], items[i + 1] = items[i + 1], items[i]
 
-        elif direction == "up":
-            if sel_idxs[0] > 0:
-                for i in sel_idxs:
-                    items[i], items[i - 1] = items[i - 1], items[i]
+        elif direction == "up" and sel_idxs[0] > 0:
+            for i in sel_idxs:
+                items[i], items[i - 1] = items[i - 1], items[i]
 
         self._update_listbox()
 
@@ -159,7 +168,7 @@ class CTkListbox(BaseScrollableFrame):
             widgets["frame"].destroy()
         self.all_widgets.clear()
         self.selected_data.clear()
-        self.all_rows.clear()
+        self.all_paths.clear()
         callback()
 
     def clear_selection(self):
@@ -171,8 +180,8 @@ class CTkListbox(BaseScrollableFrame):
 
     def remove_selected(self, *, callback: Callable):
         """Remove all currently selected files from the list and refresh it."""
-        for path in self.selected_data.keys():
-            self.all_rows.remove(path)
+        for path in self.selected_data:
+            self.all_paths.remove(path)
         self.selected_data.clear()
         self._update_listbox()
 

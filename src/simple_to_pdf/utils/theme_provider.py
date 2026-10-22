@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Literal
+from typing import Any, Literal
 
 from simple_to_pdf.core.config import DEFAULT_COLORS, ThemeKeys
 
@@ -11,17 +11,17 @@ class ThemeProviderMixin:
 
 class WidgetThemeProviderMixin(ThemeProviderMixin, ABC):
     @abstractmethod
-    def set_params(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+    def set_params(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         pass
 
 
 class ButtonThemeMixin(WidgetThemeProviderMixin):
-    def set_params(self) -> Dict[str, Any]:
+    def set_params(self) -> dict[str, Any]:
 
         default_accent = self.get_color(ThemeKeys.ACCENT)
         hover_accent = self.get_color(ThemeKeys.ACCENT_HOVER)
         text_color = self.get_color(ThemeKeys.TEXT_ON_ACCENT)
-        params: Dict[str, Any] = {
+        params: dict[str, Any] = {
             "fg_color": default_accent,
             "hover_color": hover_accent,
             "text_color": text_color,
@@ -46,7 +46,7 @@ class FrameThemeMixin(WidgetThemeProviderMixin):
             "scr_frame_container",
             "list_item",
         ],
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
 
         match frame_type:
             case "main":
@@ -74,7 +74,7 @@ class FrameThemeMixin(WidgetThemeProviderMixin):
 
 
 class LabelThemeMixin(WidgetThemeProviderMixin):
-    def set_params(self, label_type: str) -> Dict[str, Any]:
+    def set_params(self, label_type: str) -> dict[str, Any]:
         bg_color = "transparent"
 
         match label_type:
@@ -116,8 +116,8 @@ class ScrolableFrameThemeMixin(WidgetThemeProviderMixin):
     def set_params(
         self,
         *,
-        scr_frame_type: Literal["file_list", "short_content","content"],
-    ) -> Dict[str, Any]:
+        scr_frame_type: Literal["file_list", "short_content", "content"],
+    ) -> dict[str, Any]:
         """
         Generates configuration parameters for different types of CTkScrollableFrames.
         Ensures consistent UI across the application using the theme's color palette.
@@ -142,9 +142,9 @@ class ScrolableFrameThemeMixin(WidgetThemeProviderMixin):
                 )
             case "content":
                 params.update(
-                {
-                    "fg_color": self.get_color(ThemeKeys.BG_MAIN),
-                }
+                    {
+                        "fg_color": self.get_color(ThemeKeys.BG_MAIN),
+                    }
                 )
         return params
 
@@ -152,7 +152,7 @@ class ScrolableFrameThemeMixin(WidgetThemeProviderMixin):
 class TextboxThemeMixin(WidgetThemeProviderMixin):
     def set_params(
         self, *, textbox_type: Literal["status_text", "info"]
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         match textbox_type:
             case "status_text":
                 params = {
@@ -176,7 +176,7 @@ class TextboxThemeMixin(WidgetThemeProviderMixin):
 
 
 class ProgressThemeMixin(WidgetThemeProviderMixin):
-    def set_params(self, *, progress_type: Literal["merge_progress"]) -> Dict[str, Any]:
+    def set_params(self, *, progress_type: Literal["merge_progress"]) -> dict[str, Any]:
         match progress_type:
             case "merge_progress":
                 params = {
@@ -189,7 +189,7 @@ class ProgressThemeMixin(WidgetThemeProviderMixin):
 
 
 class OptionMenuThemeMixin(WidgetThemeProviderMixin):
-    def set_params(self, menu_type: str = "standard") -> Dict[str, Any]:
+    def set_params(self, menu_type: str = "standard") -> dict[str, Any]:
         accent = self.get_color(ThemeKeys.ACCENT)
         accent_hover = self.get_color(ThemeKeys.ACCENT_HOVER)
 
@@ -214,13 +214,13 @@ class OptionMenuThemeMixin(WidgetThemeProviderMixin):
 
 
 class SwitcherThemeMixin(WidgetThemeProviderMixin):
-    def set_params(self, variable: Any, text: str = "", **kwargs) -> Dict[str, Any]:
+    def set_params(self, variable: Any, text: str = "", **kwargs) -> dict[str, Any]:
         "Return style parameters for CTKSwitch."
         accent_color = self.get_color(ThemeKeys.ACCENT)
         text_color = self.get_color(ThemeKeys.TEXT_CONTENT)
         button_color = self.get_color(ThemeKeys.TEXT_PRIMARY)
 
-        params: Dict[str, Any] = {
+        params: dict[str, Any] = {
             "variable": variable,
             "text": text,
             "progress_color": accent_color,

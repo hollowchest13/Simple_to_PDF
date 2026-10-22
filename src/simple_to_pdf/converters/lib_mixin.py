@@ -1,7 +1,8 @@
-import openpyxl
 import logging
-from pathlib import Path
 from enum import Enum, IntEnum
+from pathlib import Path
+
+import openpyxl
 
 logger = logging.getLogger(__name__)
 
@@ -45,12 +46,14 @@ class LibreSetupMixin:
                 sheet.page_margins.right = ExcelMargins.LEFT_RIGHT_MARGIN.value
                 sheet.page_margins.top = ExcelMargins.TOP_BOTTOM_MARGIN.value
                 sheet.page_margins.bottom = ExcelMargins.TOP_BOTTOM_MARGIN.value
-        except Exception as e:
-            logger.error(f"⚠️ Failed to scale table file {file_path.name}: {e}")
+        except Exception as e:  # noqa: BLE001
+            logger.error("⚠️ Failed to scale table file %s: %s", file_path.name, e)
         finally:
             if wb is not None:
                 try:
                     wb.save(str(file_path))
                     wb.close()
-                except Exception as e:
-                    logger.error(f"⚠️ Failed to save table file {file_path.name}: {e}")
+                except Exception as e:  # noqa: BLE001
+                    logger.error(
+                        "⚠️ Failed to save table file %s: %s", file_path.name, e
+                    )

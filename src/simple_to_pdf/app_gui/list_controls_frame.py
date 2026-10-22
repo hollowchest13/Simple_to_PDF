@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, Dict
+from collections.abc import Callable
 
 import customtkinter as ctk
 
@@ -15,7 +15,7 @@ class ListControlsFrame(BaseFrame):
         parent: ctk.CTkFrame,
         *,
         width: int = 150,
-        handlers: Dict[str, Callable],
+        handlers: dict[str, Callable],
         **kwargs,
     ):
         super().__init__(parent, width=width, **kwargs)

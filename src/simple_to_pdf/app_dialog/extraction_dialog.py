@@ -1,5 +1,7 @@
 import customtkinter as ctk
+
 from simple_to_pdf.widgets.base_widgets import BaseLabel, PrimaryButton
+
 from .base_dialog import BaseDialog
 
 
@@ -22,7 +24,6 @@ class PageSelectionDialog(BaseDialog):
         self._setup_dialog_ui()
         self.refresh_localization()
         self.update_idletasks()
-        
 
     def _setup_dialog_ui(self) -> None:
         """Creates widgets and maps them to self.ui for the LocalizationMixin."""

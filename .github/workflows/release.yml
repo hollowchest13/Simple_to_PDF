@@ -6,47 +6,52 @@ on:
       - 'v*'
 
 jobs:
+  test:
+    uses: ./.github/workflows/tests.yml
+
   build-windows:
+    needs: test
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      
+
       - name: Install dependencies
         run: pip install . pyinstaller
-      
+
       - name: Build
         run: pyinstaller Simple_to_PDF.spec
-      
+
       - name: Archive
         run: Compress-Archive -Path dist/Simple_to_PDF -DestinationPath simple_to_pdf-windows.zip
-      
+
       - uses: actions/upload-artifact@v4
         with:
           name: windows-build
           path: simple_to_pdf-windows.zip
 
   build-linux:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      
+
       - name: Install dependencies
         run: pip install . pyinstaller
-      
+
       - name: Build
         run: pyinstaller Simple_to_PDF.spec
-      
+
       - name: Archive
         run: tar -czf simple_to_pdf-linux.tar.gz -C dist Simple_to_PDF
-      
+
       - uses: actions/upload-artifact@v4
         with:
           name: linux-build
@@ -55,9 +60,11 @@ jobs:
   release:
     needs: [build-windows, build-linux]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/download-artifact@v4
-      
+
       - uses: softprops/action-gh-release@v2
         with:
           files: |

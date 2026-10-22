@@ -1,21 +1,26 @@
 import logging
-from pathlib import Path
+import shutil
 from abc import abstractmethod
+from pathlib import Path
+
 from simple_to_pdf.base_services.base import BaseService
 from simple_to_pdf.converters.models import ConversionResult
+from simple_to_pdf.utils.file_tools import get_unique_path
 
 logger = logging.getLogger(__name__)
 
 
 class BaseConverter(BaseService):
-    SUPPORTED_FORMATS = {"pdf": {".pdf"}}
+    SUPPORTED_FORMATS = {"pdf": {".pdf"}}  # noqa: RUF012
 
     def __init__(self, *, chunk_size: int = 30):
         super().__init__()
         self.chunk_size = chunk_size
 
     @abstractmethod
-    def convert_to_pdf(self, *, files: list[tuple[int, Path]]) -> ConversionResult:
+    def convert_to_pdf(
+        self, *, files: list[tuple[int, Path]], out_dir: Path
+    ) -> ConversionResult:
         pass
 
     @staticmethod
@@ -71,3 +76,17 @@ class BaseConverter(BaseService):
         }
         file_ext = file_path.suffix.lower()
         return file_ext in convertible_exts
+
+    def _prepare_temp_files(
+        self, *, chunk: list[tuple[int, Path]], tmp_dir: Path
+    ) -> list[Path]:
+        """Copy files in temporary directory with index prefix."""
+
+        paths: list[Path] = []
+        for idx, original_path in chunk:
+            temp_name = f"{idx}_{original_path.name}"
+            temp_file_path = tmp_dir / temp_name
+            temp_file_path = get_unique_path(temp_file_path)
+            shutil.copy2(original_path, temp_file_path)
+            paths.append(temp_file_path)
+        return paths

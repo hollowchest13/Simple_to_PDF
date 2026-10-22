@@ -1,7 +1,8 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
+
 from simple_to_pdf.core.config import LANG_PATH
 
 logger = logging.getLogger(__name__)
@@ -12,11 +13,11 @@ class LocalizationMixin:
     Mixin for UI localization using an Observer pattern.
     """
 
-    _translations: Dict[str, Dict[str, Any]] = {}
+    _translations: dict[str, dict[str, Any]] = {}  # noqa: RUF012
     _current_lang: str = "en"
     _lang_dir: Path = LANG_PATH
-    _observers: List[Any] = []
-    _LANG_MAP: Dict[str, str] = {}
+    _observers: list[Any] = []  # noqa: RUF012
+    _LANG_MAP: dict[str, str] = {}  # noqa: RUF012
 
     @classmethod
     def load_translations(cls) -> None:
@@ -41,8 +42,8 @@ class LocalizationMixin:
                     )
                     cls._LANG_MAP[lang_name] = lang_code
 
-            except Exception as e:
-                logger.error(f"Failed to load {file_path.name}: {e}")
+            except Exception as e:  # noqa: BLE001
+                logger.error("Failed to load %s,: %s", file_path.name, e)
 
     @classmethod
     def switch_language(cls, *, lang_name: str) -> None:
@@ -50,10 +51,10 @@ class LocalizationMixin:
         target_lang = cls._LANG_MAP.get(lang_name, lang_name)
         if target_lang in cls._translations:
             cls._current_lang = target_lang
-            logging.info(f"Language switched to: {target_lang}")
+            logger.info("Language switched to: %s", target_lang)
             cls._notify_observers()
         else:
-            logging.warning(f"Translation not found for: {target_lang}")
+            logger.warning(f"Translation not found for: {target_lang}")
 
     @classmethod
     def _notify_observers(cls):
@@ -62,8 +63,8 @@ class LocalizationMixin:
             if hasattr(observer, "refresh_localization"):
                 try:
                     observer.refresh_localization()
-                except Exception as e:
-                    logging.error(f"Error refreshing {observer}: {e}")
+                except Exception as e:  # noqa: BLE001
+                    logger.error("Error refreshing %s: %s", observer, e)
 
     def init_localization(self):
         """Registers the current instance as an observer for language changes."""
@@ -108,15 +109,12 @@ class LocalizationMixin:
 
         return key
 
-    def get_available_languages(self) -> List[str]:
+    def get_available_languages(self) -> list[str]:
         """Returns list of human-readable language names for UI menus."""
         reverse_map = {v: k for k, v in self._LANG_MAP.items()}
-        return [
-            reverse_map.get(code, code.capitalize())
-            for code in self._translations.keys()
-        ]
+        return [reverse_map.get(code, code.capitalize()) for code in self._translations]
 
-    def update_widgets_text(self, widgets_dict: Dict[str, Any], section: str) -> None:
+    def update_widgets_text(self, widgets_dict: dict[str, Any], section: str) -> None:
         """
         Main entry point for updating UI localization.
         Iterates through widgets and applies translation.
@@ -139,9 +137,10 @@ class LocalizationMixin:
         Determines the correct attribute to update based on widget type and attributes.
         """
         try:
-            if self._is_button_widget(widget):
-                if self.update_widget_with_adaptive_font(widget, text, threshold=16):
-                    return
+            if self._is_button_widget(widget) and self.update_widget_with_adaptive_font(
+                widget, text, threshold=16
+            ):
+                return
             if self._try_configure(widget, text=text):
                 return
             if self._try_configure(widget, label_text=text):
@@ -153,8 +152,8 @@ class LocalizationMixin:
                 f"Widget '{key}' ({type(widget).__name__}) has no supported text attribute."
             )
 
-        except Exception as e:
-            logger.error(f"Error updating widget '{key}': {e}")
+        except Exception as e:  # noqa: BLE001
+            logger.error("Error updating widget '%s': %s", {key}, {e})
 
     def _is_button_widget(self, widget: Any) -> bool:
         """Returns True if the widget is a button-like component."""
@@ -165,7 +164,7 @@ class LocalizationMixin:
         try:
             widget.configure(**kwargs)
             return True
-        except Exception:
+        except Exception:  # noqa: BLE001
             return False
 
     def update_widget_with_adaptive_font(
@@ -210,8 +209,8 @@ class LocalizationMixin:
                 else:
                     base_size = 13
 
-        except Exception as e:
-            logger.debug(f"Could not determine font size for {widget}: {e}")
+        except Exception as e:  # noqa: BLE001
+            logger.debug("Could not determine font size for %s: %s", widget, e)
             base_size = 13
         widget.base_font_size = base_size
         return base_size
@@ -239,8 +238,8 @@ class LocalizationMixin:
                 new_font = ("Segoe UI", new_size)
 
             widget.configure(font=new_font)
-        except Exception as e:
-            logger.debug(f"Could not update font for {widget}: {e}")
+        except Exception as e:  # noqa: BLE001
+            logger.debug("Could not update font for %s: %s", widget, e)
 
     def refresh_localization(self) -> None:
 

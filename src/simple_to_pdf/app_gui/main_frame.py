@@ -1,6 +1,8 @@
 import logging
 import tkinter as tk
-from typing import Any, Callable, Dict, Tuple
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any
 
 import customtkinter as ctk
 
@@ -28,7 +30,7 @@ class MainFrame(BaseFrame):
         master: tk.Frame,
         get_supported_formats_func: Callable[[], dict[str, str]],
         notifier: NotificationManager,
-        handlers: Dict[str, Callable],
+        handlers: dict[str, Callable],
     ):
         super().__init__(master)
         self.get_supported_formats = get_supported_formats_func
@@ -41,13 +43,13 @@ class MainFrame(BaseFrame):
         self.progress_bar: BaseProgress
         self.progress_label: BaseLabel
 
-        self.ui: Dict[str, Any] = {}
+        self.ui: dict[str, Any] = {}
 
         self._register_components(self._setup_layout())
 
         self.init_localization()
 
-    def _setup_layout(self) -> Dict[str, Any]:
+    def _setup_layout(self) -> dict[str, Any]:
         """Sets up the visual frames and returns a dictionary of created widgets."""
         raw_components = {}
         LEFT_SIDE_PAD: int = 10
@@ -90,7 +92,7 @@ class MainFrame(BaseFrame):
 
         return raw_components
 
-    def _register_components(self, components: Dict[str, Any]) -> None:
+    def _register_components(self, components: dict[str, Any]) -> None:
         """Adds components to self as attributes and to self.ui for localization."""
         for key, widget in components.items():
             setattr(self, key, widget)
@@ -110,7 +112,7 @@ class MainFrame(BaseFrame):
 
     def _setup_progress_bar_area(
         self, progress_frame: ctk.CTkFrame
-    ) -> Tuple[BaseProgress, BaseLabel]:
+    ) -> tuple[BaseProgress, BaseLabel]:
         """Builds the top progress tracking section."""
         label = BaseLabel(progress_frame, text="Progress:", label_type="badge")
         label.pack(pady=4)
@@ -149,20 +151,19 @@ class MainFrame(BaseFrame):
             formatted_types.append((label, pattern))
         return formatted_types
 
-    def add_files(self) -> None:
-        """Opens file dialog and adds files to the listbox."""
+    def add_files(self) -> tuple[list[Path], int] | None:
         types = self._get_formatted_filetypes()
-        new_files_paths: list[str] = list(get_files(filetypes=types, multiple=True))
-
-        if not new_files_paths:
-            return
+        selected = [Path(p) for p in get_files(filetypes=types, multiple=True)]
+        if not selected:
+            return None
 
         self.progress_bar_reset()
-        self.filebox.add_new_files(file_list=new_files_paths)
+        added = self.filebox.add_new_files(file_list=selected)
+        return added, len(selected)
 
     def remove_files(self) -> None:
         """Handles removal of selected files with confirmation dialogs."""
-        all_files = self.filebox.all_rows
+        all_files = self.filebox.all_paths
         sel_files = self.filebox.get_selected_paths()
 
         if not all_files:

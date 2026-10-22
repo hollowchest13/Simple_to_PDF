@@ -1,37 +1,25 @@
-import io
 import logging
 from pathlib import Path
-from typing import Callable
 
 from pypdf import PdfReader, PdfWriter
 
 from simple_to_pdf.base_services.base import BaseService
+from simple_to_pdf.utils.file_tools import get_unique_path
 
 logger = logging.getLogger(__name__)
 
 
 class PageExtractor(BaseService):
     def __init__(self):
-        self._callback: Callable = lambda *args, **kwargs: None
         super().__init__()
-
-    @property
-    def callback(self):
-        return self._callback
-
-    @callback.setter
-    def callback(self, value):
-        self._callback = value if value is not None else lambda *args, **kwargs: None
 
     def extract_pages(
         self,
         *,
-        input_path: str,
+        input_file: Path,
         pages_to_extract: list[int],
-        output_path: str | Path,
-    ) -> bytes:
-        input_file = Path(input_path)
-        output_file = Path(output_path).resolve()
+        output_file: Path,
+    ) -> Path:
         stage_name = "extracting"
 
         writer = PdfWriter()
@@ -49,38 +37,31 @@ class PageExtractor(BaseService):
                         writer.add_page(reader.pages[p_idx])
                         self.callback(
                             "progress",
-                            **{
-                                "stage": stage_name,
-                                "mode": "determinate",
-                                "current": i,
-                                "total": total,
-                                "filename": f"page {p_num}",
-                            },
+                            stage=stage_name,
+                            mode="determinate",
+                            current=i,
+                            total=total,
+                            filename=f"page {p_num}",
                         )
                     except IndexError as e:
-                        logger.error(f"Page {p_num} is out of range for {input_path}")
+                        logger.error(f"Page {p_num} is out of range for {input_file}")
                         self.callback(
                             "status",
-                            **{
-                                "key": f"{stage_name}.error",
-                                "status": "error",
-                                "page_number": p_num,
-                                "error": e,
-                            },
+                            key=f"{stage_name}.error",
+                            status="error",
+                            page_number=p_num,
+                            error=e,
                         )
-            with io.BytesIO() as buffer:
-                writer.write(buffer)
-                data = buffer.getvalue()
+            output_file = get_unique_path(output_file)
+            writer.write(output_file)
 
             self.callback(
                 "status",
-                **{
-                    "key": f"{stage_name}.done",
-                    "status": "info",
-                    "path": str(output_file),
-                },
+                key=f"{stage_name}.done",
+                status="info",
+                path=str(output_file),
             )
-            return data
+            return output_file
 
         except InterruptedError:
             logger.info(f"{stage_name} successfully cancelled by the user.")
@@ -93,7 +74,7 @@ class PageExtractor(BaseService):
         self,
         *,
         input_path: Path,
-        pages_to_extract: list[int]|None,
+        pages_to_extract: list[int] | None,
     ) -> None:
         """
         Validates if the provided page numbers exist within the source PDF.
@@ -109,13 +90,10 @@ class PageExtractor(BaseService):
             actual_total = len(reader.pages)
 
         invalid = [
-            p_num + 1 for p_num in pages_to_extract if p_num < 1 or p_num > actual_total
+            p_num for p_num in pages_to_extract if p_num < 1 or p_num > actual_total
         ]
 
         if invalid:
             raise ValueError(
                 f"Invalid page numbers: {invalid}. File has only {actual_total} pages."
             )
-
-        if not pages_to_extract:
-            raise ValueError("No pages selected for extraction.")

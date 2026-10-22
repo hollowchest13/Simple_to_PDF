@@ -116,14 +116,19 @@
         "btn": "Got it"
       },
       "file_not_found": {
-        "header": "Not found",
+        "header": "Not found!",
         "message": "File {file_name} not found.",
         "btn": "Got it"
       },
       "file_read_error": {
-        "header": "File read error",
+        "header": "File read error!",
         "message": "Check the integrity and access to the file at path {path}.",
         "btn": "Got it"
+      },
+      "empty_file_drop": {
+        "header": "No files added!",
+        "message": "The files you are trying to add are not supported!\n\nSupported formats:\n\n{supported_ext}.",
+        "btn": "OK"
       }
     },
     "error": {
@@ -194,6 +199,11 @@
         "unknown": "Error: Failed to save file at path:\n{path}\nReason: {error}",
         "permission": "Folder access error"
       }
+    },
+    "adding": {
+      "done": "Files added: {added_count}",
+      "partial": "Added: {added_count}; Skipped (unsupported format): {skipped_count}",
+      "none": "No files to add"
     }
   },
   "progress": {

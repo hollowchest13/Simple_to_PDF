@@ -1,5 +1,6 @@
 import logging
-from typing import Any, Callable, Dict, List, Literal
+from collections.abc import Callable
+from typing import Any, Literal
 
 import customtkinter as ctk
 from PIL import Image
@@ -65,7 +66,7 @@ class BaseFrame(ctk.CTkFrame, FrameThemeMixin, LocalizationMixin):
         params = self.set_params(frame_type=frame_type)
         params.update(kwargs)
         super().__init__(parent, **params)
-        self.handlers: Dict[str, Callable] = {}
+        self.handlers: dict[str, Callable] = {}
         self.ui: dict[str, Any] = {}
         self.loc_section: str = ""
         self.init_localization()
@@ -117,8 +118,8 @@ class BaseFrame(ctk.CTkFrame, FrameThemeMixin, LocalizationMixin):
             pil_img = Image.open(full_path)
 
             return ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=size)
-        except Exception as e:
-            logger.error(f"❌ Error CTkImage: {e}")
+        except Exception as e:  # noqa: BLE001
+            logger.error("❌ Error CTkImage: %s", e)
             return None
 
     def set_actions_state(self, enabled: bool) -> None:
@@ -154,9 +155,7 @@ class BaseScrollableFrame(ctk.CTkScrollableFrame, ScrolableFrameThemeMixin):
         self,
         parent,
         *,
-        scr_frame_type: Literal[
-            "file_list", "content"
-        ] = "content",
+        scr_frame_type: Literal["file_list", "content"] = "content",
         **kwargs,
     ):
         params = self.set_params(scr_frame_type=scr_frame_type)
@@ -203,7 +202,7 @@ class BaseOptionMenu(ctk.CTkOptionMenu, OptionMenuThemeMixin):
         self,
         parent,
         menu_type: Literal["settings"] = "settings",
-        values: List[str] | None = None,
+        values: list[str] | None = None,
         **kwargs,
     ):
         params = self.set_params(menu_type=menu_type)

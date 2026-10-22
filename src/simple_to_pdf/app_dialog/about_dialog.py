@@ -1,8 +1,9 @@
 import webbrowser
 
-from .base_dialog import BaseDialog
-from simple_to_pdf.widgets import PrimaryButton, BaseLabel
 from simple_to_pdf.core.config import GITHUB_REPO_URL
+from simple_to_pdf.widgets import BaseLabel, PrimaryButton
+
+from .base_dialog import BaseDialog
 
 
 class AboutDialog(BaseDialog):

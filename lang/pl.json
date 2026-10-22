@@ -116,14 +116,19 @@
         "btn": "Rozumiem"
       },
       "file_not_found": {
-        "header": "Nie znaleziono",
+        "header": "Nie znaleziono!",
         "message": "Nie znaleziono pliku {file_name}.",
         "btn": "Rozumiem"
       },
       "file_read_error": {
-        "header": "Błąd odczytu pliku",
+        "header": "Błąd odczytu pliku!",
         "message": "Sprawdź integralność i dostęp do pliku w ścieżce {path}.",
         "btn": "Rozumiem"
+      },
+      "empty_file_drop": {
+        "header": "Nie dodano plików!",
+        "message": "Pliki, które próbujesz dodać, nie są obsługiwane!\n\nObsługiwane formaty:\n\n{supported_ext}.",
+        "btn": "OK"
       }
     },
     "error": {
@@ -194,6 +199,11 @@
         "unknown": "Błąd: Nie udało się zapisać pliku w ścieżce:\n{path}\nPrzyczyna: {error}",
         "permission": "Błąd dostępu do folderu"
       }
+    },
+    "adding": {
+      "done": "Dodano plików: {added_count}",
+      "partial": "Dodano: {added_count}; Pominięto (nieobsługiwany format): {skipped_count}",
+      "none": "Brak plików do dodania"
     }
   },
   "progress": {
