@@ -101,14 +101,14 @@ class PDFMergerGUI(BaseWindow):
             supported, self.main_panel.filebox.all_paths
         )
 
-        self._report_adding(
-            added=new_files,
-            skipped_count=unsupported_count + duplicate_count,
-            had_supported=bool(supported),
-        )
         if new_files:
-            self.main_panel.progress_bar_reset()
+            self.main_panel.reset_progress_widgets()
             self.main_panel.filebox.add_new_files(file_list=[p for p in new_files])
+            self._report_adding(
+                added=self.main_panel.filebox.all_paths,
+                skipped_count=unsupported_count + duplicate_count,
+                had_supported=bool(supported),
+            )
         return event.action
 
     def _poll_ui_queue(self):
