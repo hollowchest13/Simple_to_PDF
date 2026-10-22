@@ -20,8 +20,8 @@ class VersionController:
         version_toml_url = f"https://raw.githubusercontent.com/{self._git_user}/{self._git_repo}/main/pyproject.toml"
         return version_toml_url
 
-    def _get_release_url(self):
-        return f"{self._git_repo}/releases"
+    def _get_release_url(self) -> str:
+        return f"https://github.com/{self._git_user}/{self._git_repo}/releases"
 
     def _get_release_info(
         self, *, version_toml_url: str, timeout: int = 5
@@ -39,7 +39,7 @@ class VersionController:
 
             return ReleaseInfo(
                 version=latest_version,
-                date=metadata.get("version", "No release date provided."),
+                date=metadata.get("release_date", "No release date provided."),
                 notes=metadata.get(
                     "release_notes", "Fixed minor bugs and improved stability."
                 ),
