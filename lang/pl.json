@@ -202,8 +202,9 @@
     },
     "adding": {
       "done": "Dodano plików: {added_count}",
-      "partial": "Dodano: {added_count}; Pominięto (nieobsługiwany format): {unsupported_count}",
-      "none": "Brak plików do dodania"
+      "partial": "Dodano: {added_count} | Już dodane: {existing_count} | Nieobsługiwane: {unsupported_count}",
+      "existing_only": "Już dodane: {existing_count}",
+      "unsupported_only": "Nieobsługiwane pliki: {unsupported_count}"
     }
   },
   "progress": {

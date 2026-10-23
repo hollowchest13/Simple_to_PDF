@@ -202,8 +202,9 @@
     },
     "adding": {
       "done": "Archivos añadidos: {added_count}",
-      "partial": "Añadidos: {added_count}; Omitidos (formato no compatible): {unsupported_count}",
-      "none": "No hay archivos para añadir"
+      "partial": "Añadidos: {added_count} | Ya añadidos: {existing_count} | No soportados: {unsupported_count}",
+      "existing_only": "Ya añadidos: {existing_count}",
+      "unsupported_only": "Archivos no soportados: {unsupported_count}"
     }
   },
   "progress": {

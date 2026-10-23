@@ -202,8 +202,9 @@
     },
     "adding": {
       "done": "Додано файлів: {added_count}",
-      "partial": "Додано: {added_count}; Пропущено (непідтримуваний формат): {unsupported_count}",
-      "none": "Немає файлів для додавання"
+      "partial": "Додано: {added_count} | Уже є: {existing_count} | Непідтримувані: {unsupported_count}",
+      "existing_only": "Уже є: {existing_count}",
+      "unsupported_only": "Непідтримувані файли: {unsupported_count}"
     }
   },
   "progress": {

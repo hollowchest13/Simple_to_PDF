@@ -201,9 +201,10 @@
       }
     },
     "adding": {
-      "done": "Files added: {added_count}",
-      "partial": "Added: {added_count}; Skipped (unsupported format): {unsupported_count}",
-      "none": "No files to add"
+      "done": "Added files: {added_count}",
+      "partial": "Added: {added_count} | Already added: {existing_count} | Unsupported: {unsupported_count}",
+      "existing_only": "Already added: {existing_count}",
+      "unsupported_only": "Unsupported files: {unsupported_count}"
     }
   },
   "progress": {

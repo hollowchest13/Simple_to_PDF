@@ -151,13 +151,15 @@ class MainFrame(BaseFrame):
             formatted_types.append((label, pattern))
         return formatted_types
 
-    def add_files(self) -> list[Path] | None:
+    def add_files(self) -> tuple[int, int] | None:
         types = self._get_formatted_filetypes()
         selected = [Path(p) for p in get_files(filetypes=types, multiple=True)]
         if not selected:
             return None
         added = self.filebox.add_new_files(file_list=selected)
-        return added
+        added_count = len(added)
+        existing_count = len(selected) - added_count
+        return added_count, existing_count
 
     def remove_files(self) -> None:
         """Handles removal of selected files with confirmation dialogs."""

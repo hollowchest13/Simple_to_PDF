@@ -202,8 +202,9 @@
     },
     "adding": {
       "done": "Hinzugefügte Dateien: {added_count}",
-      "partial": "Hinzugefügt: {added_count}; Übersprungen (nicht unterstütztes Format): {unsupported_count}",
-      "none": "Keine Dateien zum Hinzufügen"
+      "partial": "Hinzugefügt: {added_count} | Bereits vorhanden: {existing_count} | Nicht unterstützt: {unsupported_count}",
+      "existing_only": "Bereits vorhanden: {existing_count}",
+      "unsupported_only": "Nicht unterstützte Dateien: {unsupported_count}"
     }
   },
   "progress": {

@@ -115,9 +115,13 @@ class PDFMergerGUI(BaseWindow):
 
         if new_files:
             self.main_panel.filebox.add_new_files(file_list=[p for p in new_files])
+        dropped_count = len(dropped)
+        new_files_count = len(new_files)
+        existing_count = dropped_count - new_files_count - unsupported_count
 
         self._report_adding(
-            added=new_files,
+            added_count=new_files_count,
+            existing_count=existing_count,
             unsupported_count=unsupported_count,
             had_supported=bool(supported),
         )
@@ -140,7 +144,8 @@ class PDFMergerGUI(BaseWindow):
     def _report_adding(
         self,
         *,
-        added: list[Path],
+        added_count: int = 0,
+        existing_count: int = 0,
         unsupported_count: int = 0,
         had_supported: bool = True,
     ) -> None:
@@ -150,13 +155,27 @@ class PDFMergerGUI(BaseWindow):
                 scenario_key="empty_file_drop",
                 supported_ext=format_extensions(self._supported_extensions_set),
             )
+            return
+
+        if not added_count and not existing_count and not unsupported_count:
+            return
+
+        if unsupported_count and added_count > 0:
+            status_key = "adding.partial"
+        elif not added_count and existing_count > 0 and not unsupported_count:
+            status_key = "adding.existing_only"
+        elif not added_count and not existing_count and unsupported_count:
+            status_key = "adding.unsupported_only"  # Якщо кинули лише непідтримувані
         else:
-            self.callback.safe_callback(
-                "status",
-                key="adding.partial" if unsupported_count else "adding.done",
-                added_count=len(added),
-                unsupported_count=unsupported_count,
-            )
+            status_key = "adding.done"
+
+        self.callback.safe_callback(
+            "status",
+            key=status_key,
+            added_count=added_count,
+            existing_count=existing_count,
+            unsupported_count=unsupported_count,
+        )
 
     def apply_settings(self) -> None:
         self.settings_panel.setup()
@@ -320,12 +339,14 @@ class PDFMergerGUI(BaseWindow):
 
     @update_ui_after("_update_merge_button")
     def handle_add_files(self) -> None:
-        added_files = self.main_panel.add_files()
-        if added_files is None:
+        result = self.main_panel.add_files()
+        if not result:
             return
-        self.callback.safe_callback("progress_reset")
+        added_count, existing_count = result
+        self.callback.safe_callback("status_clear")
         self._report_adding(
-            added=added_files,
+            added_count=added_count,
+            existing_count=existing_count,
         )
 
     @update_ui_after("_update_merge_button")
