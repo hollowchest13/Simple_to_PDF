@@ -21,9 +21,7 @@ def split_supported(
     return supported, len(files) - len(supported)
 
 
-def filter_new(
-    files: list[Path], existing: Iterable[str | Path]
-) -> tuple[list[Path], int]:
+def filter_new(files: list[Path], existing: Iterable[str | Path]) -> list[Path]:
     """Drop files already in the list and duplicates within the batch."""
     seen = {Path(p).resolve() for p in existing}
     new_files: list[Path] = []
@@ -33,7 +31,7 @@ def filter_new(
             continue
         seen.add(rp)
         new_files.append(p)
-    return new_files, len(files) - len(new_files)
+    return new_files
 
 
 def format_extensions(exts: Iterable[str]) -> str:

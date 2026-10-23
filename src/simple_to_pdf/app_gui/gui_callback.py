@@ -22,7 +22,15 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
         self._schedule_task = schedule
 
     def safe_callback(
-        self, event_type: Literal["status", "progress", "progress_reset"], **params
+        self,
+        event_type: Literal[
+            "status",
+            "progress",
+            "progress_reset",
+            "status_clear",
+            "reset_progress_widgets",
+        ],
+        **params,
     ) -> None:
         """Can be called from any thread; hands the event over to the UI thread."""
         self._schedule_task(self._handle_event, event_type, **params)
@@ -47,6 +55,9 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
                 status_type = status_params.pop("status", "info")
                 self._set_status(key=status_key, status=status_type, **status_params)
 
+            case "status_clear":
+                self.main_frame.clear_status_text()
+
             case "progress_reset":
                 self.main_frame.set_progress_determinate()
                 self.main_frame.progress_bar.set(0)
@@ -56,6 +67,8 @@ class GUICallback(ThemeProviderMixin, LocalizationMixin):
                 self.main_frame.progress_label.configure(
                     text=self.get_text(key="main_panel.progress_label", section="ui")
                 )
+            case "reset_progress_widgets":
+                self.main_frame.reset_progress_widgets()
             case _:
                 logger.warning("Unknown GUI event type: %s", event_type)
 

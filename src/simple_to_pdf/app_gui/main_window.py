@@ -88,27 +88,39 @@ class PDFMergerGUI(BaseWindow):
         self.dnd_bind("<<Drop>>", self.handle_drop)
         self._supported_extensions_set = self._supported_extensions()
 
+    @staticmethod
+    def update_ui_after(method_name: str):
+        def decorator(func: Callable[..., Any]):
+            def wrapper(self, *args, **kwargs):
+                result = func(self, *args, **kwargs)
+                getattr(self, method_name)()
+                return result
+
+            return wrapper
+
+        return decorator
+
     def _supported_extensions(self) -> set[str]:
         formats = self.conversion_service.converter.get_supported_formats()
         return {ext.lower() for group in formats.values() for ext in group} | {".pdf"}
 
+    @update_ui_after("_update_merge_button")
     def handle_drop(self, event) -> str:
         dropped = expand_paths(self.tk.splitlist(event.data))
         supported, unsupported_count = split_supported(
             dropped, self._supported_extensions()
         )
-        new_files, duplicate_count = filter_new(
-            supported, self.main_panel.filebox.all_paths
-        )
+        new_files = filter_new(supported, self.main_panel.filebox.all_paths)
+        self.callback.safe_callback("status_clear")
 
         if new_files:
-            self.main_panel.reset_progress_widgets()
             self.main_panel.filebox.add_new_files(file_list=[p for p in new_files])
-            self._report_adding(
-                added=self.main_panel.filebox.all_paths,
-                skipped_count=unsupported_count + duplicate_count,
-                had_supported=bool(supported),
-            )
+
+        self._report_adding(
+            added=new_files,
+            unsupported_count=unsupported_count,
+            had_supported=bool(supported),
+        )
         return event.action
 
     def _poll_ui_queue(self):
@@ -126,20 +138,24 @@ class PDFMergerGUI(BaseWindow):
             self.after(16, self._poll_ui_queue)
 
     def _report_adding(
-        self, *, added: list[Path], skipped_count: int = 0, had_supported: bool = True
+        self,
+        *,
+        added: list[Path],
+        unsupported_count: int = 0,
+        had_supported: bool = True,
     ) -> None:
         """Show a status only when there is something meaningful to report."""
-        if added:
-            self.callback.safe_callback(
-                "status",
-                key="adding.partial" if skipped_count else "adding.done",
-                added_count=len(added),
-                skipped_count=skipped_count,
-            )
-        elif not had_supported:
+        if not had_supported:
             self.notifier.warning(
                 scenario_key="empty_file_drop",
                 supported_ext=format_extensions(self._supported_extensions_set),
+            )
+        else:
+            self.callback.safe_callback(
+                "status",
+                key="adding.partial" if unsupported_count else "adding.done",
+                added_count=len(added),
+                unsupported_count=unsupported_count,
             )
 
     def apply_settings(self) -> None:
@@ -244,7 +260,7 @@ class PDFMergerGUI(BaseWindow):
             "logs": self.open_log_folder,
             "documentation": self.show_documentation,
             "dependencies": self.show_dependencies,
-            "add": self.add_files,
+            "add": self.handle_add_files,
             "remove": self.remove_files,
             "stop": self.cancel_processing,
             "move": lambda direction: self.main_panel.move_on_listbox(
@@ -261,18 +277,6 @@ class PDFMergerGUI(BaseWindow):
 
     def clear_console(self):
         self.main_panel.clear_status_text()
-
-    @staticmethod
-    def update_ui_after(method_name: str):
-        def decorator(func: Callable[..., Any]):
-            def wrapper(self, *args, **kwargs):
-                result = func(self, *args, **kwargs)
-                getattr(self, method_name)()
-                return result
-
-            return wrapper
-
-        return decorator
 
     def _update_merge_button(self):
         """
@@ -315,14 +319,13 @@ class PDFMergerGUI(BaseWindow):
         self.btns_panel.update_conditional_button()
 
     @update_ui_after("_update_merge_button")
-    def add_files(self) -> None:
-        result = self.main_panel.add_files()
-        if result is None:
+    def handle_add_files(self) -> None:
+        added_files = self.main_panel.add_files()
+        if added_files is None:
             return
-        added, requested = result
+        self.callback.safe_callback("progress_reset")
         self._report_adding(
-            added=added,
-            skipped_count=requested - len(added),
+            added=added_files,
         )
 
     @update_ui_after("_update_merge_button")
